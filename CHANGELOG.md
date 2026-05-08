@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.10.4 (2026-05-08)
+
+Full Changelog: [v0.10.3...v0.10.4](https://github.com/boltz-bio/boltz-api-go/compare/v0.10.3...v0.10.4)
+
+### Bug Fixes
+
+* **go:** avoid panic when http.DefaultTransport is wrapped ([7a0abf1](https://github.com/boltz-bio/boltz-api-go/commit/7a0abf1c1bdf00e16972c9ba10a831a68f017572))
+
+
+### Chores
+
+* redact api-key headers in debug logs ([3c8aff8](https://github.com/boltz-bio/boltz-api-go/commit/3c8aff8e21d896b63d11305a245bc131851f1be7))
+
 ## 0.10.3 (2026-05-02)
 
 Full Changelog: [v0.10.2...v0.10.3](https://github.com/boltz-bio/boltz-api-go/compare/v0.10.2...v0.10.3)
