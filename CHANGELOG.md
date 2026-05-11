@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.11.0 (2026-05-11)
+
+Full Changelog: [v0.10.4...v0.11.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.10.4...v0.11.0)
+
+### Features
+
+* [codex] Add ADME scoring for small molecule pipelines ([e49dd61](https://github.com/boltz-bio/boltz-api-go/commit/e49dd611358263f8e103c2b1bca62f520a0e7a9f))
+* Address ADME API review followups ([664fd80](https://github.com/boltz-bio/boltz-api-go/commit/664fd8044ab5ae5ce27532a7dcbf77d06f9fa8c0))
+
 ## 0.10.4 (2026-05-08)
 
 Full Changelog: [v0.10.3...v0.10.4](https://github.com/boltz-bio/boltz-api-go/compare/v0.10.3...v0.10.4)
