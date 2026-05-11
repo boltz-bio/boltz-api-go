@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.12.0 (2026-05-11)
+
+Full Changelog: [v0.11.0...v0.12.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.11.0...v0.12.0)
+
+### Features
+
+* **compute-api:** support non-binding target residues ([2da90d9](https://github.com/boltz-bio/boltz-api-go/commit/2da90d983e07cbb25de25e0f36994c9753caa54b))
+
 ## 0.11.0 (2026-05-11)
 
 Full Changelog: [v0.10.4...v0.11.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.10.4...v0.11.0)
