@@ -131,8 +131,9 @@ func TestProteinLibraryScreenEstimateCostWithOptionalParams(t *testing.T) {
 							CropResidues: boltzapi.ProteinLibraryScreenEstimateCostParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpecCropResiduesUnion{
 								OfIntArray: []int64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
 							},
-							EpitopeResidues:  []int64{10, 11, 12},
-							FlexibleResidues: []int64{5, 6, 7},
+							EpitopeResidues:    []int64{10, 11, 12},
+							FlexibleResidues:   []int64{5, 6, 7},
+							NonBindingResidues: []int64{0, 1, 2},
 						},
 					},
 				},
@@ -225,8 +226,9 @@ func TestProteinLibraryScreenStartWithOptionalParams(t *testing.T) {
 							CropResidues: boltzapi.ProteinLibraryScreenStartParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpecCropResiduesUnion{
 								OfIntArray: []int64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
 							},
-							EpitopeResidues:  []int64{10, 11, 12},
-							FlexibleResidues: []int64{5, 6, 7},
+							EpitopeResidues:    []int64{10, 11, 12},
+							FlexibleResidues:   []int64{5, 6, 7},
+							NonBindingResidues: []int64{0, 1, 2},
 						},
 					},
 				},
