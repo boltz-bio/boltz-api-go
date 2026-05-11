@@ -20,6 +20,9 @@ type PredictionService struct {
 	// Predict 3D structure coordinates, per-residue confidence scores, and binding
 	// metrics for a molecular complex.
 	StructureAndBinding PredictionStructureAndBindingService
+	// Predict Tier 1 ADME summary values for a batch of small molecules specified by
+	// SMILES.
+	Adme PredictionAdmeService
 }
 
 // NewPredictionService generates a new service that applies the given options to
@@ -29,5 +32,6 @@ func NewPredictionService(opts ...option.RequestOption) (r PredictionService) {
 	r = PredictionService{}
 	r.Options = opts
 	r.StructureAndBinding = NewPredictionStructureAndBindingService(opts...)
+	r.Adme = NewPredictionAdmeService(opts...)
 	return
 }
