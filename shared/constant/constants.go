@@ -18,6 +18,7 @@ func ValueOf[T Constant[T]]() T {
 	return t.Default()
 }
 
+type AdmeV1 string                       // Always "adme-v1"
 type All string                          // Always "all"
 type APIKey string                       // Always "api_key"
 type Base64 string                       // Always "base64"
@@ -32,6 +33,7 @@ type ChemicalXCif string                 // Always "chemical/x-cif"
 type Contact string                      // Always "contact"
 type DesignedProtein string              // Always "designed_protein"
 type Dna string                          // Always "dna"
+type Failed string                       // Always "failed"
 type Insertion string                    // Always "insertion"
 type Ligand string                       // Always "ligand"
 type LigandAtom string                   // Always "ligand_atom"
@@ -57,10 +59,12 @@ type SmartsCustomFilter string           // Always "smarts_custom_filter"
 type Smiles string                       // Always "smiles"
 type SmilesRegexFilter string            // Always "smiles_regex_filter"
 type StructureTemplate string            // Always "structure_template"
+type Succeeded string                    // Always "succeeded"
 type URL string                          // Always "url"
 type User string                         // Always "user"
 type Workspace string                    // Always "workspace"
 
+func (c AdmeV1) Default() AdmeV1                             { return "adme-v1" }
 func (c All) Default() All                                   { return "all" }
 func (c APIKey) Default() APIKey                             { return "api_key" }
 func (c Base64) Default() Base64                             { return "base64" }
@@ -75,6 +79,7 @@ func (c ChemicalXCif) Default() ChemicalXCif                 { return "chemical/
 func (c Contact) Default() Contact                           { return "contact" }
 func (c DesignedProtein) Default() DesignedProtein           { return "designed_protein" }
 func (c Dna) Default() Dna                                   { return "dna" }
+func (c Failed) Default() Failed                             { return "failed" }
 func (c Insertion) Default() Insertion                       { return "insertion" }
 func (c Ligand) Default() Ligand                             { return "ligand" }
 func (c LigandAtom) Default() LigandAtom                     { return "ligand_atom" }
@@ -104,10 +109,12 @@ func (c SmartsCustomFilter) Default() SmartsCustomFilter       { return "smarts_
 func (c Smiles) Default() Smiles                               { return "smiles" }
 func (c SmilesRegexFilter) Default() SmilesRegexFilter         { return "smiles_regex_filter" }
 func (c StructureTemplate) Default() StructureTemplate         { return "structure_template" }
+func (c Succeeded) Default() Succeeded                         { return "succeeded" }
 func (c URL) Default() URL                                     { return "url" }
 func (c User) Default() User                                   { return "user" }
 func (c Workspace) Default() Workspace                         { return "workspace" }
 
+func (c AdmeV1) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c All) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c APIKey) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Base64) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
@@ -122,6 +129,7 @@ func (c ChemicalXCif) MarshalJSON() ([]byte, error)                 { return mar
 func (c Contact) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c DesignedProtein) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c Dna) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c Failed) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Insertion) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c Ligand) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c LigandAtom) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
@@ -147,6 +155,7 @@ func (c SmartsCustomFilter) MarshalJSON() ([]byte, error)           { return mar
 func (c Smiles) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c SmilesRegexFilter) MarshalJSON() ([]byte, error)            { return marshalString(c) }
 func (c StructureTemplate) MarshalJSON() ([]byte, error)            { return marshalString(c) }
+func (c Succeeded) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c URL) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c User) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c Workspace) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
