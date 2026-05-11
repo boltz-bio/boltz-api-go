@@ -1795,7 +1795,10 @@ type ProteinDesignGetResponseInputTargetUnion struct {
 	// This field is from variant
 	// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponse].
 	EpitopeResidues map[string][]int64 `json:"epitope_residues"`
-	JSON            struct {
+	// This field is from variant
+	// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponse].
+	NonBindingResidues map[string][]int64 `json:"non_binding_residues"`
+	JSON               struct {
 		ChainSelection      respjson.Field
 		Structure           respjson.Field
 		Type                respjson.Field
@@ -1804,6 +1807,7 @@ type ProteinDesignGetResponseInputTargetUnion struct {
 		Constraints         respjson.Field
 		EpitopeLigandChains respjson.Field
 		EpitopeResidues     respjson.Field
+		NonBindingResidues  respjson.Field
 		raw                 string
 	} `json:"-"`
 }
@@ -1831,7 +1835,7 @@ type ProteinDesignGetResponseInputTargetStructureTemplateTargetResponse struct {
 	// Chains selected from the uploaded structure, keyed by chain ID. Only chains
 	// listed here are included in the engine run — any chains omitted from this
 	// mapping are ignored. Each value defines which residues to keep, which are
-	// epitope residues, and which are flexible.
+	// epitope residues, which are non-binding residues, and which are flexible.
 	ChainSelection map[string]ProteinDesignGetResponseInputTargetStructureTemplateTargetResponseChainSelectionUnion `json:"chain_selection" api:"required"`
 	Structure      ProteinDesignGetResponseInputTargetStructureTemplateTargetResponseStructure                      `json:"structure" api:"required"`
 	Type           constant.StructureTemplate                                                                       `json:"type" default:"structure_template"`
@@ -1870,12 +1874,16 @@ type ProteinDesignGetResponseInputTargetStructureTemplateTargetResponseChainSele
 	// This field is from variant
 	// [ProteinDesignGetResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpec].
 	FlexibleResidues []int64 `json:"flexible_residues"`
-	JSON             struct {
-		ChainType        respjson.Field
-		CropResidues     respjson.Field
-		EpitopeResidues  respjson.Field
-		FlexibleResidues respjson.Field
-		raw              string
+	// This field is from variant
+	// [ProteinDesignGetResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpec].
+	NonBindingResidues []int64 `json:"non_binding_residues"`
+	JSON               struct {
+		ChainType          respjson.Field
+		CropResidues       respjson.Field
+		EpitopeResidues    respjson.Field
+		FlexibleResidues   respjson.Field
+		NonBindingResidues respjson.Field
+		raw                string
 	} `json:"-"`
 }
 
@@ -1906,19 +1914,24 @@ type ProteinDesignGetResponseInputTargetStructureTemplateTargetResponseChainSele
 	// residues. Residues not listed are excluded from the engine run.
 	CropResidues ProteinDesignGetResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpecCropResiduesUnion `json:"crop_residues" api:"required"`
 	// 0-indexed residue indices where binder contact is desired (the epitope). All
-	// indices must be present in crop_residues.
+	// indices must be present in crop_residues and must not overlap
+	// non_binding_residues.
 	EpitopeResidues []int64 `json:"epitope_residues"`
 	// 0-indexed residue indices allowed to move during design (e.g. flexible loop
 	// regions). All indices must be present in crop_residues.
 	FlexibleResidues []int64 `json:"flexible_residues"`
+	// 0-indexed residue indices where binder contact should be discouraged. All
+	// indices must be present in crop_residues and must not overlap epitope_residues.
+	NonBindingResidues []int64 `json:"non_binding_residues"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ChainType        respjson.Field
-		CropResidues     respjson.Field
-		EpitopeResidues  respjson.Field
-		FlexibleResidues respjson.Field
-		ExtraFields      map[string]respjson.Field
-		raw              string
+		ChainType          respjson.Field
+		CropResidues       respjson.Field
+		EpitopeResidues    respjson.Field
+		FlexibleResidues   respjson.Field
+		NonBindingResidues respjson.Field
+		ExtraFields        map[string]respjson.Field
+		raw                string
 	} `json:"-"`
 }
 
@@ -2027,8 +2040,12 @@ type ProteinDesignGetResponseInputTargetNoTemplateTargetResponse struct {
 	EpitopeLigandChains []string `json:"epitope_ligand_chains"`
 	// Polymer chain residues where binder contact is desired (the epitope). Each key
 	// is a chain ID of a polymer entity, each value is an array of 0-indexed residue
-	// indices.
+	// indices. Residues must not overlap non_binding_residues on the same chain.
 	EpitopeResidues map[string][]int64 `json:"epitope_residues"`
+	// Polymer chain residues where binder contact should be discouraged. Each key is a
+	// chain ID of a polymer entity, each value is an array of 0-indexed residue
+	// indices. Residues must not overlap epitope_residues on the same chain.
+	NonBindingResidues map[string][]int64 `json:"non_binding_residues"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Entities            respjson.Field
@@ -2037,6 +2054,7 @@ type ProteinDesignGetResponseInputTargetNoTemplateTargetResponse struct {
 		Constraints         respjson.Field
 		EpitopeLigandChains respjson.Field
 		EpitopeResidues     respjson.Field
+		NonBindingResidues  respjson.Field
 		ExtraFields         map[string]respjson.Field
 		raw                 string
 	} `json:"-"`
@@ -5579,7 +5597,10 @@ type ProteinDesignStartResponseInputTargetUnion struct {
 	// This field is from variant
 	// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponse].
 	EpitopeResidues map[string][]int64 `json:"epitope_residues"`
-	JSON            struct {
+	// This field is from variant
+	// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponse].
+	NonBindingResidues map[string][]int64 `json:"non_binding_residues"`
+	JSON               struct {
 		ChainSelection      respjson.Field
 		Structure           respjson.Field
 		Type                respjson.Field
@@ -5588,6 +5609,7 @@ type ProteinDesignStartResponseInputTargetUnion struct {
 		Constraints         respjson.Field
 		EpitopeLigandChains respjson.Field
 		EpitopeResidues     respjson.Field
+		NonBindingResidues  respjson.Field
 		raw                 string
 	} `json:"-"`
 }
@@ -5615,7 +5637,7 @@ type ProteinDesignStartResponseInputTargetStructureTemplateTargetResponse struct
 	// Chains selected from the uploaded structure, keyed by chain ID. Only chains
 	// listed here are included in the engine run — any chains omitted from this
 	// mapping are ignored. Each value defines which residues to keep, which are
-	// epitope residues, and which are flexible.
+	// epitope residues, which are non-binding residues, and which are flexible.
 	ChainSelection map[string]ProteinDesignStartResponseInputTargetStructureTemplateTargetResponseChainSelectionUnion `json:"chain_selection" api:"required"`
 	Structure      ProteinDesignStartResponseInputTargetStructureTemplateTargetResponseStructure                      `json:"structure" api:"required"`
 	Type           constant.StructureTemplate                                                                         `json:"type" default:"structure_template"`
@@ -5654,12 +5676,16 @@ type ProteinDesignStartResponseInputTargetStructureTemplateTargetResponseChainSe
 	// This field is from variant
 	// [ProteinDesignStartResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpec].
 	FlexibleResidues []int64 `json:"flexible_residues"`
-	JSON             struct {
-		ChainType        respjson.Field
-		CropResidues     respjson.Field
-		EpitopeResidues  respjson.Field
-		FlexibleResidues respjson.Field
-		raw              string
+	// This field is from variant
+	// [ProteinDesignStartResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpec].
+	NonBindingResidues []int64 `json:"non_binding_residues"`
+	JSON               struct {
+		ChainType          respjson.Field
+		CropResidues       respjson.Field
+		EpitopeResidues    respjson.Field
+		FlexibleResidues   respjson.Field
+		NonBindingResidues respjson.Field
+		raw                string
 	} `json:"-"`
 }
 
@@ -5690,19 +5716,24 @@ type ProteinDesignStartResponseInputTargetStructureTemplateTargetResponseChainSe
 	// residues. Residues not listed are excluded from the engine run.
 	CropResidues ProteinDesignStartResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpecCropResiduesUnion `json:"crop_residues" api:"required"`
 	// 0-indexed residue indices where binder contact is desired (the epitope). All
-	// indices must be present in crop_residues.
+	// indices must be present in crop_residues and must not overlap
+	// non_binding_residues.
 	EpitopeResidues []int64 `json:"epitope_residues"`
 	// 0-indexed residue indices allowed to move during design (e.g. flexible loop
 	// regions). All indices must be present in crop_residues.
 	FlexibleResidues []int64 `json:"flexible_residues"`
+	// 0-indexed residue indices where binder contact should be discouraged. All
+	// indices must be present in crop_residues and must not overlap epitope_residues.
+	NonBindingResidues []int64 `json:"non_binding_residues"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ChainType        respjson.Field
-		CropResidues     respjson.Field
-		EpitopeResidues  respjson.Field
-		FlexibleResidues respjson.Field
-		ExtraFields      map[string]respjson.Field
-		raw              string
+		ChainType          respjson.Field
+		CropResidues       respjson.Field
+		EpitopeResidues    respjson.Field
+		FlexibleResidues   respjson.Field
+		NonBindingResidues respjson.Field
+		ExtraFields        map[string]respjson.Field
+		raw                string
 	} `json:"-"`
 }
 
@@ -5811,8 +5842,12 @@ type ProteinDesignStartResponseInputTargetNoTemplateTargetResponse struct {
 	EpitopeLigandChains []string `json:"epitope_ligand_chains"`
 	// Polymer chain residues where binder contact is desired (the epitope). Each key
 	// is a chain ID of a polymer entity, each value is an array of 0-indexed residue
-	// indices.
+	// indices. Residues must not overlap non_binding_residues on the same chain.
 	EpitopeResidues map[string][]int64 `json:"epitope_residues"`
+	// Polymer chain residues where binder contact should be discouraged. Each key is a
+	// chain ID of a polymer entity, each value is an array of 0-indexed residue
+	// indices. Residues must not overlap epitope_residues on the same chain.
+	NonBindingResidues map[string][]int64 `json:"non_binding_residues"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Entities            respjson.Field
@@ -5821,6 +5856,7 @@ type ProteinDesignStartResponseInputTargetNoTemplateTargetResponse struct {
 		Constraints         respjson.Field
 		EpitopeLigandChains respjson.Field
 		EpitopeResidues     respjson.Field
+		NonBindingResidues  respjson.Field
 		ExtraFields         map[string]respjson.Field
 		raw                 string
 	} `json:"-"`
@@ -8534,7 +8570,10 @@ type ProteinDesignStopResponseInputTargetUnion struct {
 	// This field is from variant
 	// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponse].
 	EpitopeResidues map[string][]int64 `json:"epitope_residues"`
-	JSON            struct {
+	// This field is from variant
+	// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponse].
+	NonBindingResidues map[string][]int64 `json:"non_binding_residues"`
+	JSON               struct {
 		ChainSelection      respjson.Field
 		Structure           respjson.Field
 		Type                respjson.Field
@@ -8543,6 +8582,7 @@ type ProteinDesignStopResponseInputTargetUnion struct {
 		Constraints         respjson.Field
 		EpitopeLigandChains respjson.Field
 		EpitopeResidues     respjson.Field
+		NonBindingResidues  respjson.Field
 		raw                 string
 	} `json:"-"`
 }
@@ -8570,7 +8610,7 @@ type ProteinDesignStopResponseInputTargetStructureTemplateTargetResponse struct 
 	// Chains selected from the uploaded structure, keyed by chain ID. Only chains
 	// listed here are included in the engine run — any chains omitted from this
 	// mapping are ignored. Each value defines which residues to keep, which are
-	// epitope residues, and which are flexible.
+	// epitope residues, which are non-binding residues, and which are flexible.
 	ChainSelection map[string]ProteinDesignStopResponseInputTargetStructureTemplateTargetResponseChainSelectionUnion `json:"chain_selection" api:"required"`
 	Structure      ProteinDesignStopResponseInputTargetStructureTemplateTargetResponseStructure                      `json:"structure" api:"required"`
 	Type           constant.StructureTemplate                                                                        `json:"type" default:"structure_template"`
@@ -8609,12 +8649,16 @@ type ProteinDesignStopResponseInputTargetStructureTemplateTargetResponseChainSel
 	// This field is from variant
 	// [ProteinDesignStopResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpec].
 	FlexibleResidues []int64 `json:"flexible_residues"`
-	JSON             struct {
-		ChainType        respjson.Field
-		CropResidues     respjson.Field
-		EpitopeResidues  respjson.Field
-		FlexibleResidues respjson.Field
-		raw              string
+	// This field is from variant
+	// [ProteinDesignStopResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpec].
+	NonBindingResidues []int64 `json:"non_binding_residues"`
+	JSON               struct {
+		ChainType          respjson.Field
+		CropResidues       respjson.Field
+		EpitopeResidues    respjson.Field
+		FlexibleResidues   respjson.Field
+		NonBindingResidues respjson.Field
+		raw                string
 	} `json:"-"`
 }
 
@@ -8645,19 +8689,24 @@ type ProteinDesignStopResponseInputTargetStructureTemplateTargetResponseChainSel
 	// residues. Residues not listed are excluded from the engine run.
 	CropResidues ProteinDesignStopResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpecCropResiduesUnion `json:"crop_residues" api:"required"`
 	// 0-indexed residue indices where binder contact is desired (the epitope). All
-	// indices must be present in crop_residues.
+	// indices must be present in crop_residues and must not overlap
+	// non_binding_residues.
 	EpitopeResidues []int64 `json:"epitope_residues"`
 	// 0-indexed residue indices allowed to move during design (e.g. flexible loop
 	// regions). All indices must be present in crop_residues.
 	FlexibleResidues []int64 `json:"flexible_residues"`
+	// 0-indexed residue indices where binder contact should be discouraged. All
+	// indices must be present in crop_residues and must not overlap epitope_residues.
+	NonBindingResidues []int64 `json:"non_binding_residues"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ChainType        respjson.Field
-		CropResidues     respjson.Field
-		EpitopeResidues  respjson.Field
-		FlexibleResidues respjson.Field
-		ExtraFields      map[string]respjson.Field
-		raw              string
+		ChainType          respjson.Field
+		CropResidues       respjson.Field
+		EpitopeResidues    respjson.Field
+		FlexibleResidues   respjson.Field
+		NonBindingResidues respjson.Field
+		ExtraFields        map[string]respjson.Field
+		raw                string
 	} `json:"-"`
 }
 
@@ -8766,8 +8815,12 @@ type ProteinDesignStopResponseInputTargetNoTemplateTargetResponse struct {
 	EpitopeLigandChains []string `json:"epitope_ligand_chains"`
 	// Polymer chain residues where binder contact is desired (the epitope). Each key
 	// is a chain ID of a polymer entity, each value is an array of 0-indexed residue
-	// indices.
+	// indices. Residues must not overlap non_binding_residues on the same chain.
 	EpitopeResidues map[string][]int64 `json:"epitope_residues"`
+	// Polymer chain residues where binder contact should be discouraged. Each key is a
+	// chain ID of a polymer entity, each value is an array of 0-indexed residue
+	// indices. Residues must not overlap epitope_residues on the same chain.
+	NonBindingResidues map[string][]int64 `json:"non_binding_residues"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Entities            respjson.Field
@@ -8776,6 +8829,7 @@ type ProteinDesignStopResponseInputTargetNoTemplateTargetResponse struct {
 		Constraints         respjson.Field
 		EpitopeLigandChains respjson.Field
 		EpitopeResidues     respjson.Field
+		NonBindingResidues  respjson.Field
 		ExtraFields         map[string]respjson.Field
 		raw                 string
 	} `json:"-"`
@@ -10900,7 +10954,7 @@ type ProteinDesignEstimateCostParamsTargetStructureTemplateTarget struct {
 	// Chains selected from the uploaded structure, keyed by chain ID. Only chains
 	// listed here are included in the engine run — any chains omitted from this
 	// mapping are ignored. Each value defines which residues to keep, which are
-	// epitope residues, and which are flexible.
+	// epitope residues, which are non-binding residues, and which are flexible.
 	ChainSelection map[string]ProteinDesignEstimateCostParamsTargetStructureTemplateTargetChainSelectionUnion `json:"chain_selection,omitzero" api:"required"`
 	// How to provide a CIF structure file. URLs are auto-detected; base64 uploads must
 	// use chemical/x-cif media type.
@@ -10944,11 +10998,15 @@ type ProteinDesignEstimateCostParamsTargetStructureTemplateTargetChainSelectionS
 	// residues. Residues not listed are excluded from the engine run.
 	CropResidues ProteinDesignEstimateCostParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpecCropResiduesUnion `json:"crop_residues,omitzero" api:"required"`
 	// 0-indexed residue indices where binder contact is desired (the epitope). All
-	// indices must be present in crop_residues.
+	// indices must be present in crop_residues and must not overlap
+	// non_binding_residues.
 	EpitopeResidues []int64 `json:"epitope_residues,omitzero"`
 	// 0-indexed residue indices allowed to move during design (e.g. flexible loop
 	// regions). All indices must be present in crop_residues.
 	FlexibleResidues []int64 `json:"flexible_residues,omitzero"`
+	// 0-indexed residue indices where binder contact should be discouraged. All
+	// indices must be present in crop_residues and must not overlap epitope_residues.
+	NonBindingResidues []int64 `json:"non_binding_residues,omitzero"`
 	// This field can be elided, and will marshal its zero value as "polymer".
 	ChainType constant.Polymer `json:"chain_type" default:"polymer"`
 	paramObj
@@ -11073,8 +11131,12 @@ type ProteinDesignEstimateCostParamsTargetNoTemplateTarget struct {
 	EpitopeLigandChains []string `json:"epitope_ligand_chains,omitzero"`
 	// Polymer chain residues where binder contact is desired (the epitope). Each key
 	// is a chain ID of a polymer entity, each value is an array of 0-indexed residue
-	// indices.
+	// indices. Residues must not overlap non_binding_residues on the same chain.
 	EpitopeResidues map[string][]int64 `json:"epitope_residues,omitzero"`
+	// Polymer chain residues where binder contact should be discouraged. Each key is a
+	// chain ID of a polymer entity, each value is an array of 0-indexed residue
+	// indices. Residues must not overlap epitope_residues on the same chain.
+	NonBindingResidues map[string][]int64 `json:"non_binding_residues,omitzero"`
 	// This field can be elided, and will marshal its zero value as "no_template".
 	Type constant.NoTemplate `json:"type" default:"no_template"`
 	paramObj
@@ -12753,7 +12815,7 @@ type ProteinDesignStartParamsTargetStructureTemplateTarget struct {
 	// Chains selected from the uploaded structure, keyed by chain ID. Only chains
 	// listed here are included in the engine run — any chains omitted from this
 	// mapping are ignored. Each value defines which residues to keep, which are
-	// epitope residues, and which are flexible.
+	// epitope residues, which are non-binding residues, and which are flexible.
 	ChainSelection map[string]ProteinDesignStartParamsTargetStructureTemplateTargetChainSelectionUnion `json:"chain_selection,omitzero" api:"required"`
 	// How to provide a CIF structure file. URLs are auto-detected; base64 uploads must
 	// use chemical/x-cif media type.
@@ -12797,11 +12859,15 @@ type ProteinDesignStartParamsTargetStructureTemplateTargetChainSelectionStructur
 	// residues. Residues not listed are excluded from the engine run.
 	CropResidues ProteinDesignStartParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpecCropResiduesUnion `json:"crop_residues,omitzero" api:"required"`
 	// 0-indexed residue indices where binder contact is desired (the epitope). All
-	// indices must be present in crop_residues.
+	// indices must be present in crop_residues and must not overlap
+	// non_binding_residues.
 	EpitopeResidues []int64 `json:"epitope_residues,omitzero"`
 	// 0-indexed residue indices allowed to move during design (e.g. flexible loop
 	// regions). All indices must be present in crop_residues.
 	FlexibleResidues []int64 `json:"flexible_residues,omitzero"`
+	// 0-indexed residue indices where binder contact should be discouraged. All
+	// indices must be present in crop_residues and must not overlap epitope_residues.
+	NonBindingResidues []int64 `json:"non_binding_residues,omitzero"`
 	// This field can be elided, and will marshal its zero value as "polymer".
 	ChainType constant.Polymer `json:"chain_type" default:"polymer"`
 	paramObj
@@ -12926,8 +12992,12 @@ type ProteinDesignStartParamsTargetNoTemplateTarget struct {
 	EpitopeLigandChains []string `json:"epitope_ligand_chains,omitzero"`
 	// Polymer chain residues where binder contact is desired (the epitope). Each key
 	// is a chain ID of a polymer entity, each value is an array of 0-indexed residue
-	// indices.
+	// indices. Residues must not overlap non_binding_residues on the same chain.
 	EpitopeResidues map[string][]int64 `json:"epitope_residues,omitzero"`
+	// Polymer chain residues where binder contact should be discouraged. Each key is a
+	// chain ID of a polymer entity, each value is an array of 0-indexed residue
+	// indices. Residues must not overlap epitope_residues on the same chain.
+	NonBindingResidues map[string][]int64 `json:"non_binding_residues,omitzero"`
 	// This field can be elided, and will marshal its zero value as "no_template".
 	Type constant.NoTemplate `json:"type" default:"no_template"`
 	paramObj
