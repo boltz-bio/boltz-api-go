@@ -1975,7 +1975,7 @@ func (r *SmallMoleculeLibraryScreenListResultsResponseMetrics) UnmarshalJSON(dat
 // Tier 1 ADME summary values for this molecule.
 type SmallMoleculeLibraryScreenListResultsResponseAdme struct {
 	// Lipophilicity score from the internal LogD prediction.
-	Liphophilicity float64 `json:"liphophilicity" api:"required"`
+	Lipophilicity float64 `json:"lipophilicity" api:"required"`
 	// Permeability score for this molecule.
 	Permeability float64 `json:"permeability" api:"required"`
 	// Solubility judgement for this molecule.
@@ -1984,11 +1984,11 @@ type SmallMoleculeLibraryScreenListResultsResponseAdme struct {
 	Solubility SmallMoleculeLibraryScreenListResultsResponseAdmeSolubility `json:"solubility" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Liphophilicity respjson.Field
-		Permeability   respjson.Field
-		Solubility     respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
+		Lipophilicity respjson.Field
+		Permeability  respjson.Field
+		Solubility    respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
 	} `json:"-"`
 }
 

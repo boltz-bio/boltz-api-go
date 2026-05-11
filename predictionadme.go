@@ -301,7 +301,7 @@ type PredictionAdmeGetResponseOutputMoleculeUnionAdme struct {
 	OfPredictionAdmeGetResponseOutputMoleculeAdmeMoleculeFailedAdme any `json:",inline"`
 	// This field is from variant
 	// [PredictionAdmeGetResponseOutputMoleculeAdmeMoleculeSucceededAdme].
-	Liphophilicity float64 `json:"liphophilicity"`
+	Lipophilicity float64 `json:"lipophilicity"`
 	// This field is from variant
 	// [PredictionAdmeGetResponseOutputMoleculeAdmeMoleculeSucceededAdme].
 	Permeability float64 `json:"permeability"`
@@ -310,7 +310,7 @@ type PredictionAdmeGetResponseOutputMoleculeUnionAdme struct {
 	Solubility PredictionAdmeGetResponseOutputMoleculeAdmeMoleculeSucceededAdmeSolubility `json:"solubility"`
 	JSON       struct {
 		OfPredictionAdmeGetResponseOutputMoleculeAdmeMoleculeFailedAdme respjson.Field
-		Liphophilicity                                                  respjson.Field
+		Lipophilicity                                                   respjson.Field
 		Permeability                                                    respjson.Field
 		Solubility                                                      respjson.Field
 		raw                                                             string
@@ -392,7 +392,7 @@ func (r *PredictionAdmeGetResponseOutputMoleculeAdmeMoleculeSucceeded) Unmarshal
 // Tier 1 ADME summary values for this molecule.
 type PredictionAdmeGetResponseOutputMoleculeAdmeMoleculeSucceededAdme struct {
 	// Lipophilicity score from the internal LogD prediction.
-	Liphophilicity float64 `json:"liphophilicity" api:"required"`
+	Lipophilicity float64 `json:"lipophilicity" api:"required"`
 	// Permeability score for this molecule.
 	Permeability float64 `json:"permeability" api:"required"`
 	// Solubility judgement for this molecule.
@@ -401,11 +401,11 @@ type PredictionAdmeGetResponseOutputMoleculeAdmeMoleculeSucceededAdme struct {
 	Solubility PredictionAdmeGetResponseOutputMoleculeAdmeMoleculeSucceededAdmeSolubility `json:"solubility" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Liphophilicity respjson.Field
-		Permeability   respjson.Field
-		Solubility     respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
+		Lipophilicity respjson.Field
+		Permeability  respjson.Field
+		Solubility    respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
 	} `json:"-"`
 }
 
@@ -798,7 +798,7 @@ type PredictionAdmeStartResponseOutputMoleculeUnionAdme struct {
 	OfPredictionAdmeStartResponseOutputMoleculeAdmeMoleculeFailedAdme any `json:",inline"`
 	// This field is from variant
 	// [PredictionAdmeStartResponseOutputMoleculeAdmeMoleculeSucceededAdme].
-	Liphophilicity float64 `json:"liphophilicity"`
+	Lipophilicity float64 `json:"lipophilicity"`
 	// This field is from variant
 	// [PredictionAdmeStartResponseOutputMoleculeAdmeMoleculeSucceededAdme].
 	Permeability float64 `json:"permeability"`
@@ -807,7 +807,7 @@ type PredictionAdmeStartResponseOutputMoleculeUnionAdme struct {
 	Solubility PredictionAdmeStartResponseOutputMoleculeAdmeMoleculeSucceededAdmeSolubility `json:"solubility"`
 	JSON       struct {
 		OfPredictionAdmeStartResponseOutputMoleculeAdmeMoleculeFailedAdme respjson.Field
-		Liphophilicity                                                    respjson.Field
+		Lipophilicity                                                     respjson.Field
 		Permeability                                                      respjson.Field
 		Solubility                                                        respjson.Field
 		raw                                                               string
@@ -889,7 +889,7 @@ func (r *PredictionAdmeStartResponseOutputMoleculeAdmeMoleculeSucceeded) Unmarsh
 // Tier 1 ADME summary values for this molecule.
 type PredictionAdmeStartResponseOutputMoleculeAdmeMoleculeSucceededAdme struct {
 	// Lipophilicity score from the internal LogD prediction.
-	Liphophilicity float64 `json:"liphophilicity" api:"required"`
+	Lipophilicity float64 `json:"lipophilicity" api:"required"`
 	// Permeability score for this molecule.
 	Permeability float64 `json:"permeability" api:"required"`
 	// Solubility judgement for this molecule.
@@ -898,11 +898,11 @@ type PredictionAdmeStartResponseOutputMoleculeAdmeMoleculeSucceededAdme struct {
 	Solubility PredictionAdmeStartResponseOutputMoleculeAdmeMoleculeSucceededAdmeSolubility `json:"solubility" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Liphophilicity respjson.Field
-		Permeability   respjson.Field
-		Solubility     respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
+		Lipophilicity respjson.Field
+		Permeability  respjson.Field
+		Solubility    respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
 	} `json:"-"`
 }
 
