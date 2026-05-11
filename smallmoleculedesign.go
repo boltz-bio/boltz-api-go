@@ -1775,6 +1775,8 @@ type SmallMoleculeDesignListResultsResponse struct {
 	Metrics SmallMoleculeDesignListResultsResponseMetrics `json:"metrics" api:"required"`
 	// SMILES string of the designed molecule
 	Smiles string `json:"smiles" api:"required"`
+	// Tier 1 ADME summary values for this molecule.
+	Adme SmallMoleculeDesignListResultsResponseAdme `json:"adme"`
 	// Warnings about potential quality issues with this result.
 	Warnings []SmallMoleculeDesignListResultsResponseWarning `json:"warnings"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -1784,6 +1786,7 @@ type SmallMoleculeDesignListResultsResponse struct {
 		CreatedAt   respjson.Field
 		Metrics     respjson.Field
 		Smiles      respjson.Field
+		Adme        respjson.Field
 		Warnings    respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -1893,6 +1896,41 @@ func (r SmallMoleculeDesignListResultsResponseMetrics) RawJSON() string { return
 func (r *SmallMoleculeDesignListResultsResponseMetrics) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Tier 1 ADME summary values for this molecule.
+type SmallMoleculeDesignListResultsResponseAdme struct {
+	// Lipophilicity score from the internal LogD prediction.
+	Liphophilicity float64 `json:"liphophilicity" api:"required"`
+	// Permeability score for this molecule.
+	Permeability float64 `json:"permeability" api:"required"`
+	// Solubility judgement for this molecule.
+	//
+	// Any of "high-confidence", "medium-confidence", "high-risk".
+	Solubility SmallMoleculeDesignListResultsResponseAdmeSolubility `json:"solubility" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Liphophilicity respjson.Field
+		Permeability   respjson.Field
+		Solubility     respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeDesignListResultsResponseAdme) RawJSON() string { return r.JSON.raw }
+func (r *SmallMoleculeDesignListResultsResponseAdme) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Solubility judgement for this molecule.
+type SmallMoleculeDesignListResultsResponseAdmeSolubility string
+
+const (
+	SmallMoleculeDesignListResultsResponseAdmeSolubilityHighConfidence   SmallMoleculeDesignListResultsResponseAdmeSolubility = "high-confidence"
+	SmallMoleculeDesignListResultsResponseAdmeSolubilityMediumConfidence SmallMoleculeDesignListResultsResponseAdmeSolubility = "medium-confidence"
+	SmallMoleculeDesignListResultsResponseAdmeSolubilityHighRisk         SmallMoleculeDesignListResultsResponseAdmeSolubility = "high-risk"
+)
 
 // A warning about a potential quality issue with a result
 type SmallMoleculeDesignListResultsResponseWarning struct {
