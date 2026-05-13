@@ -115,6 +115,7 @@ func TestAdminWorkspaceListWithOptionalParams(t *testing.T) {
 		AfterID:  boltzapi.String("after_id"),
 		BeforeID: boltzapi.String("before_id"),
 		Limit:    boltzapi.Int(1),
+		Name:     boltzapi.String("x"),
 	})
 	if err != nil {
 		var apierr *boltzapi.Error
