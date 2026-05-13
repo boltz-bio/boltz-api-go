@@ -536,6 +536,8 @@ type AdminWorkspaceListParams struct {
 	BeforeID param.Opt[string] `query:"before_id,omitzero" json:"-"`
 	// Max items to return
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	// Case-insensitive workspace name prefix to filter by
+	Name param.Opt[string] `query:"name,omitzero" json:"-"`
 	paramObj
 }
 
