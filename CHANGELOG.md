@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.13.0 (2026-05-13)
+
+Full Changelog: [v0.12.1...v0.13.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.12.1...v0.13.0)
+
+### Features
+
+* **compute:** filter workspaces by name prefix ([9b31722](https://github.com/boltz-bio/boltz-api-go/commit/9b31722585c64904f6c7c3c93309575af4b5a19f))
+
 ## 0.12.1 (2026-05-13)
 
 Full Changelog: [v0.12.0...v0.12.1](https://github.com/boltz-bio/boltz-api-go/compare/v0.12.0...v0.12.1)
