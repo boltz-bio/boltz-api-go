@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.14.0 (2026-05-14)
+
+Full Changelog: [v0.13.0...v0.14.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.13.0...v0.14.0)
+
+### Features
+
+* **client:** optimize json encoder for internal types ([a5ea7a8](https://github.com/boltz-bio/boltz-api-go/commit/a5ea7a80fd0daccedbbcd2bfa2d879e7ce3b74b3))
+
 ## 0.13.0 (2026-05-13)
 
 Full Changelog: [v0.12.1...v0.13.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.12.1...v0.13.0)
