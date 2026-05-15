@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.15.0 (2026-05-15)
+
+Full Changelog: [v0.14.0...v0.15.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.14.0...v0.15.0)
+
+### Features
+
+* [codex] Add Benchling workspace spending limits ([fb1fb3e](https://github.com/boltz-bio/boltz-api-go/commit/fb1fb3e576c0f8759ad15c94d647509a8af0e534))
+
 ## 0.14.0 (2026-05-14)
 
 Full Changelog: [v0.13.0...v0.14.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.13.0...v0.14.0)
