@@ -35,6 +35,7 @@ type DesignedProtein string              // Always "designed_protein"
 type Dna string                          // Always "dna"
 type Failed string                       // Always "failed"
 type Insertion string                    // Always "insertion"
+type Lifetime string                     // Always "lifetime"
 type Ligand string                       // Always "ligand"
 type LigandAtom string                   // Always "ligand_atom"
 type LigandCcd string                    // Always "ligand_ccd"
@@ -43,6 +44,7 @@ type LigandProteinBinding string         // Always "ligand_protein_binding"
 type LigandProteinBindingMetrics string  // Always "ligand_protein_binding_metrics"
 type LigandSmiles string                 // Always "ligand_smiles"
 type LipinskiFilter string               // Always "lipinski_filter"
+type MilliUsd string                     // Always "MILLI_USD"
 type NoTemplate string                   // Always "no_template"
 type Pocket string                       // Always "pocket"
 type Polymer string                      // Always "polymer"
@@ -81,6 +83,7 @@ func (c DesignedProtein) Default() DesignedProtein           { return "designed_
 func (c Dna) Default() Dna                                   { return "dna" }
 func (c Failed) Default() Failed                             { return "failed" }
 func (c Insertion) Default() Insertion                       { return "insertion" }
+func (c Lifetime) Default() Lifetime                         { return "lifetime" }
 func (c Ligand) Default() Ligand                             { return "ligand" }
 func (c LigandAtom) Default() LigandAtom                     { return "ligand_atom" }
 func (c LigandCcd) Default() LigandCcd                       { return "ligand_ccd" }
@@ -91,6 +94,7 @@ func (c LigandProteinBindingMetrics) Default() LigandProteinBindingMetrics {
 }
 func (c LigandSmiles) Default() LigandSmiles                   { return "ligand_smiles" }
 func (c LipinskiFilter) Default() LipinskiFilter               { return "lipinski_filter" }
+func (c MilliUsd) Default() MilliUsd                           { return "MILLI_USD" }
 func (c NoTemplate) Default() NoTemplate                       { return "no_template" }
 func (c Pocket) Default() Pocket                               { return "pocket" }
 func (c Polymer) Default() Polymer                             { return "polymer" }
@@ -131,6 +135,7 @@ func (c DesignedProtein) MarshalJSON() ([]byte, error)              { return mar
 func (c Dna) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c Failed) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Insertion) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c Lifetime) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c Ligand) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c LigandAtom) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c LigandCcd) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
@@ -139,6 +144,7 @@ func (c LigandProteinBinding) MarshalJSON() ([]byte, error)         { return mar
 func (c LigandProteinBindingMetrics) MarshalJSON() ([]byte, error)  { return marshalString(c) }
 func (c LigandSmiles) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c LipinskiFilter) MarshalJSON() ([]byte, error)               { return marshalString(c) }
+func (c MilliUsd) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c NoTemplate) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c Pocket) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Polymer) MarshalJSON() ([]byte, error)                      { return marshalString(c) }

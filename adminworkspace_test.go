@@ -32,6 +32,11 @@ func TestAdminWorkspaceNewWithOptionalParams(t *testing.T) {
 			Value: 1,
 		},
 		Name: boltzapi.String("x"),
+		SpendingLimit: boltzapi.AdminWorkspaceNewParamsSpendingLimit{
+			Limit: boltzapi.AdminWorkspaceNewParamsSpendingLimitLimit{
+				Amount: 5000,
+			},
+		},
 	})
 	if err != nil {
 		var apierr *boltzapi.Error
@@ -140,6 +145,61 @@ func TestAdminWorkspaceArchive(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Admin.Workspaces.Archive(context.TODO(), "workspace_id")
+	if err != nil {
+		var apierr *boltzapi.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestAdminWorkspaceGetSpendingLimit(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := boltzapi.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Admin.Workspaces.GetSpendingLimit(context.TODO(), "workspace_id")
+	if err != nil {
+		var apierr *boltzapi.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestAdminWorkspaceSetSpendingLimit(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := boltzapi.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Admin.Workspaces.SetSpendingLimit(
+		context.TODO(),
+		"workspace_id",
+		boltzapi.AdminWorkspaceSetSpendingLimitParams{
+			Limit: boltzapi.AdminWorkspaceSetSpendingLimitParamsLimit{
+				Amount: 5000,
+			},
+			Type: "lifetime",
+		},
+	)
 	if err != nil {
 		var apierr *boltzapi.Error
 		if errors.As(err, &apierr) {
