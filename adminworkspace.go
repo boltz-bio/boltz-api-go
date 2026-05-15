@@ -18,6 +18,7 @@ import (
 	"github.com/boltz-bio/boltz-api-go/packages/pagination"
 	"github.com/boltz-bio/boltz-api-go/packages/param"
 	"github.com/boltz-bio/boltz-api-go/packages/respjson"
+	"github.com/boltz-bio/boltz-api-go/shared/constant"
 )
 
 // Workspaces provide isolated environments for organizing predictions and engine
@@ -108,6 +109,30 @@ func (r *AdminWorkspaceService) Archive(ctx context.Context, workspaceID string,
 	}
 	path := fmt.Sprintf("compute/v1/admin/workspaces/%s/archive", url.PathEscape(workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
+	return res, err
+}
+
+// Get a workspace spending limit
+func (r *AdminWorkspaceService) GetSpendingLimit(ctx context.Context, workspaceID string, opts ...option.RequestOption) (res *AdminWorkspaceGetSpendingLimitResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspace_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("compute/v1/admin/workspaces/%s/spending-limit", url.PathEscape(workspaceID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
+	return res, err
+}
+
+// Set a workspace spending limit
+func (r *AdminWorkspaceService) SetSpendingLimit(ctx context.Context, workspaceID string, body AdminWorkspaceSetSpendingLimitParams, opts ...option.RequestOption) (res *AdminWorkspaceSetSpendingLimitResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspace_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("compute/v1/admin/workspaces/%s/spending-limit", url.PathEscape(workspaceID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPut, path, body, &res, opts...)
 	return res, err
 }
 
@@ -436,12 +461,97 @@ const (
 	AdminWorkspaceArchiveResponseDataRetentionUnitDays  AdminWorkspaceArchiveResponseDataRetentionUnit = "days"
 )
 
+// Configured lifetime workspace spending limit, or null if unset. Unset workspaces
+// have no workspace-level cap and continue to use organization-level billing.
+type AdminWorkspaceGetSpendingLimitResponse struct {
+	Limit AdminWorkspaceGetSpendingLimitResponseLimit `json:"limit" api:"required"`
+	Type  constant.Lifetime                           `json:"type" default:"lifetime"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Limit       respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AdminWorkspaceGetSpendingLimitResponse) RawJSON() string { return r.JSON.raw }
+func (r *AdminWorkspaceGetSpendingLimitResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AdminWorkspaceGetSpendingLimitResponseLimit struct {
+	// Workspace spending limit amount in milli-USD. Tracking starts when the limit is
+	// configured; prior or already-committed unreserved work is not counted in this
+	// workspace cap ledger.
+	Amount int64 `json:"amount" api:"required"`
+	// Workspace spending limits currently support milli-USD only.
+	Currency constant.MilliUsd `json:"currency" default:"MILLI_USD"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Amount      respjson.Field
+		Currency    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AdminWorkspaceGetSpendingLimitResponseLimit) RawJSON() string { return r.JSON.raw }
+func (r *AdminWorkspaceGetSpendingLimitResponseLimit) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Configured lifetime workspace spending limit, or null if unset. Unset workspaces
+// have no workspace-level cap and continue to use organization-level billing.
+type AdminWorkspaceSetSpendingLimitResponse struct {
+	Limit AdminWorkspaceSetSpendingLimitResponseLimit `json:"limit" api:"required"`
+	Type  constant.Lifetime                           `json:"type" default:"lifetime"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Limit       respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AdminWorkspaceSetSpendingLimitResponse) RawJSON() string { return r.JSON.raw }
+func (r *AdminWorkspaceSetSpendingLimitResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AdminWorkspaceSetSpendingLimitResponseLimit struct {
+	// Workspace spending limit amount in milli-USD. Tracking starts when the limit is
+	// configured; prior or already-committed unreserved work is not counted in this
+	// workspace cap ledger.
+	Amount int64 `json:"amount" api:"required"`
+	// Workspace spending limits currently support milli-USD only.
+	Currency constant.MilliUsd `json:"currency" default:"MILLI_USD"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Amount      respjson.Field
+		Currency    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AdminWorkspaceSetSpendingLimitResponseLimit) RawJSON() string { return r.JSON.raw }
+func (r *AdminWorkspaceSetSpendingLimitResponseLimit) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type AdminWorkspaceNewParams struct {
 	// Workspace name
 	Name param.Opt[string] `json:"name,omitzero"`
 	// How long result data is retained before automatic deletion. Defaults to 7 days
 	// if not specified. Maximum retention is 14 days (336 hours).
 	DataRetention AdminWorkspaceNewParamsDataRetention `json:"data_retention,omitzero"`
+	SpendingLimit AdminWorkspaceNewParamsSpendingLimit `json:"spending_limit,omitzero"`
 	paramObj
 }
 
@@ -482,6 +592,43 @@ const (
 	AdminWorkspaceNewParamsDataRetentionUnitHours AdminWorkspaceNewParamsDataRetentionUnit = "hours"
 	AdminWorkspaceNewParamsDataRetentionUnitDays  AdminWorkspaceNewParamsDataRetentionUnit = "days"
 )
+
+// The properties Limit, Type are required.
+type AdminWorkspaceNewParamsSpendingLimit struct {
+	Limit AdminWorkspaceNewParamsSpendingLimitLimit `json:"limit,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "lifetime".
+	Type constant.Lifetime `json:"type" default:"lifetime"`
+	paramObj
+}
+
+func (r AdminWorkspaceNewParamsSpendingLimit) MarshalJSON() (data []byte, err error) {
+	type shadow AdminWorkspaceNewParamsSpendingLimit
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AdminWorkspaceNewParamsSpendingLimit) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Amount, Currency are required.
+type AdminWorkspaceNewParamsSpendingLimitLimit struct {
+	// Workspace spending limit amount in milli-USD. Tracking starts when the limit is
+	// configured; prior or already-committed unreserved work is not counted in this
+	// workspace cap ledger.
+	Amount int64 `json:"amount" api:"required"`
+	// Workspace spending limits currently support milli-USD only.
+	//
+	// This field can be elided, and will marshal its zero value as "MILLI_USD".
+	Currency constant.MilliUsd `json:"currency" default:"MILLI_USD"`
+	paramObj
+}
+
+func (r AdminWorkspaceNewParamsSpendingLimitLimit) MarshalJSON() (data []byte, err error) {
+	type shadow AdminWorkspaceNewParamsSpendingLimitLimit
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AdminWorkspaceNewParamsSpendingLimitLimit) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 type AdminWorkspaceUpdateParams struct {
 	Name param.Opt[string] `json:"name,omitzero"`
@@ -548,4 +695,40 @@ func (r AdminWorkspaceListParams) URLQuery() (v url.Values, err error) {
 		ArrayFormat:  apiquery.ArrayQueryFormatRepeat,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
+}
+
+type AdminWorkspaceSetSpendingLimitParams struct {
+	Limit AdminWorkspaceSetSpendingLimitParamsLimit `json:"limit,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "lifetime".
+	Type constant.Lifetime `json:"type" default:"lifetime"`
+	paramObj
+}
+
+func (r AdminWorkspaceSetSpendingLimitParams) MarshalJSON() (data []byte, err error) {
+	type shadow AdminWorkspaceSetSpendingLimitParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AdminWorkspaceSetSpendingLimitParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Amount, Currency are required.
+type AdminWorkspaceSetSpendingLimitParamsLimit struct {
+	// Workspace spending limit amount in milli-USD. Tracking starts when the limit is
+	// configured; prior or already-committed unreserved work is not counted in this
+	// workspace cap ledger.
+	Amount int64 `json:"amount" api:"required"`
+	// Workspace spending limits currently support milli-USD only.
+	//
+	// This field can be elided, and will marshal its zero value as "MILLI_USD".
+	Currency constant.MilliUsd `json:"currency" default:"MILLI_USD"`
+	paramObj
+}
+
+func (r AdminWorkspaceSetSpendingLimitParamsLimit) MarshalJSON() (data []byte, err error) {
+	type shadow AdminWorkspaceSetSpendingLimitParamsLimit
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AdminWorkspaceSetSpendingLimitParamsLimit) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
