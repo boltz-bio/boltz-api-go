@@ -113,11 +113,9 @@ func TestSmallMoleculeDesignEstimateCostWithOptionalParams(t *testing.T) {
 				ChainIDs: []string{"string"},
 				Value:    "value",
 				Cyclic:   boltzapi.Bool(true),
-				Modifications: []boltzapi.SmallMoleculeDesignEstimateCostParamsTargetEntityModificationUnion{{
-					OfSmallMoleculeDesignEstimateCostsTargetEntityModificationCcdModification: &boltzapi.SmallMoleculeDesignEstimateCostParamsTargetEntityModificationCcdModification{
-						ResidueIndex: 0,
-						Value:        "value",
-					},
+				Modifications: []boltzapi.SmallMoleculeDesignEstimateCostParamsTargetEntityModification{{
+					ResidueIndex: 0,
+					Value:        "value",
 				}},
 			}},
 			Bonds: []boltzapi.SmallMoleculeDesignEstimateCostParamsTargetBond{{
@@ -226,11 +224,9 @@ func TestSmallMoleculeDesignStartWithOptionalParams(t *testing.T) {
 				ChainIDs: []string{"string"},
 				Value:    "value",
 				Cyclic:   boltzapi.Bool(true),
-				Modifications: []boltzapi.SmallMoleculeDesignStartParamsTargetEntityModificationUnion{{
-					OfSmallMoleculeDesignStartsTargetEntityModificationCcdModification: &boltzapi.SmallMoleculeDesignStartParamsTargetEntityModificationCcdModification{
-						ResidueIndex: 0,
-						Value:        "value",
-					},
+				Modifications: []boltzapi.SmallMoleculeDesignStartParamsTargetEntityModification{{
+					ResidueIndex: 0,
+					Value:        "value",
 				}},
 			}},
 			Bonds: []boltzapi.SmallMoleculeDesignStartParamsTargetBond{{

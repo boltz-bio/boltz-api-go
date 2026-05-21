@@ -58,7 +58,6 @@ type Replacement string                  // Always "replacement"
 type Rna string                          // Always "rna"
 type SmartsCatalogFilter string          // Always "smarts_catalog_filter"
 type SmartsCustomFilter string           // Always "smarts_custom_filter"
-type Smiles string                       // Always "smiles"
 type SmilesRegexFilter string            // Always "smiles_regex_filter"
 type StructureTemplate string            // Always "structure_template"
 type Succeeded string                    // Always "succeeded"
@@ -110,7 +109,6 @@ func (c Replacement) Default() Replacement                     { return "replace
 func (c Rna) Default() Rna                                     { return "rna" }
 func (c SmartsCatalogFilter) Default() SmartsCatalogFilter     { return "smarts_catalog_filter" }
 func (c SmartsCustomFilter) Default() SmartsCustomFilter       { return "smarts_custom_filter" }
-func (c Smiles) Default() Smiles                               { return "smiles" }
 func (c SmilesRegexFilter) Default() SmilesRegexFilter         { return "smiles_regex_filter" }
 func (c StructureTemplate) Default() StructureTemplate         { return "structure_template" }
 func (c Succeeded) Default() Succeeded                         { return "succeeded" }
@@ -158,7 +156,6 @@ func (c Replacement) MarshalJSON() ([]byte, error)                  { return mar
 func (c Rna) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c SmartsCatalogFilter) MarshalJSON() ([]byte, error)          { return marshalString(c) }
 func (c SmartsCustomFilter) MarshalJSON() ([]byte, error)           { return marshalString(c) }
-func (c Smiles) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c SmilesRegexFilter) MarshalJSON() ([]byte, error)            { return marshalString(c) }
 func (c StructureTemplate) MarshalJSON() ([]byte, error)            { return marshalString(c) }
 func (c Succeeded) MarshalJSON() ([]byte, error)                    { return marshalString(c) }

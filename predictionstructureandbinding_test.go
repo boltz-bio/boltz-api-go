@@ -113,11 +113,9 @@ func TestPredictionStructureAndBindingEstimateCostWithOptionalParams(t *testing.
 					ChainIDs: []string{"string"},
 					Value:    "value",
 					Cyclic:   boltzapi.Bool(true),
-					Modifications: []boltzapi.PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModificationUnion{{
-						OfPredictionStructureAndBindingEstimateCostsInputEntityProteinEntityModificationCcdModification: &boltzapi.PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModificationCcdModification{
-							ResidueIndex: 0,
-							Value:        "value",
-						},
+					Modifications: []boltzapi.PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModification{{
+						ResidueIndex: 0,
+						Value:        "value",
 					}},
 				},
 			}},
@@ -190,11 +188,9 @@ func TestPredictionStructureAndBindingStartWithOptionalParams(t *testing.T) {
 					ChainIDs: []string{"string"},
 					Value:    "value",
 					Cyclic:   boltzapi.Bool(true),
-					Modifications: []boltzapi.PredictionStructureAndBindingStartParamsInputEntityProteinEntityModificationUnion{{
-						OfPredictionStructureAndBindingStartsInputEntityProteinEntityModificationCcdModification: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityProteinEntityModificationCcdModification{
-							ResidueIndex: 0,
-							Value:        "value",
-						},
+					Modifications: []boltzapi.PredictionStructureAndBindingStartParamsInputEntityProteinEntityModification{{
+						ResidueIndex: 0,
+						Value:        "value",
 					}},
 				},
 			}},
