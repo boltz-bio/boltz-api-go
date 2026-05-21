@@ -241,9 +241,9 @@ type PredictionStructureAndBindingGetResponseInputEntityUnion struct {
 	Value    string   `json:"value"`
 	Cyclic   bool     `json:"cyclic"`
 	// This field is a union of
-	// [[]PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationUnion],
-	// [[]PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationUnion],
-	// [[]PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationUnion]
+	// [[]PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModification],
+	// [[]PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModification],
+	// [[]PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModification]
 	Modifications PredictionStructureAndBindingGetResponseInputEntityUnionModifications `json:"modifications"`
 	JSON          struct {
 		ChainIDs      respjson.Field
@@ -302,17 +302,17 @@ func (r *PredictionStructureAndBindingGetResponseInputEntityUnion) UnmarshalJSON
 // OfPredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModifications]
 type PredictionStructureAndBindingGetResponseInputEntityUnionModifications struct {
 	// This field will be present if the value is a
-	// [[]PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationUnion]
+	// [[]PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModification]
 	// instead of an object.
-	OfPredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModifications []PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationUnion `json:",inline"`
+	OfPredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModifications []PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModification `json:",inline"`
 	// This field will be present if the value is a
-	// [[]PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationUnion]
+	// [[]PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModification]
 	// instead of an object.
-	OfPredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModifications []PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationUnion `json:",inline"`
+	OfPredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModifications []PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModification `json:",inline"`
 	// This field will be present if the value is a
-	// [[]PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationUnion]
+	// [[]PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModification]
 	// instead of an object.
-	OfPredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModifications []PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationUnion `json:",inline"`
+	OfPredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModifications []PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModification `json:",inline"`
 	JSON                                                                                struct {
 		OfPredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModifications respjson.Field
 		OfPredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModifications     respjson.Field
@@ -335,7 +335,7 @@ type PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponse st
 	Cyclic bool `json:"cyclic"`
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
-	Modifications []PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationUnion `json:"modifications"`
+	Modifications []PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainIDs      respjson.Field
@@ -356,44 +356,7 @@ func (r *PredictionStructureAndBindingGetResponseInputEntityProteinEntityRespons
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationUnion
-// contains all possible properties and values from
-// [PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationCcdModificationResponse],
-// [PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationSmilesModificationResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationUnion struct {
-	ResidueIndex int64  `json:"residue_index"`
-	Type         string `json:"type"`
-	Value        string `json:"value"`
-	JSON         struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-func (u PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationUnion) AsPredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationCcdModificationResponse() (v PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationCcdModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationUnion) AsPredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationSmilesModificationResponse() (v PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationSmilesModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationUnion) RawJSON() string {
-	return u.JSON.raw
-}
-
-func (r *PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationCcdModificationResponse struct {
+type PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64        `json:"residue_index" api:"required"`
 	Type         constant.Ccd `json:"type" default:"ccd"`
@@ -411,34 +374,10 @@ type PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseMod
 }
 
 // Returns the unmodified JSON received from the API
-func (r PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationCcdModificationResponse) RawJSON() string {
+func (r PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModification) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationCcdModificationResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationSmilesModificationResponse struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64           `json:"residue_index" api:"required"`
-	Type         constant.Smiles `json:"type" default:"smiles"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationSmilesModificationResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModificationSmilesModificationResponse) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -451,7 +390,7 @@ type PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponse struct
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
 	// Chemical modifications. Optional; defaults to an empty list when omitted.
-	Modifications []PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationUnion `json:"modifications"`
+	Modifications []PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainIDs      respjson.Field
@@ -472,44 +411,7 @@ func (r *PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponse) U
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationUnion
-// contains all possible properties and values from
-// [PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationCcdModificationResponse],
-// [PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationSmilesModificationResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationUnion struct {
-	ResidueIndex int64  `json:"residue_index"`
-	Type         string `json:"type"`
-	Value        string `json:"value"`
-	JSON         struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-func (u PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationUnion) AsPredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationCcdModificationResponse() (v PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationCcdModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationUnion) AsPredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationSmilesModificationResponse() (v PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationSmilesModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationUnion) RawJSON() string {
-	return u.JSON.raw
-}
-
-func (r *PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationCcdModificationResponse struct {
+type PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64        `json:"residue_index" api:"required"`
 	Type         constant.Ccd `json:"type" default:"ccd"`
@@ -527,34 +429,10 @@ type PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModific
 }
 
 // Returns the unmodified JSON received from the API
-func (r PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationCcdModificationResponse) RawJSON() string {
+func (r PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModification) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationCcdModificationResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationSmilesModificationResponse struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64           `json:"residue_index" api:"required"`
-	Type         constant.Smiles `json:"type" default:"smiles"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationSmilesModificationResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModificationSmilesModificationResponse) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -567,7 +445,7 @@ type PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponse struct
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
 	// Chemical modifications. Optional; defaults to an empty list when omitted.
-	Modifications []PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationUnion `json:"modifications"`
+	Modifications []PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainIDs      respjson.Field
@@ -588,44 +466,7 @@ func (r *PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponse) U
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationUnion
-// contains all possible properties and values from
-// [PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationCcdModificationResponse],
-// [PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationSmilesModificationResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationUnion struct {
-	ResidueIndex int64  `json:"residue_index"`
-	Type         string `json:"type"`
-	Value        string `json:"value"`
-	JSON         struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-func (u PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationUnion) AsPredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationCcdModificationResponse() (v PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationCcdModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationUnion) AsPredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationSmilesModificationResponse() (v PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationSmilesModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationUnion) RawJSON() string {
-	return u.JSON.raw
-}
-
-func (r *PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationCcdModificationResponse struct {
+type PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64        `json:"residue_index" api:"required"`
 	Type         constant.Ccd `json:"type" default:"ccd"`
@@ -643,34 +484,10 @@ type PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModific
 }
 
 // Returns the unmodified JSON received from the API
-func (r PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationCcdModificationResponse) RawJSON() string {
+func (r PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModification) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationCcdModificationResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationSmilesModificationResponse struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64           `json:"residue_index" api:"required"`
-	Type         constant.Smiles `json:"type" default:"smiles"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationSmilesModificationResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModificationSmilesModificationResponse) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1964,9 +1781,9 @@ type PredictionStructureAndBindingStartResponseInputEntityUnion struct {
 	Value    string   `json:"value"`
 	Cyclic   bool     `json:"cyclic"`
 	// This field is a union of
-	// [[]PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationUnion],
-	// [[]PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationUnion],
-	// [[]PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationUnion]
+	// [[]PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModification],
+	// [[]PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModification],
+	// [[]PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModification]
 	Modifications PredictionStructureAndBindingStartResponseInputEntityUnionModifications `json:"modifications"`
 	JSON          struct {
 		ChainIDs      respjson.Field
@@ -2028,17 +1845,17 @@ func (r *PredictionStructureAndBindingStartResponseInputEntityUnion) UnmarshalJS
 // OfPredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModifications]
 type PredictionStructureAndBindingStartResponseInputEntityUnionModifications struct {
 	// This field will be present if the value is a
-	// [[]PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationUnion]
+	// [[]PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModification]
 	// instead of an object.
-	OfPredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModifications []PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationUnion `json:",inline"`
+	OfPredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModifications []PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModification `json:",inline"`
 	// This field will be present if the value is a
-	// [[]PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationUnion]
+	// [[]PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModification]
 	// instead of an object.
-	OfPredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModifications []PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationUnion `json:",inline"`
+	OfPredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModifications []PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModification `json:",inline"`
 	// This field will be present if the value is a
-	// [[]PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationUnion]
+	// [[]PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModification]
 	// instead of an object.
-	OfPredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModifications []PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationUnion `json:",inline"`
+	OfPredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModifications []PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModification `json:",inline"`
 	JSON                                                                                  struct {
 		OfPredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModifications respjson.Field
 		OfPredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModifications     respjson.Field
@@ -2061,7 +1878,7 @@ type PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponse 
 	Cyclic bool `json:"cyclic"`
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
-	Modifications []PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationUnion `json:"modifications"`
+	Modifications []PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainIDs      respjson.Field
@@ -2082,44 +1899,7 @@ func (r *PredictionStructureAndBindingStartResponseInputEntityProteinEntityRespo
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationUnion
-// contains all possible properties and values from
-// [PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationCcdModificationResponse],
-// [PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationSmilesModificationResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationUnion struct {
-	ResidueIndex int64  `json:"residue_index"`
-	Type         string `json:"type"`
-	Value        string `json:"value"`
-	JSON         struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-func (u PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationUnion) AsPredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationCcdModificationResponse() (v PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationCcdModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationUnion) AsPredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationSmilesModificationResponse() (v PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationSmilesModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationUnion) RawJSON() string {
-	return u.JSON.raw
-}
-
-func (r *PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationCcdModificationResponse struct {
+type PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64        `json:"residue_index" api:"required"`
 	Type         constant.Ccd `json:"type" default:"ccd"`
@@ -2137,34 +1917,10 @@ type PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseM
 }
 
 // Returns the unmodified JSON received from the API
-func (r PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationCcdModificationResponse) RawJSON() string {
+func (r PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModification) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationCcdModificationResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationSmilesModificationResponse struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64           `json:"residue_index" api:"required"`
-	Type         constant.Smiles `json:"type" default:"smiles"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationSmilesModificationResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModificationSmilesModificationResponse) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -2177,7 +1933,7 @@ type PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponse stru
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
 	// Chemical modifications. Optional; defaults to an empty list when omitted.
-	Modifications []PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationUnion `json:"modifications"`
+	Modifications []PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainIDs      respjson.Field
@@ -2198,44 +1954,7 @@ func (r *PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponse)
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationUnion
-// contains all possible properties and values from
-// [PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationCcdModificationResponse],
-// [PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationSmilesModificationResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationUnion struct {
-	ResidueIndex int64  `json:"residue_index"`
-	Type         string `json:"type"`
-	Value        string `json:"value"`
-	JSON         struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-func (u PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationUnion) AsPredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationCcdModificationResponse() (v PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationCcdModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationUnion) AsPredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationSmilesModificationResponse() (v PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationSmilesModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationUnion) RawJSON() string {
-	return u.JSON.raw
-}
-
-func (r *PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationCcdModificationResponse struct {
+type PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64        `json:"residue_index" api:"required"`
 	Type         constant.Ccd `json:"type" default:"ccd"`
@@ -2253,34 +1972,10 @@ type PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModif
 }
 
 // Returns the unmodified JSON received from the API
-func (r PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationCcdModificationResponse) RawJSON() string {
+func (r PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModification) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationCcdModificationResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationSmilesModificationResponse struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64           `json:"residue_index" api:"required"`
-	Type         constant.Smiles `json:"type" default:"smiles"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationSmilesModificationResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModificationSmilesModificationResponse) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -2293,7 +1988,7 @@ type PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponse stru
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
 	// Chemical modifications. Optional; defaults to an empty list when omitted.
-	Modifications []PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationUnion `json:"modifications"`
+	Modifications []PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainIDs      respjson.Field
@@ -2314,44 +2009,7 @@ func (r *PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponse)
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationUnion
-// contains all possible properties and values from
-// [PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationCcdModificationResponse],
-// [PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationSmilesModificationResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationUnion struct {
-	ResidueIndex int64  `json:"residue_index"`
-	Type         string `json:"type"`
-	Value        string `json:"value"`
-	JSON         struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-func (u PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationUnion) AsPredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationCcdModificationResponse() (v PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationCcdModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationUnion) AsPredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationSmilesModificationResponse() (v PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationSmilesModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationUnion) RawJSON() string {
-	return u.JSON.raw
-}
-
-func (r *PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationCcdModificationResponse struct {
+type PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64        `json:"residue_index" api:"required"`
 	Type         constant.Ccd `json:"type" default:"ccd"`
@@ -2369,34 +2027,10 @@ type PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModif
 }
 
 // Returns the unmodified JSON received from the API
-func (r PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationCcdModificationResponse) RawJSON() string {
+func (r PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModification) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationCcdModificationResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationSmilesModificationResponse struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64           `json:"residue_index" api:"required"`
-	Type         constant.Smiles `json:"type" default:"smiles"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationSmilesModificationResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModificationSmilesModificationResponse) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -3508,7 +3142,7 @@ type PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntity str
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
-	Modifications []PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModificationUnion `json:"modifications,omitzero"`
+	Modifications []PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "protein".
 	Type constant.Protein `json:"type" default:"protein"`
 	paramObj
@@ -3522,24 +3156,8 @@ func (r *PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntity
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModificationUnion struct {
-	OfPredictionStructureAndBindingEstimateCostsInputEntityProteinEntityModificationCcdModification    *PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModificationCcdModification    `json:",omitzero,inline"`
-	OfPredictionStructureAndBindingEstimateCostsInputEntityProteinEntityModificationSmilesModification *PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModificationSmilesModification `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModificationUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfPredictionStructureAndBindingEstimateCostsInputEntityProteinEntityModificationCcdModification, u.OfPredictionStructureAndBindingEstimateCostsInputEntityProteinEntityModificationSmilesModification)
-}
-func (u *PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
 // The properties ResidueIndex, Type, Value are required.
-type PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModificationCcdModification struct {
+type PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64 `json:"residue_index" api:"required"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
@@ -3550,30 +3168,11 @@ type PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModi
 	paramObj
 }
 
-func (r PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModificationCcdModification) MarshalJSON() (data []byte, err error) {
-	type shadow PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModificationCcdModification
+func (r PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModification
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModificationCcdModification) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The properties ResidueIndex, Type, Value are required.
-type PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModificationSmilesModification struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64 `json:"residue_index" api:"required"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// This field can be elided, and will marshal its zero value as "smiles".
-	Type constant.Smiles `json:"type" default:"smiles"`
-	paramObj
-}
-
-func (r PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModificationSmilesModification) MarshalJSON() (data []byte, err error) {
-	type shadow PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModificationSmilesModification
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModificationSmilesModification) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -3586,7 +3185,7 @@ type PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntity struct 
 	// Whether the sequence is cyclic
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
 	// Chemical modifications. Optional; defaults to an empty list when omitted.
-	Modifications []PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntityModificationUnion `json:"modifications,omitzero"`
+	Modifications []PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "rna".
 	Type constant.Rna `json:"type" default:"rna"`
 	paramObj
@@ -3600,24 +3199,8 @@ func (r *PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntity) Un
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntityModificationUnion struct {
-	OfPredictionStructureAndBindingEstimateCostsInputEntityRnaEntityModificationCcdModification    *PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntityModificationCcdModification    `json:",omitzero,inline"`
-	OfPredictionStructureAndBindingEstimateCostsInputEntityRnaEntityModificationSmilesModification *PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntityModificationSmilesModification `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntityModificationUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfPredictionStructureAndBindingEstimateCostsInputEntityRnaEntityModificationCcdModification, u.OfPredictionStructureAndBindingEstimateCostsInputEntityRnaEntityModificationSmilesModification)
-}
-func (u *PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntityModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
 // The properties ResidueIndex, Type, Value are required.
-type PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntityModificationCcdModification struct {
+type PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntityModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64 `json:"residue_index" api:"required"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
@@ -3628,30 +3211,11 @@ type PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntityModifica
 	paramObj
 }
 
-func (r PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntityModificationCcdModification) MarshalJSON() (data []byte, err error) {
-	type shadow PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntityModificationCcdModification
+func (r PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntityModification
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntityModificationCcdModification) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The properties ResidueIndex, Type, Value are required.
-type PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntityModificationSmilesModification struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64 `json:"residue_index" api:"required"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// This field can be elided, and will marshal its zero value as "smiles".
-	Type constant.Smiles `json:"type" default:"smiles"`
-	paramObj
-}
-
-func (r PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntityModificationSmilesModification) MarshalJSON() (data []byte, err error) {
-	type shadow PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntityModificationSmilesModification
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntityModificationSmilesModification) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntityModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -3664,7 +3228,7 @@ type PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntity struct 
 	// Whether the sequence is cyclic
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
 	// Chemical modifications. Optional; defaults to an empty list when omitted.
-	Modifications []PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntityModificationUnion `json:"modifications,omitzero"`
+	Modifications []PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "dna".
 	Type constant.Dna `json:"type" default:"dna"`
 	paramObj
@@ -3678,24 +3242,8 @@ func (r *PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntity) Un
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntityModificationUnion struct {
-	OfPredictionStructureAndBindingEstimateCostsInputEntityDnaEntityModificationCcdModification    *PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntityModificationCcdModification    `json:",omitzero,inline"`
-	OfPredictionStructureAndBindingEstimateCostsInputEntityDnaEntityModificationSmilesModification *PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntityModificationSmilesModification `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntityModificationUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfPredictionStructureAndBindingEstimateCostsInputEntityDnaEntityModificationCcdModification, u.OfPredictionStructureAndBindingEstimateCostsInputEntityDnaEntityModificationSmilesModification)
-}
-func (u *PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntityModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
 // The properties ResidueIndex, Type, Value are required.
-type PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntityModificationCcdModification struct {
+type PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntityModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64 `json:"residue_index" api:"required"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
@@ -3706,30 +3254,11 @@ type PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntityModifica
 	paramObj
 }
 
-func (r PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntityModificationCcdModification) MarshalJSON() (data []byte, err error) {
-	type shadow PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntityModificationCcdModification
+func (r PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntityModification
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntityModificationCcdModification) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The properties ResidueIndex, Type, Value are required.
-type PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntityModificationSmilesModification struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64 `json:"residue_index" api:"required"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// This field can be elided, and will marshal its zero value as "smiles".
-	Type constant.Smiles `json:"type" default:"smiles"`
-	paramObj
-}
-
-func (r PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntityModificationSmilesModification) MarshalJSON() (data []byte, err error) {
-	type shadow PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntityModificationSmilesModification
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntityModificationSmilesModification) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntityModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -4254,7 +3783,7 @@ type PredictionStructureAndBindingStartParamsInputEntityProteinEntity struct {
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
-	Modifications []PredictionStructureAndBindingStartParamsInputEntityProteinEntityModificationUnion `json:"modifications,omitzero"`
+	Modifications []PredictionStructureAndBindingStartParamsInputEntityProteinEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "protein".
 	Type constant.Protein `json:"type" default:"protein"`
 	paramObj
@@ -4268,24 +3797,8 @@ func (r *PredictionStructureAndBindingStartParamsInputEntityProteinEntity) Unmar
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type PredictionStructureAndBindingStartParamsInputEntityProteinEntityModificationUnion struct {
-	OfPredictionStructureAndBindingStartsInputEntityProteinEntityModificationCcdModification    *PredictionStructureAndBindingStartParamsInputEntityProteinEntityModificationCcdModification    `json:",omitzero,inline"`
-	OfPredictionStructureAndBindingStartsInputEntityProteinEntityModificationSmilesModification *PredictionStructureAndBindingStartParamsInputEntityProteinEntityModificationSmilesModification `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u PredictionStructureAndBindingStartParamsInputEntityProteinEntityModificationUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfPredictionStructureAndBindingStartsInputEntityProteinEntityModificationCcdModification, u.OfPredictionStructureAndBindingStartsInputEntityProteinEntityModificationSmilesModification)
-}
-func (u *PredictionStructureAndBindingStartParamsInputEntityProteinEntityModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
 // The properties ResidueIndex, Type, Value are required.
-type PredictionStructureAndBindingStartParamsInputEntityProteinEntityModificationCcdModification struct {
+type PredictionStructureAndBindingStartParamsInputEntityProteinEntityModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64 `json:"residue_index" api:"required"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
@@ -4296,30 +3809,11 @@ type PredictionStructureAndBindingStartParamsInputEntityProteinEntityModificatio
 	paramObj
 }
 
-func (r PredictionStructureAndBindingStartParamsInputEntityProteinEntityModificationCcdModification) MarshalJSON() (data []byte, err error) {
-	type shadow PredictionStructureAndBindingStartParamsInputEntityProteinEntityModificationCcdModification
+func (r PredictionStructureAndBindingStartParamsInputEntityProteinEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingStartParamsInputEntityProteinEntityModification
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *PredictionStructureAndBindingStartParamsInputEntityProteinEntityModificationCcdModification) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The properties ResidueIndex, Type, Value are required.
-type PredictionStructureAndBindingStartParamsInputEntityProteinEntityModificationSmilesModification struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64 `json:"residue_index" api:"required"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// This field can be elided, and will marshal its zero value as "smiles".
-	Type constant.Smiles `json:"type" default:"smiles"`
-	paramObj
-}
-
-func (r PredictionStructureAndBindingStartParamsInputEntityProteinEntityModificationSmilesModification) MarshalJSON() (data []byte, err error) {
-	type shadow PredictionStructureAndBindingStartParamsInputEntityProteinEntityModificationSmilesModification
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *PredictionStructureAndBindingStartParamsInputEntityProteinEntityModificationSmilesModification) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingStartParamsInputEntityProteinEntityModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -4332,7 +3826,7 @@ type PredictionStructureAndBindingStartParamsInputEntityRnaEntity struct {
 	// Whether the sequence is cyclic
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
 	// Chemical modifications. Optional; defaults to an empty list when omitted.
-	Modifications []PredictionStructureAndBindingStartParamsInputEntityRnaEntityModificationUnion `json:"modifications,omitzero"`
+	Modifications []PredictionStructureAndBindingStartParamsInputEntityRnaEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "rna".
 	Type constant.Rna `json:"type" default:"rna"`
 	paramObj
@@ -4346,24 +3840,8 @@ func (r *PredictionStructureAndBindingStartParamsInputEntityRnaEntity) Unmarshal
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type PredictionStructureAndBindingStartParamsInputEntityRnaEntityModificationUnion struct {
-	OfPredictionStructureAndBindingStartsInputEntityRnaEntityModificationCcdModification    *PredictionStructureAndBindingStartParamsInputEntityRnaEntityModificationCcdModification    `json:",omitzero,inline"`
-	OfPredictionStructureAndBindingStartsInputEntityRnaEntityModificationSmilesModification *PredictionStructureAndBindingStartParamsInputEntityRnaEntityModificationSmilesModification `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u PredictionStructureAndBindingStartParamsInputEntityRnaEntityModificationUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfPredictionStructureAndBindingStartsInputEntityRnaEntityModificationCcdModification, u.OfPredictionStructureAndBindingStartsInputEntityRnaEntityModificationSmilesModification)
-}
-func (u *PredictionStructureAndBindingStartParamsInputEntityRnaEntityModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
 // The properties ResidueIndex, Type, Value are required.
-type PredictionStructureAndBindingStartParamsInputEntityRnaEntityModificationCcdModification struct {
+type PredictionStructureAndBindingStartParamsInputEntityRnaEntityModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64 `json:"residue_index" api:"required"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
@@ -4374,30 +3852,11 @@ type PredictionStructureAndBindingStartParamsInputEntityRnaEntityModificationCcd
 	paramObj
 }
 
-func (r PredictionStructureAndBindingStartParamsInputEntityRnaEntityModificationCcdModification) MarshalJSON() (data []byte, err error) {
-	type shadow PredictionStructureAndBindingStartParamsInputEntityRnaEntityModificationCcdModification
+func (r PredictionStructureAndBindingStartParamsInputEntityRnaEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingStartParamsInputEntityRnaEntityModification
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *PredictionStructureAndBindingStartParamsInputEntityRnaEntityModificationCcdModification) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The properties ResidueIndex, Type, Value are required.
-type PredictionStructureAndBindingStartParamsInputEntityRnaEntityModificationSmilesModification struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64 `json:"residue_index" api:"required"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// This field can be elided, and will marshal its zero value as "smiles".
-	Type constant.Smiles `json:"type" default:"smiles"`
-	paramObj
-}
-
-func (r PredictionStructureAndBindingStartParamsInputEntityRnaEntityModificationSmilesModification) MarshalJSON() (data []byte, err error) {
-	type shadow PredictionStructureAndBindingStartParamsInputEntityRnaEntityModificationSmilesModification
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *PredictionStructureAndBindingStartParamsInputEntityRnaEntityModificationSmilesModification) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingStartParamsInputEntityRnaEntityModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -4410,7 +3869,7 @@ type PredictionStructureAndBindingStartParamsInputEntityDnaEntity struct {
 	// Whether the sequence is cyclic
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
 	// Chemical modifications. Optional; defaults to an empty list when omitted.
-	Modifications []PredictionStructureAndBindingStartParamsInputEntityDnaEntityModificationUnion `json:"modifications,omitzero"`
+	Modifications []PredictionStructureAndBindingStartParamsInputEntityDnaEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "dna".
 	Type constant.Dna `json:"type" default:"dna"`
 	paramObj
@@ -4424,24 +3883,8 @@ func (r *PredictionStructureAndBindingStartParamsInputEntityDnaEntity) Unmarshal
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type PredictionStructureAndBindingStartParamsInputEntityDnaEntityModificationUnion struct {
-	OfPredictionStructureAndBindingStartsInputEntityDnaEntityModificationCcdModification    *PredictionStructureAndBindingStartParamsInputEntityDnaEntityModificationCcdModification    `json:",omitzero,inline"`
-	OfPredictionStructureAndBindingStartsInputEntityDnaEntityModificationSmilesModification *PredictionStructureAndBindingStartParamsInputEntityDnaEntityModificationSmilesModification `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u PredictionStructureAndBindingStartParamsInputEntityDnaEntityModificationUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfPredictionStructureAndBindingStartsInputEntityDnaEntityModificationCcdModification, u.OfPredictionStructureAndBindingStartsInputEntityDnaEntityModificationSmilesModification)
-}
-func (u *PredictionStructureAndBindingStartParamsInputEntityDnaEntityModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
 // The properties ResidueIndex, Type, Value are required.
-type PredictionStructureAndBindingStartParamsInputEntityDnaEntityModificationCcdModification struct {
+type PredictionStructureAndBindingStartParamsInputEntityDnaEntityModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64 `json:"residue_index" api:"required"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
@@ -4452,30 +3895,11 @@ type PredictionStructureAndBindingStartParamsInputEntityDnaEntityModificationCcd
 	paramObj
 }
 
-func (r PredictionStructureAndBindingStartParamsInputEntityDnaEntityModificationCcdModification) MarshalJSON() (data []byte, err error) {
-	type shadow PredictionStructureAndBindingStartParamsInputEntityDnaEntityModificationCcdModification
+func (r PredictionStructureAndBindingStartParamsInputEntityDnaEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingStartParamsInputEntityDnaEntityModification
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *PredictionStructureAndBindingStartParamsInputEntityDnaEntityModificationCcdModification) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The properties ResidueIndex, Type, Value are required.
-type PredictionStructureAndBindingStartParamsInputEntityDnaEntityModificationSmilesModification struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64 `json:"residue_index" api:"required"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// This field can be elided, and will marshal its zero value as "smiles".
-	Type constant.Smiles `json:"type" default:"smiles"`
-	paramObj
-}
-
-func (r PredictionStructureAndBindingStartParamsInputEntityDnaEntityModificationSmilesModification) MarshalJSON() (data []byte, err error) {
-	type shadow PredictionStructureAndBindingStartParamsInputEntityDnaEntityModificationSmilesModification
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *PredictionStructureAndBindingStartParamsInputEntityDnaEntityModificationSmilesModification) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingStartParamsInputEntityDnaEntityModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

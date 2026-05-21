@@ -323,7 +323,7 @@ type SmallMoleculeLibraryScreenGetResponseInputTargetEntity struct {
 	Cyclic bool `json:"cyclic"`
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
-	Modifications []SmallMoleculeLibraryScreenGetResponseInputTargetEntityModificationUnion `json:"modifications"`
+	Modifications []SmallMoleculeLibraryScreenGetResponseInputTargetEntityModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainIDs      respjson.Field
@@ -342,44 +342,7 @@ func (r *SmallMoleculeLibraryScreenGetResponseInputTargetEntity) UnmarshalJSON(d
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// SmallMoleculeLibraryScreenGetResponseInputTargetEntityModificationUnion contains
-// all possible properties and values from
-// [SmallMoleculeLibraryScreenGetResponseInputTargetEntityModificationCcdModificationResponse],
-// [SmallMoleculeLibraryScreenGetResponseInputTargetEntityModificationSmilesModificationResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type SmallMoleculeLibraryScreenGetResponseInputTargetEntityModificationUnion struct {
-	ResidueIndex int64  `json:"residue_index"`
-	Type         string `json:"type"`
-	Value        string `json:"value"`
-	JSON         struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-func (u SmallMoleculeLibraryScreenGetResponseInputTargetEntityModificationUnion) AsSmallMoleculeLibraryScreenGetResponseInputTargetEntityModificationCcdModificationResponse() (v SmallMoleculeLibraryScreenGetResponseInputTargetEntityModificationCcdModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u SmallMoleculeLibraryScreenGetResponseInputTargetEntityModificationUnion) AsSmallMoleculeLibraryScreenGetResponseInputTargetEntityModificationSmilesModificationResponse() (v SmallMoleculeLibraryScreenGetResponseInputTargetEntityModificationSmilesModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u SmallMoleculeLibraryScreenGetResponseInputTargetEntityModificationUnion) RawJSON() string {
-	return u.JSON.raw
-}
-
-func (r *SmallMoleculeLibraryScreenGetResponseInputTargetEntityModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type SmallMoleculeLibraryScreenGetResponseInputTargetEntityModificationCcdModificationResponse struct {
+type SmallMoleculeLibraryScreenGetResponseInputTargetEntityModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64        `json:"residue_index" api:"required"`
 	Type         constant.Ccd `json:"type" default:"ccd"`
@@ -397,34 +360,10 @@ type SmallMoleculeLibraryScreenGetResponseInputTargetEntityModificationCcdModifi
 }
 
 // Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenGetResponseInputTargetEntityModificationCcdModificationResponse) RawJSON() string {
+func (r SmallMoleculeLibraryScreenGetResponseInputTargetEntityModification) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *SmallMoleculeLibraryScreenGetResponseInputTargetEntityModificationCcdModificationResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type SmallMoleculeLibraryScreenGetResponseInputTargetEntityModificationSmilesModificationResponse struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64           `json:"residue_index" api:"required"`
-	Type         constant.Smiles `json:"type" default:"smiles"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenGetResponseInputTargetEntityModificationSmilesModificationResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *SmallMoleculeLibraryScreenGetResponseInputTargetEntityModificationSmilesModificationResponse) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenGetResponseInputTargetEntityModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -2200,7 +2139,7 @@ type SmallMoleculeLibraryScreenStartResponseInputTargetEntity struct {
 	Cyclic bool `json:"cyclic"`
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
-	Modifications []SmallMoleculeLibraryScreenStartResponseInputTargetEntityModificationUnion `json:"modifications"`
+	Modifications []SmallMoleculeLibraryScreenStartResponseInputTargetEntityModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainIDs      respjson.Field
@@ -2219,44 +2158,7 @@ func (r *SmallMoleculeLibraryScreenStartResponseInputTargetEntity) UnmarshalJSON
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// SmallMoleculeLibraryScreenStartResponseInputTargetEntityModificationUnion
-// contains all possible properties and values from
-// [SmallMoleculeLibraryScreenStartResponseInputTargetEntityModificationCcdModificationResponse],
-// [SmallMoleculeLibraryScreenStartResponseInputTargetEntityModificationSmilesModificationResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type SmallMoleculeLibraryScreenStartResponseInputTargetEntityModificationUnion struct {
-	ResidueIndex int64  `json:"residue_index"`
-	Type         string `json:"type"`
-	Value        string `json:"value"`
-	JSON         struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-func (u SmallMoleculeLibraryScreenStartResponseInputTargetEntityModificationUnion) AsSmallMoleculeLibraryScreenStartResponseInputTargetEntityModificationCcdModificationResponse() (v SmallMoleculeLibraryScreenStartResponseInputTargetEntityModificationCcdModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u SmallMoleculeLibraryScreenStartResponseInputTargetEntityModificationUnion) AsSmallMoleculeLibraryScreenStartResponseInputTargetEntityModificationSmilesModificationResponse() (v SmallMoleculeLibraryScreenStartResponseInputTargetEntityModificationSmilesModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u SmallMoleculeLibraryScreenStartResponseInputTargetEntityModificationUnion) RawJSON() string {
-	return u.JSON.raw
-}
-
-func (r *SmallMoleculeLibraryScreenStartResponseInputTargetEntityModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type SmallMoleculeLibraryScreenStartResponseInputTargetEntityModificationCcdModificationResponse struct {
+type SmallMoleculeLibraryScreenStartResponseInputTargetEntityModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64        `json:"residue_index" api:"required"`
 	Type         constant.Ccd `json:"type" default:"ccd"`
@@ -2274,34 +2176,10 @@ type SmallMoleculeLibraryScreenStartResponseInputTargetEntityModificationCcdModi
 }
 
 // Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenStartResponseInputTargetEntityModificationCcdModificationResponse) RawJSON() string {
+func (r SmallMoleculeLibraryScreenStartResponseInputTargetEntityModification) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *SmallMoleculeLibraryScreenStartResponseInputTargetEntityModificationCcdModificationResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type SmallMoleculeLibraryScreenStartResponseInputTargetEntityModificationSmilesModificationResponse struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64           `json:"residue_index" api:"required"`
-	Type         constant.Smiles `json:"type" default:"smiles"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenStartResponseInputTargetEntityModificationSmilesModificationResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *SmallMoleculeLibraryScreenStartResponseInputTargetEntityModificationSmilesModificationResponse) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenStartResponseInputTargetEntityModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -3659,7 +3537,7 @@ type SmallMoleculeLibraryScreenStopResponseInputTargetEntity struct {
 	Cyclic bool `json:"cyclic"`
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
-	Modifications []SmallMoleculeLibraryScreenStopResponseInputTargetEntityModificationUnion `json:"modifications"`
+	Modifications []SmallMoleculeLibraryScreenStopResponseInputTargetEntityModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainIDs      respjson.Field
@@ -3678,44 +3556,7 @@ func (r *SmallMoleculeLibraryScreenStopResponseInputTargetEntity) UnmarshalJSON(
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// SmallMoleculeLibraryScreenStopResponseInputTargetEntityModificationUnion
-// contains all possible properties and values from
-// [SmallMoleculeLibraryScreenStopResponseInputTargetEntityModificationCcdModificationResponse],
-// [SmallMoleculeLibraryScreenStopResponseInputTargetEntityModificationSmilesModificationResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type SmallMoleculeLibraryScreenStopResponseInputTargetEntityModificationUnion struct {
-	ResidueIndex int64  `json:"residue_index"`
-	Type         string `json:"type"`
-	Value        string `json:"value"`
-	JSON         struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-func (u SmallMoleculeLibraryScreenStopResponseInputTargetEntityModificationUnion) AsSmallMoleculeLibraryScreenStopResponseInputTargetEntityModificationCcdModificationResponse() (v SmallMoleculeLibraryScreenStopResponseInputTargetEntityModificationCcdModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u SmallMoleculeLibraryScreenStopResponseInputTargetEntityModificationUnion) AsSmallMoleculeLibraryScreenStopResponseInputTargetEntityModificationSmilesModificationResponse() (v SmallMoleculeLibraryScreenStopResponseInputTargetEntityModificationSmilesModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u SmallMoleculeLibraryScreenStopResponseInputTargetEntityModificationUnion) RawJSON() string {
-	return u.JSON.raw
-}
-
-func (r *SmallMoleculeLibraryScreenStopResponseInputTargetEntityModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type SmallMoleculeLibraryScreenStopResponseInputTargetEntityModificationCcdModificationResponse struct {
+type SmallMoleculeLibraryScreenStopResponseInputTargetEntityModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64        `json:"residue_index" api:"required"`
 	Type         constant.Ccd `json:"type" default:"ccd"`
@@ -3733,34 +3574,10 @@ type SmallMoleculeLibraryScreenStopResponseInputTargetEntityModificationCcdModif
 }
 
 // Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenStopResponseInputTargetEntityModificationCcdModificationResponse) RawJSON() string {
+func (r SmallMoleculeLibraryScreenStopResponseInputTargetEntityModification) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *SmallMoleculeLibraryScreenStopResponseInputTargetEntityModificationCcdModificationResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type SmallMoleculeLibraryScreenStopResponseInputTargetEntityModificationSmilesModificationResponse struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64           `json:"residue_index" api:"required"`
-	Type         constant.Smiles `json:"type" default:"smiles"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenStopResponseInputTargetEntityModificationSmilesModificationResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *SmallMoleculeLibraryScreenStopResponseInputTargetEntityModificationSmilesModificationResponse) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenStopResponseInputTargetEntityModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -5072,7 +4889,7 @@ type SmallMoleculeLibraryScreenEstimateCostParamsTargetEntity struct {
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
-	Modifications []SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModificationUnion `json:"modifications,omitzero"`
+	Modifications []SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "protein".
 	Type constant.Protein `json:"type" default:"protein"`
 	paramObj
@@ -5086,24 +4903,8 @@ func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetEntity) UnmarshalJSON
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModificationUnion struct {
-	OfSmallMoleculeLibraryScreenEstimateCostsTargetEntityModificationCcdModification    *SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModificationCcdModification    `json:",omitzero,inline"`
-	OfSmallMoleculeLibraryScreenEstimateCostsTargetEntityModificationSmilesModification *SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModificationSmilesModification `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModificationUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfSmallMoleculeLibraryScreenEstimateCostsTargetEntityModificationCcdModification, u.OfSmallMoleculeLibraryScreenEstimateCostsTargetEntityModificationSmilesModification)
-}
-func (u *SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
 // The properties ResidueIndex, Type, Value are required.
-type SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModificationCcdModification struct {
+type SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64 `json:"residue_index" api:"required"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
@@ -5114,30 +4915,11 @@ type SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModificationCcdModi
 	paramObj
 }
 
-func (r SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModificationCcdModification) MarshalJSON() (data []byte, err error) {
-	type shadow SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModificationCcdModification
+func (r SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModification
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModificationCcdModification) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The properties ResidueIndex, Type, Value are required.
-type SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModificationSmilesModification struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64 `json:"residue_index" api:"required"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// This field can be elided, and will marshal its zero value as "smiles".
-	Type constant.Smiles `json:"type" default:"smiles"`
-	paramObj
-}
-
-func (r SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModificationSmilesModification) MarshalJSON() (data []byte, err error) {
-	type shadow SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModificationSmilesModification
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModificationSmilesModification) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -5974,7 +5756,7 @@ type SmallMoleculeLibraryScreenStartParamsTargetEntity struct {
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
-	Modifications []SmallMoleculeLibraryScreenStartParamsTargetEntityModificationUnion `json:"modifications,omitzero"`
+	Modifications []SmallMoleculeLibraryScreenStartParamsTargetEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "protein".
 	Type constant.Protein `json:"type" default:"protein"`
 	paramObj
@@ -5988,24 +5770,8 @@ func (r *SmallMoleculeLibraryScreenStartParamsTargetEntity) UnmarshalJSON(data [
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type SmallMoleculeLibraryScreenStartParamsTargetEntityModificationUnion struct {
-	OfSmallMoleculeLibraryScreenStartsTargetEntityModificationCcdModification    *SmallMoleculeLibraryScreenStartParamsTargetEntityModificationCcdModification    `json:",omitzero,inline"`
-	OfSmallMoleculeLibraryScreenStartsTargetEntityModificationSmilesModification *SmallMoleculeLibraryScreenStartParamsTargetEntityModificationSmilesModification `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u SmallMoleculeLibraryScreenStartParamsTargetEntityModificationUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfSmallMoleculeLibraryScreenStartsTargetEntityModificationCcdModification, u.OfSmallMoleculeLibraryScreenStartsTargetEntityModificationSmilesModification)
-}
-func (u *SmallMoleculeLibraryScreenStartParamsTargetEntityModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
 // The properties ResidueIndex, Type, Value are required.
-type SmallMoleculeLibraryScreenStartParamsTargetEntityModificationCcdModification struct {
+type SmallMoleculeLibraryScreenStartParamsTargetEntityModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64 `json:"residue_index" api:"required"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
@@ -6016,30 +5782,11 @@ type SmallMoleculeLibraryScreenStartParamsTargetEntityModificationCcdModificatio
 	paramObj
 }
 
-func (r SmallMoleculeLibraryScreenStartParamsTargetEntityModificationCcdModification) MarshalJSON() (data []byte, err error) {
-	type shadow SmallMoleculeLibraryScreenStartParamsTargetEntityModificationCcdModification
+func (r SmallMoleculeLibraryScreenStartParamsTargetEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenStartParamsTargetEntityModification
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *SmallMoleculeLibraryScreenStartParamsTargetEntityModificationCcdModification) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The properties ResidueIndex, Type, Value are required.
-type SmallMoleculeLibraryScreenStartParamsTargetEntityModificationSmilesModification struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64 `json:"residue_index" api:"required"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// This field can be elided, and will marshal its zero value as "smiles".
-	Type constant.Smiles `json:"type" default:"smiles"`
-	paramObj
-}
-
-func (r SmallMoleculeLibraryScreenStartParamsTargetEntityModificationSmilesModification) MarshalJSON() (data []byte, err error) {
-	type shadow SmallMoleculeLibraryScreenStartParamsTargetEntityModificationSmilesModification
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *SmallMoleculeLibraryScreenStartParamsTargetEntityModificationSmilesModification) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenStartParamsTargetEntityModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
