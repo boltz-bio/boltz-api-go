@@ -319,7 +319,7 @@ type SmallMoleculeDesignGetResponseInputTargetEntity struct {
 	Cyclic bool `json:"cyclic"`
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
-	Modifications []SmallMoleculeDesignGetResponseInputTargetEntityModificationUnion `json:"modifications"`
+	Modifications []SmallMoleculeDesignGetResponseInputTargetEntityModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainIDs      respjson.Field
@@ -338,44 +338,7 @@ func (r *SmallMoleculeDesignGetResponseInputTargetEntity) UnmarshalJSON(data []b
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// SmallMoleculeDesignGetResponseInputTargetEntityModificationUnion contains all
-// possible properties and values from
-// [SmallMoleculeDesignGetResponseInputTargetEntityModificationCcdModificationResponse],
-// [SmallMoleculeDesignGetResponseInputTargetEntityModificationSmilesModificationResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type SmallMoleculeDesignGetResponseInputTargetEntityModificationUnion struct {
-	ResidueIndex int64  `json:"residue_index"`
-	Type         string `json:"type"`
-	Value        string `json:"value"`
-	JSON         struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-func (u SmallMoleculeDesignGetResponseInputTargetEntityModificationUnion) AsSmallMoleculeDesignGetResponseInputTargetEntityModificationCcdModificationResponse() (v SmallMoleculeDesignGetResponseInputTargetEntityModificationCcdModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u SmallMoleculeDesignGetResponseInputTargetEntityModificationUnion) AsSmallMoleculeDesignGetResponseInputTargetEntityModificationSmilesModificationResponse() (v SmallMoleculeDesignGetResponseInputTargetEntityModificationSmilesModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u SmallMoleculeDesignGetResponseInputTargetEntityModificationUnion) RawJSON() string {
-	return u.JSON.raw
-}
-
-func (r *SmallMoleculeDesignGetResponseInputTargetEntityModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type SmallMoleculeDesignGetResponseInputTargetEntityModificationCcdModificationResponse struct {
+type SmallMoleculeDesignGetResponseInputTargetEntityModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64        `json:"residue_index" api:"required"`
 	Type         constant.Ccd `json:"type" default:"ccd"`
@@ -393,34 +356,10 @@ type SmallMoleculeDesignGetResponseInputTargetEntityModificationCcdModificationR
 }
 
 // Returns the unmodified JSON received from the API
-func (r SmallMoleculeDesignGetResponseInputTargetEntityModificationCcdModificationResponse) RawJSON() string {
+func (r SmallMoleculeDesignGetResponseInputTargetEntityModification) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *SmallMoleculeDesignGetResponseInputTargetEntityModificationCcdModificationResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type SmallMoleculeDesignGetResponseInputTargetEntityModificationSmilesModificationResponse struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64           `json:"residue_index" api:"required"`
-	Type         constant.Smiles `json:"type" default:"smiles"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r SmallMoleculeDesignGetResponseInputTargetEntityModificationSmilesModificationResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *SmallMoleculeDesignGetResponseInputTargetEntityModificationSmilesModificationResponse) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeDesignGetResponseInputTargetEntityModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -2119,7 +2058,7 @@ type SmallMoleculeDesignStartResponseInputTargetEntity struct {
 	Cyclic bool `json:"cyclic"`
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
-	Modifications []SmallMoleculeDesignStartResponseInputTargetEntityModificationUnion `json:"modifications"`
+	Modifications []SmallMoleculeDesignStartResponseInputTargetEntityModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainIDs      respjson.Field
@@ -2138,44 +2077,7 @@ func (r *SmallMoleculeDesignStartResponseInputTargetEntity) UnmarshalJSON(data [
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// SmallMoleculeDesignStartResponseInputTargetEntityModificationUnion contains all
-// possible properties and values from
-// [SmallMoleculeDesignStartResponseInputTargetEntityModificationCcdModificationResponse],
-// [SmallMoleculeDesignStartResponseInputTargetEntityModificationSmilesModificationResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type SmallMoleculeDesignStartResponseInputTargetEntityModificationUnion struct {
-	ResidueIndex int64  `json:"residue_index"`
-	Type         string `json:"type"`
-	Value        string `json:"value"`
-	JSON         struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-func (u SmallMoleculeDesignStartResponseInputTargetEntityModificationUnion) AsSmallMoleculeDesignStartResponseInputTargetEntityModificationCcdModificationResponse() (v SmallMoleculeDesignStartResponseInputTargetEntityModificationCcdModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u SmallMoleculeDesignStartResponseInputTargetEntityModificationUnion) AsSmallMoleculeDesignStartResponseInputTargetEntityModificationSmilesModificationResponse() (v SmallMoleculeDesignStartResponseInputTargetEntityModificationSmilesModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u SmallMoleculeDesignStartResponseInputTargetEntityModificationUnion) RawJSON() string {
-	return u.JSON.raw
-}
-
-func (r *SmallMoleculeDesignStartResponseInputTargetEntityModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type SmallMoleculeDesignStartResponseInputTargetEntityModificationCcdModificationResponse struct {
+type SmallMoleculeDesignStartResponseInputTargetEntityModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64        `json:"residue_index" api:"required"`
 	Type         constant.Ccd `json:"type" default:"ccd"`
@@ -2193,34 +2095,10 @@ type SmallMoleculeDesignStartResponseInputTargetEntityModificationCcdModificatio
 }
 
 // Returns the unmodified JSON received from the API
-func (r SmallMoleculeDesignStartResponseInputTargetEntityModificationCcdModificationResponse) RawJSON() string {
+func (r SmallMoleculeDesignStartResponseInputTargetEntityModification) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *SmallMoleculeDesignStartResponseInputTargetEntityModificationCcdModificationResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type SmallMoleculeDesignStartResponseInputTargetEntityModificationSmilesModificationResponse struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64           `json:"residue_index" api:"required"`
-	Type         constant.Smiles `json:"type" default:"smiles"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r SmallMoleculeDesignStartResponseInputTargetEntityModificationSmilesModificationResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *SmallMoleculeDesignStartResponseInputTargetEntityModificationSmilesModificationResponse) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeDesignStartResponseInputTargetEntityModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -3542,7 +3420,7 @@ type SmallMoleculeDesignStopResponseInputTargetEntity struct {
 	Cyclic bool `json:"cyclic"`
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
-	Modifications []SmallMoleculeDesignStopResponseInputTargetEntityModificationUnion `json:"modifications"`
+	Modifications []SmallMoleculeDesignStopResponseInputTargetEntityModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainIDs      respjson.Field
@@ -3561,44 +3439,7 @@ func (r *SmallMoleculeDesignStopResponseInputTargetEntity) UnmarshalJSON(data []
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// SmallMoleculeDesignStopResponseInputTargetEntityModificationUnion contains all
-// possible properties and values from
-// [SmallMoleculeDesignStopResponseInputTargetEntityModificationCcdModificationResponse],
-// [SmallMoleculeDesignStopResponseInputTargetEntityModificationSmilesModificationResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type SmallMoleculeDesignStopResponseInputTargetEntityModificationUnion struct {
-	ResidueIndex int64  `json:"residue_index"`
-	Type         string `json:"type"`
-	Value        string `json:"value"`
-	JSON         struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-func (u SmallMoleculeDesignStopResponseInputTargetEntityModificationUnion) AsSmallMoleculeDesignStopResponseInputTargetEntityModificationCcdModificationResponse() (v SmallMoleculeDesignStopResponseInputTargetEntityModificationCcdModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u SmallMoleculeDesignStopResponseInputTargetEntityModificationUnion) AsSmallMoleculeDesignStopResponseInputTargetEntityModificationSmilesModificationResponse() (v SmallMoleculeDesignStopResponseInputTargetEntityModificationSmilesModificationResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u SmallMoleculeDesignStopResponseInputTargetEntityModificationUnion) RawJSON() string {
-	return u.JSON.raw
-}
-
-func (r *SmallMoleculeDesignStopResponseInputTargetEntityModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type SmallMoleculeDesignStopResponseInputTargetEntityModificationCcdModificationResponse struct {
+type SmallMoleculeDesignStopResponseInputTargetEntityModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64        `json:"residue_index" api:"required"`
 	Type         constant.Ccd `json:"type" default:"ccd"`
@@ -3616,34 +3457,10 @@ type SmallMoleculeDesignStopResponseInputTargetEntityModificationCcdModification
 }
 
 // Returns the unmodified JSON received from the API
-func (r SmallMoleculeDesignStopResponseInputTargetEntityModificationCcdModificationResponse) RawJSON() string {
+func (r SmallMoleculeDesignStopResponseInputTargetEntityModification) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *SmallMoleculeDesignStopResponseInputTargetEntityModificationCcdModificationResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type SmallMoleculeDesignStopResponseInputTargetEntityModificationSmilesModificationResponse struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64           `json:"residue_index" api:"required"`
-	Type         constant.Smiles `json:"type" default:"smiles"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ResidueIndex respjson.Field
-		Type         respjson.Field
-		Value        respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r SmallMoleculeDesignStopResponseInputTargetEntityModificationSmilesModificationResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *SmallMoleculeDesignStopResponseInputTargetEntityModificationSmilesModificationResponse) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeDesignStopResponseInputTargetEntityModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -4908,7 +4725,7 @@ type SmallMoleculeDesignEstimateCostParamsTargetEntity struct {
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
-	Modifications []SmallMoleculeDesignEstimateCostParamsTargetEntityModificationUnion `json:"modifications,omitzero"`
+	Modifications []SmallMoleculeDesignEstimateCostParamsTargetEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "protein".
 	Type constant.Protein `json:"type" default:"protein"`
 	paramObj
@@ -4922,24 +4739,8 @@ func (r *SmallMoleculeDesignEstimateCostParamsTargetEntity) UnmarshalJSON(data [
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type SmallMoleculeDesignEstimateCostParamsTargetEntityModificationUnion struct {
-	OfSmallMoleculeDesignEstimateCostsTargetEntityModificationCcdModification    *SmallMoleculeDesignEstimateCostParamsTargetEntityModificationCcdModification    `json:",omitzero,inline"`
-	OfSmallMoleculeDesignEstimateCostsTargetEntityModificationSmilesModification *SmallMoleculeDesignEstimateCostParamsTargetEntityModificationSmilesModification `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u SmallMoleculeDesignEstimateCostParamsTargetEntityModificationUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfSmallMoleculeDesignEstimateCostsTargetEntityModificationCcdModification, u.OfSmallMoleculeDesignEstimateCostsTargetEntityModificationSmilesModification)
-}
-func (u *SmallMoleculeDesignEstimateCostParamsTargetEntityModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
 // The properties ResidueIndex, Type, Value are required.
-type SmallMoleculeDesignEstimateCostParamsTargetEntityModificationCcdModification struct {
+type SmallMoleculeDesignEstimateCostParamsTargetEntityModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64 `json:"residue_index" api:"required"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
@@ -4950,30 +4751,11 @@ type SmallMoleculeDesignEstimateCostParamsTargetEntityModificationCcdModificatio
 	paramObj
 }
 
-func (r SmallMoleculeDesignEstimateCostParamsTargetEntityModificationCcdModification) MarshalJSON() (data []byte, err error) {
-	type shadow SmallMoleculeDesignEstimateCostParamsTargetEntityModificationCcdModification
+func (r SmallMoleculeDesignEstimateCostParamsTargetEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeDesignEstimateCostParamsTargetEntityModification
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *SmallMoleculeDesignEstimateCostParamsTargetEntityModificationCcdModification) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The properties ResidueIndex, Type, Value are required.
-type SmallMoleculeDesignEstimateCostParamsTargetEntityModificationSmilesModification struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64 `json:"residue_index" api:"required"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// This field can be elided, and will marshal its zero value as "smiles".
-	Type constant.Smiles `json:"type" default:"smiles"`
-	paramObj
-}
-
-func (r SmallMoleculeDesignEstimateCostParamsTargetEntityModificationSmilesModification) MarshalJSON() (data []byte, err error) {
-	type shadow SmallMoleculeDesignEstimateCostParamsTargetEntityModificationSmilesModification
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *SmallMoleculeDesignEstimateCostParamsTargetEntityModificationSmilesModification) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeDesignEstimateCostParamsTargetEntityModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -5806,7 +5588,7 @@ type SmallMoleculeDesignStartParamsTargetEntity struct {
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
-	Modifications []SmallMoleculeDesignStartParamsTargetEntityModificationUnion `json:"modifications,omitzero"`
+	Modifications []SmallMoleculeDesignStartParamsTargetEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "protein".
 	Type constant.Protein `json:"type" default:"protein"`
 	paramObj
@@ -5820,24 +5602,8 @@ func (r *SmallMoleculeDesignStartParamsTargetEntity) UnmarshalJSON(data []byte) 
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type SmallMoleculeDesignStartParamsTargetEntityModificationUnion struct {
-	OfSmallMoleculeDesignStartsTargetEntityModificationCcdModification    *SmallMoleculeDesignStartParamsTargetEntityModificationCcdModification    `json:",omitzero,inline"`
-	OfSmallMoleculeDesignStartsTargetEntityModificationSmilesModification *SmallMoleculeDesignStartParamsTargetEntityModificationSmilesModification `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u SmallMoleculeDesignStartParamsTargetEntityModificationUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfSmallMoleculeDesignStartsTargetEntityModificationCcdModification, u.OfSmallMoleculeDesignStartsTargetEntityModificationSmilesModification)
-}
-func (u *SmallMoleculeDesignStartParamsTargetEntityModificationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
 // The properties ResidueIndex, Type, Value are required.
-type SmallMoleculeDesignStartParamsTargetEntityModificationCcdModification struct {
+type SmallMoleculeDesignStartParamsTargetEntityModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64 `json:"residue_index" api:"required"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
@@ -5848,30 +5614,11 @@ type SmallMoleculeDesignStartParamsTargetEntityModificationCcdModification struc
 	paramObj
 }
 
-func (r SmallMoleculeDesignStartParamsTargetEntityModificationCcdModification) MarshalJSON() (data []byte, err error) {
-	type shadow SmallMoleculeDesignStartParamsTargetEntityModificationCcdModification
+func (r SmallMoleculeDesignStartParamsTargetEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeDesignStartParamsTargetEntityModification
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *SmallMoleculeDesignStartParamsTargetEntityModificationCcdModification) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The properties ResidueIndex, Type, Value are required.
-type SmallMoleculeDesignStartParamsTargetEntityModificationSmilesModification struct {
-	// 0-based index of the residue to modify
-	ResidueIndex int64 `json:"residue_index" api:"required"`
-	// SMILES string for the modification
-	Value string `json:"value" api:"required"`
-	// This field can be elided, and will marshal its zero value as "smiles".
-	Type constant.Smiles `json:"type" default:"smiles"`
-	paramObj
-}
-
-func (r SmallMoleculeDesignStartParamsTargetEntityModificationSmilesModification) MarshalJSON() (data []byte, err error) {
-	type shadow SmallMoleculeDesignStartParamsTargetEntityModificationSmilesModification
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *SmallMoleculeDesignStartParamsTargetEntityModificationSmilesModification) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeDesignStartParamsTargetEntityModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

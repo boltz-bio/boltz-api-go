@@ -116,11 +116,9 @@ func TestSmallMoleculeLibraryScreenEstimateCostWithOptionalParams(t *testing.T) 
 				ChainIDs: []string{"string"},
 				Value:    "value",
 				Cyclic:   boltzapi.Bool(true),
-				Modifications: []boltzapi.SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModificationUnion{{
-					OfSmallMoleculeLibraryScreenEstimateCostsTargetEntityModificationCcdModification: &boltzapi.SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModificationCcdModification{
-						ResidueIndex: 0,
-						Value:        "value",
-					},
+				Modifications: []boltzapi.SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModification{{
+					ResidueIndex: 0,
+					Value:        "value",
 				}},
 			}},
 			Bonds: []boltzapi.SmallMoleculeLibraryScreenEstimateCostParamsTargetBond{{
@@ -231,11 +229,9 @@ func TestSmallMoleculeLibraryScreenStartWithOptionalParams(t *testing.T) {
 				ChainIDs: []string{"string"},
 				Value:    "value",
 				Cyclic:   boltzapi.Bool(true),
-				Modifications: []boltzapi.SmallMoleculeLibraryScreenStartParamsTargetEntityModificationUnion{{
-					OfSmallMoleculeLibraryScreenStartsTargetEntityModificationCcdModification: &boltzapi.SmallMoleculeLibraryScreenStartParamsTargetEntityModificationCcdModification{
-						ResidueIndex: 0,
-						Value:        "value",
-					},
+				Modifications: []boltzapi.SmallMoleculeLibraryScreenStartParamsTargetEntityModification{{
+					ResidueIndex: 0,
+					Value:        "value",
 				}},
 			}},
 			Bonds: []boltzapi.SmallMoleculeLibraryScreenStartParamsTargetBond{{

@@ -113,11 +113,9 @@ func TestProteinLibraryScreenEstimateCostWithOptionalParams(t *testing.T) {
 					ChainIDs: []string{"string"},
 					Value:    "value",
 					Cyclic:   boltzapi.Bool(true),
-					Modifications: []boltzapi.ProteinLibraryScreenEstimateCostParamsProteinEntityProteinEntityModificationUnion{{
-						OfProteinLibraryScreenEstimateCostsProteinEntityProteinEntityModificationCcdModification: &boltzapi.ProteinLibraryScreenEstimateCostParamsProteinEntityProteinEntityModificationCcdModification{
-							ResidueIndex: 0,
-							Value:        "value",
-						},
+					Modifications: []boltzapi.ProteinLibraryScreenEstimateCostParamsProteinEntityProteinEntityModification{{
+						ResidueIndex: 0,
+						Value:        "value",
 					}},
 				},
 			}},
@@ -208,11 +206,9 @@ func TestProteinLibraryScreenStartWithOptionalParams(t *testing.T) {
 					ChainIDs: []string{"string"},
 					Value:    "value",
 					Cyclic:   boltzapi.Bool(true),
-					Modifications: []boltzapi.ProteinLibraryScreenStartParamsProteinEntityProteinEntityModificationUnion{{
-						OfProteinLibraryScreenStartsProteinEntityProteinEntityModificationCcdModification: &boltzapi.ProteinLibraryScreenStartParamsProteinEntityProteinEntityModificationCcdModification{
-							ResidueIndex: 0,
-							Value:        "value",
-						},
+					Modifications: []boltzapi.ProteinLibraryScreenStartParamsProteinEntityProteinEntityModification{{
+						ResidueIndex: 0,
+						Value:        "value",
 					}},
 				},
 			}},
