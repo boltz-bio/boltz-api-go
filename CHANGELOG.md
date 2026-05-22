@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.15.1 (2026-05-22)
+
+Full Changelog: [v0.15.0...v0.15.1](https://github.com/boltz-bio/boltz-api-go/compare/v0.15.0...v0.15.1)
+
+### Bug Fixes
+
+* **compute-api:** reject idempotency key input mismatches ([1341344](https://github.com/boltz-bio/boltz-api-go/commit/1341344ca0778575093a37ec56ee133c0548294b))
+
 ## 0.15.0 (2026-05-15)
 
 Full Changelog: [v0.14.0...v0.15.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.14.0...v0.15.0)
