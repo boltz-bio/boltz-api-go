@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.15.2 (2026-05-25)
+
+Full Changelog: [v0.15.1...v0.15.2](https://github.com/boltz-bio/boltz-api-go/compare/v0.15.1...v0.15.2)
+
+### Chores
+
+* **typebox:** upgrade backend schemas to v1 ([aa697d1](https://github.com/boltz-bio/boltz-api-go/commit/aa697d106ab682cfea097709c1dd52a988c6e619))
+
 ## 0.15.1 (2026-05-22)
 
 Full Changelog: [v0.15.0...v0.15.1](https://github.com/boltz-bio/boltz-api-go/compare/v0.15.0...v0.15.1)
