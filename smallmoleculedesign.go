@@ -235,7 +235,7 @@ func (r *SmallMoleculeDesignGetResponseError) UnmarshalJSON(data []byte) error {
 type SmallMoleculeDesignGetResponseInput struct {
 	// Number of molecules to generate. Must be between 10 and 1,000,000.
 	NumMolecules int64 `json:"num_molecules" api:"required"`
-	// Target protein with binding pocket for small molecule design or screening
+	// Target protein sequences for small molecule design or screening.
 	Target SmallMoleculeDesignGetResponseInputTarget `json:"target" api:"required"`
 	// Chemical space to constrain generated molecules. Currently only 'enamine_real'
 	// (Enamine REAL chemical space) is supported. Additional options may be added in
@@ -269,7 +269,7 @@ func (r *SmallMoleculeDesignGetResponseInput) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Target protein with binding pocket for small molecule design or screening
+// Target protein sequences for small molecule design or screening.
 type SmallMoleculeDesignGetResponseInputTarget struct {
 	// Protein entities defining the target structure. Each entity represents a protein
 	// chain.
@@ -280,6 +280,9 @@ type SmallMoleculeDesignGetResponseInputTarget struct {
 	// Structural constraints (pocket and contact). Atom-level ligand references
 	// currently support ligand_ccd only; ligand_smiles is unsupported.
 	Constraints []SmallMoleculeDesignGetResponseInputTargetConstraintUnion `json:"constraints"`
+	// When true, pocket_residues are also sent as a forced Boltz2 pocket constraint
+	// while scoring candidate molecules. Defaults to false.
+	EnablePocketConditioning bool `json:"enable_pocket_conditioning"`
 	// Binding pocket residues, keyed by chain ID. Each key is a chain ID (e.g. "A")
 	// and the value is an array of 0-indexed residue indices that define the binding
 	// pocket on that chain. When provided, these residues guide pocket extraction and
@@ -291,15 +294,22 @@ type SmallMoleculeDesignGetResponseInputTarget struct {
 	// pocket. When omitted, a set of drug-like default ligands is used for pocket
 	// detection.
 	ReferenceLigands []string `json:"reference_ligands"`
+	// Target is defined directly by protein sequences rather than a structure
+	// template.
+	//
+	// Any of "no_template".
+	Type string `json:"type"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Entities         respjson.Field
-		Bonds            respjson.Field
-		Constraints      respjson.Field
-		PocketResidues   respjson.Field
-		ReferenceLigands respjson.Field
-		ExtraFields      map[string]respjson.Field
-		raw              string
+		Entities                 respjson.Field
+		Bonds                    respjson.Field
+		Constraints              respjson.Field
+		EnablePocketConditioning respjson.Field
+		PocketResidues           respjson.Field
+		ReferenceLigands         respjson.Field
+		Type                     respjson.Field
+		ExtraFields              map[string]respjson.Field
+		raw                      string
 	} `json:"-"`
 }
 
@@ -1932,7 +1942,7 @@ func (r *SmallMoleculeDesignStartResponseError) UnmarshalJSON(data []byte) error
 type SmallMoleculeDesignStartResponseInput struct {
 	// Number of molecules to generate. Must be between 10 and 1,000,000.
 	NumMolecules int64 `json:"num_molecules" api:"required"`
-	// Target protein with binding pocket for small molecule design or screening
+	// Target protein sequences for small molecule design or screening.
 	Target SmallMoleculeDesignStartResponseInputTarget `json:"target" api:"required"`
 	// Chemical space to constrain generated molecules. Currently only 'enamine_real'
 	// (Enamine REAL chemical space) is supported. Additional options may be added in
@@ -1966,7 +1976,7 @@ func (r *SmallMoleculeDesignStartResponseInput) UnmarshalJSON(data []byte) error
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Target protein with binding pocket for small molecule design or screening
+// Target protein sequences for small molecule design or screening.
 type SmallMoleculeDesignStartResponseInputTarget struct {
 	// Protein entities defining the target structure. Each entity represents a protein
 	// chain.
@@ -1977,6 +1987,9 @@ type SmallMoleculeDesignStartResponseInputTarget struct {
 	// Structural constraints (pocket and contact). Atom-level ligand references
 	// currently support ligand_ccd only; ligand_smiles is unsupported.
 	Constraints []SmallMoleculeDesignStartResponseInputTargetConstraintUnion `json:"constraints"`
+	// When true, pocket_residues are also sent as a forced Boltz2 pocket constraint
+	// while scoring candidate molecules. Defaults to false.
+	EnablePocketConditioning bool `json:"enable_pocket_conditioning"`
 	// Binding pocket residues, keyed by chain ID. Each key is a chain ID (e.g. "A")
 	// and the value is an array of 0-indexed residue indices that define the binding
 	// pocket on that chain. When provided, these residues guide pocket extraction and
@@ -1988,15 +2001,22 @@ type SmallMoleculeDesignStartResponseInputTarget struct {
 	// pocket. When omitted, a set of drug-like default ligands is used for pocket
 	// detection.
 	ReferenceLigands []string `json:"reference_ligands"`
+	// Target is defined directly by protein sequences rather than a structure
+	// template.
+	//
+	// Any of "no_template".
+	Type string `json:"type"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Entities         respjson.Field
-		Bonds            respjson.Field
-		Constraints      respjson.Field
-		PocketResidues   respjson.Field
-		ReferenceLigands respjson.Field
-		ExtraFields      map[string]respjson.Field
-		raw              string
+		Entities                 respjson.Field
+		Bonds                    respjson.Field
+		Constraints              respjson.Field
+		EnablePocketConditioning respjson.Field
+		PocketResidues           respjson.Field
+		ReferenceLigands         respjson.Field
+		Type                     respjson.Field
+		ExtraFields              map[string]respjson.Field
+		raw                      string
 	} `json:"-"`
 }
 
@@ -3252,7 +3272,7 @@ func (r *SmallMoleculeDesignStopResponseError) UnmarshalJSON(data []byte) error 
 type SmallMoleculeDesignStopResponseInput struct {
 	// Number of molecules to generate. Must be between 10 and 1,000,000.
 	NumMolecules int64 `json:"num_molecules" api:"required"`
-	// Target protein with binding pocket for small molecule design or screening
+	// Target protein sequences for small molecule design or screening.
 	Target SmallMoleculeDesignStopResponseInputTarget `json:"target" api:"required"`
 	// Chemical space to constrain generated molecules. Currently only 'enamine_real'
 	// (Enamine REAL chemical space) is supported. Additional options may be added in
@@ -3286,7 +3306,7 @@ func (r *SmallMoleculeDesignStopResponseInput) UnmarshalJSON(data []byte) error 
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Target protein with binding pocket for small molecule design or screening
+// Target protein sequences for small molecule design or screening.
 type SmallMoleculeDesignStopResponseInputTarget struct {
 	// Protein entities defining the target structure. Each entity represents a protein
 	// chain.
@@ -3297,6 +3317,9 @@ type SmallMoleculeDesignStopResponseInputTarget struct {
 	// Structural constraints (pocket and contact). Atom-level ligand references
 	// currently support ligand_ccd only; ligand_smiles is unsupported.
 	Constraints []SmallMoleculeDesignStopResponseInputTargetConstraintUnion `json:"constraints"`
+	// When true, pocket_residues are also sent as a forced Boltz2 pocket constraint
+	// while scoring candidate molecules. Defaults to false.
+	EnablePocketConditioning bool `json:"enable_pocket_conditioning"`
 	// Binding pocket residues, keyed by chain ID. Each key is a chain ID (e.g. "A")
 	// and the value is an array of 0-indexed residue indices that define the binding
 	// pocket on that chain. When provided, these residues guide pocket extraction and
@@ -3308,15 +3331,22 @@ type SmallMoleculeDesignStopResponseInputTarget struct {
 	// pocket. When omitted, a set of drug-like default ligands is used for pocket
 	// detection.
 	ReferenceLigands []string `json:"reference_ligands"`
+	// Target is defined directly by protein sequences rather than a structure
+	// template.
+	//
+	// Any of "no_template".
+	Type string `json:"type"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Entities         respjson.Field
-		Bonds            respjson.Field
-		Constraints      respjson.Field
-		PocketResidues   respjson.Field
-		ReferenceLigands respjson.Field
-		ExtraFields      map[string]respjson.Field
-		raw              string
+		Entities                 respjson.Field
+		Bonds                    respjson.Field
+		Constraints              respjson.Field
+		EnablePocketConditioning respjson.Field
+		PocketResidues           respjson.Field
+		ReferenceLigands         respjson.Field
+		Type                     respjson.Field
+		ExtraFields              map[string]respjson.Field
+		raw                      string
 	} `json:"-"`
 }
 
@@ -4528,7 +4558,7 @@ func (r SmallMoleculeDesignListParams) URLQuery() (v url.Values, err error) {
 type SmallMoleculeDesignEstimateCostParams struct {
 	// Number of molecules to generate. Must be between 10 and 1,000,000.
 	NumMolecules int64 `json:"num_molecules" api:"required"`
-	// Target protein with binding pocket for small molecule design or screening
+	// Target protein sequences for small molecule design or screening.
 	Target SmallMoleculeDesignEstimateCostParamsTarget `json:"target,omitzero" api:"required"`
 	// Client-provided key to prevent duplicate submissions on retries
 	IdempotencyKey param.Opt[string] `json:"idempotency_key,omitzero"`
@@ -4554,13 +4584,16 @@ func (r *SmallMoleculeDesignEstimateCostParams) UnmarshalJSON(data []byte) error
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Target protein with binding pocket for small molecule design or screening
+// Target protein sequences for small molecule design or screening.
 //
 // The property Entities is required.
 type SmallMoleculeDesignEstimateCostParamsTarget struct {
 	// Protein entities defining the target structure. Each entity represents a protein
 	// chain.
 	Entities []SmallMoleculeDesignEstimateCostParamsTargetEntity `json:"entities,omitzero" api:"required"`
+	// When true, pocket_residues are also sent as a forced Boltz2 pocket constraint
+	// while scoring candidate molecules. Defaults to false.
+	EnablePocketConditioning param.Opt[bool] `json:"enable_pocket_conditioning,omitzero"`
 	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
 	// references currently support ligand_ccd only; ligand_smiles is unsupported.
 	Bonds []SmallMoleculeDesignEstimateCostParamsTargetBond `json:"bonds,omitzero"`
@@ -4578,6 +4611,11 @@ type SmallMoleculeDesignEstimateCostParamsTarget struct {
 	// pocket. When omitted, a set of drug-like default ligands is used for pocket
 	// detection.
 	ReferenceLigands []string `json:"reference_ligands,omitzero"`
+	// Target is defined directly by protein sequences rather than a structure
+	// template.
+	//
+	// Any of "no_template".
+	Type string `json:"type,omitzero"`
 	paramObj
 }
 
@@ -4587,6 +4625,12 @@ func (r SmallMoleculeDesignEstimateCostParamsTarget) MarshalJSON() (data []byte,
 }
 func (r *SmallMoleculeDesignEstimateCostParamsTarget) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[SmallMoleculeDesignEstimateCostParamsTarget](
+		"type", "no_template",
+	)
 }
 
 // The properties ChainIDs, Type, Value are required.
@@ -5376,7 +5420,7 @@ func (r SmallMoleculeDesignListResultsParams) URLQuery() (v url.Values, err erro
 type SmallMoleculeDesignStartParams struct {
 	// Number of molecules to generate. Must be between 10 and 1,000,000.
 	NumMolecules int64 `json:"num_molecules" api:"required"`
-	// Target protein with binding pocket for small molecule design or screening
+	// Target protein sequences for small molecule design or screening.
 	Target SmallMoleculeDesignStartParamsTarget `json:"target,omitzero" api:"required"`
 	// Client-provided key to prevent duplicate submissions on retries
 	IdempotencyKey param.Opt[string] `json:"idempotency_key,omitzero"`
@@ -5402,13 +5446,16 @@ func (r *SmallMoleculeDesignStartParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Target protein with binding pocket for small molecule design or screening
+// Target protein sequences for small molecule design or screening.
 //
 // The property Entities is required.
 type SmallMoleculeDesignStartParamsTarget struct {
 	// Protein entities defining the target structure. Each entity represents a protein
 	// chain.
 	Entities []SmallMoleculeDesignStartParamsTargetEntity `json:"entities,omitzero" api:"required"`
+	// When true, pocket_residues are also sent as a forced Boltz2 pocket constraint
+	// while scoring candidate molecules. Defaults to false.
+	EnablePocketConditioning param.Opt[bool] `json:"enable_pocket_conditioning,omitzero"`
 	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
 	// references currently support ligand_ccd only; ligand_smiles is unsupported.
 	Bonds []SmallMoleculeDesignStartParamsTargetBond `json:"bonds,omitzero"`
@@ -5426,6 +5473,11 @@ type SmallMoleculeDesignStartParamsTarget struct {
 	// pocket. When omitted, a set of drug-like default ligands is used for pocket
 	// detection.
 	ReferenceLigands []string `json:"reference_ligands,omitzero"`
+	// Target is defined directly by protein sequences rather than a structure
+	// template.
+	//
+	// Any of "no_template".
+	Type string `json:"type,omitzero"`
 	paramObj
 }
 
@@ -5435,6 +5487,12 @@ func (r SmallMoleculeDesignStartParamsTarget) MarshalJSON() (data []byte, err er
 }
 func (r *SmallMoleculeDesignStartParamsTarget) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[SmallMoleculeDesignStartParamsTarget](
+		"type", "no_template",
+	)
 }
 
 // The properties ChainIDs, Type, Value are required.
