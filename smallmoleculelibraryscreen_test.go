@@ -145,10 +145,12 @@ func TestSmallMoleculeLibraryScreenEstimateCostWithOptionalParams(t *testing.T) 
 					Force:               boltzapi.Bool(true),
 				},
 			}},
+			EnablePocketConditioning: boltzapi.Bool(true),
 			PocketResidues: map[string][]int64{
 				"A": {42, 43, 44, 67, 68, 69},
 			},
 			ReferenceLigands: []string{"string"},
+			Type:             "no_template",
 		},
 		IdempotencyKey: boltzapi.String("idempotency_key"),
 		MoleculeFilters: boltzapi.SmallMoleculeLibraryScreenEstimateCostParamsMoleculeFilters{
@@ -258,10 +260,12 @@ func TestSmallMoleculeLibraryScreenStartWithOptionalParams(t *testing.T) {
 					Force:               boltzapi.Bool(true),
 				},
 			}},
+			EnablePocketConditioning: boltzapi.Bool(true),
 			PocketResidues: map[string][]int64{
 				"A": {42, 43, 44, 67, 68, 69},
 			},
 			ReferenceLigands: []string{"string"},
+			Type:             "no_template",
 		},
 		IdempotencyKey: boltzapi.String("idempotency_key"),
 		MoleculeFilters: boltzapi.SmallMoleculeLibraryScreenStartParamsMoleculeFilters{
