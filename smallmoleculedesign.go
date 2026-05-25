@@ -985,7 +985,7 @@ type SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterUnion struct 
 	Patterns []string                                                                                        `json:"patterns"`
 	// This field is from variant
 	// [SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponse].
-	Catalog SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog `json:"catalog"`
+	Catalog string `json:"catalog"`
 	JSON    struct {
 		MaxHba               respjson.Field
 		MaxHbd               respjson.Field
@@ -1392,8 +1392,8 @@ type SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalog
 	// Any of "PAINS", "PAINS_A", "PAINS_B", "PAINS_C", "BRENK", "CHEMBL",
 	// "CHEMBL_BMS", "CHEMBL_Dundee", "CHEMBL_Glaxo", "CHEMBL_Inpharmatica",
 	// "CHEMBL_LINT", "CHEMBL_MLSMR", "CHEMBL_SureChEMBL", "NIH".
-	Catalog SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog `json:"catalog" api:"required"`
-	Type    constant.SmartsCatalogFilter                                                                     `json:"type" default:"smarts_catalog_filter"`
+	Catalog string                       `json:"catalog" api:"required"`
+	Type    constant.SmartsCatalogFilter `json:"type" default:"smarts_catalog_filter"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Catalog     respjson.Field
@@ -1410,27 +1410,6 @@ func (r SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCata
 func (r *SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// Predefined SMARTS catalog to apply. PAINS, BRENK, ChEMBL, and NIH catalogs
-// reject known problematic substructures.
-type SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog string
-
-const (
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogPains              SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "PAINS"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogPainsA             SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "PAINS_A"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogPainsB             SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "PAINS_B"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogPainsC             SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "PAINS_C"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogBrenk              SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "BRENK"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChembl             SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChemblBms          SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL_BMS"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChemblDundee       SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL_Dundee"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChemblGlaxo        SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL_Glaxo"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChemblInpharmatica SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL_Inpharmatica"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChemblLint         SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL_LINT"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChemblMlsmr        SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL_MLSMR"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChemblSureChEmbl   SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL_SureChEMBL"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogNih                SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "NIH"
-)
 
 // Filter molecules by regex patterns on their SMILES representation.
 type SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmilesRegexFilterResponse struct {
@@ -1454,27 +1433,6 @@ func (r SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmilesRege
 func (r *SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterSmilesRegexFilterResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// Predefined SMARTS catalog to apply. PAINS, BRENK, ChEMBL, and NIH catalogs
-// reject known problematic substructures.
-type SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalog string
-
-const (
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalogPains              SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalog = "PAINS"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalogPainsA             SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalog = "PAINS_A"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalogPainsB             SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalog = "PAINS_B"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalogPainsC             SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalog = "PAINS_C"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalogBrenk              SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalog = "BRENK"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalogChembl             SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalogChemblBms          SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL_BMS"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalogChemblDundee       SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL_Dundee"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalogChemblGlaxo        SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL_Glaxo"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalogChemblInpharmatica SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL_Inpharmatica"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalogChemblLint         SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL_LINT"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalogChemblMlsmr        SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL_MLSMR"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalogChemblSureChEmbl   SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL_SureChEMBL"
-	SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalogNih                SmallMoleculeDesignGetResponseInputMoleculeFiltersCustomFilterCatalog = "NIH"
-)
 
 type SmallMoleculeDesignGetResponseProgress struct {
 	// Number of molecules generated so far
@@ -2730,7 +2688,7 @@ type SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterUnion struc
 	Patterns []string                                                                                          `json:"patterns"`
 	// This field is from variant
 	// [SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponse].
-	Catalog SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog `json:"catalog"`
+	Catalog string `json:"catalog"`
 	JSON    struct {
 		MaxHba               respjson.Field
 		MaxHbd               respjson.Field
@@ -3137,8 +3095,8 @@ type SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatal
 	// Any of "PAINS", "PAINS_A", "PAINS_B", "PAINS_C", "BRENK", "CHEMBL",
 	// "CHEMBL_BMS", "CHEMBL_Dundee", "CHEMBL_Glaxo", "CHEMBL_Inpharmatica",
 	// "CHEMBL_LINT", "CHEMBL_MLSMR", "CHEMBL_SureChEMBL", "NIH".
-	Catalog SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog `json:"catalog" api:"required"`
-	Type    constant.SmartsCatalogFilter                                                                       `json:"type" default:"smarts_catalog_filter"`
+	Catalog string                       `json:"catalog" api:"required"`
+	Type    constant.SmartsCatalogFilter `json:"type" default:"smarts_catalog_filter"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Catalog     respjson.Field
@@ -3155,27 +3113,6 @@ func (r SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCa
 func (r *SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// Predefined SMARTS catalog to apply. PAINS, BRENK, ChEMBL, and NIH catalogs
-// reject known problematic substructures.
-type SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog string
-
-const (
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogPains              SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "PAINS"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogPainsA             SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "PAINS_A"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogPainsB             SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "PAINS_B"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogPainsC             SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "PAINS_C"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogBrenk              SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "BRENK"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChembl             SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChemblBms          SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL_BMS"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChemblDundee       SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL_Dundee"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChemblGlaxo        SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL_Glaxo"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChemblInpharmatica SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL_Inpharmatica"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChemblLint         SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL_LINT"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChemblMlsmr        SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL_MLSMR"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChemblSureChEmbl   SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL_SureChEMBL"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogNih                SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "NIH"
-)
 
 // Filter molecules by regex patterns on their SMILES representation.
 type SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmilesRegexFilterResponse struct {
@@ -3199,27 +3136,6 @@ func (r SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmilesRe
 func (r *SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterSmilesRegexFilterResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// Predefined SMARTS catalog to apply. PAINS, BRENK, ChEMBL, and NIH catalogs
-// reject known problematic substructures.
-type SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalog string
-
-const (
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalogPains              SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalog = "PAINS"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalogPainsA             SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalog = "PAINS_A"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalogPainsB             SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalog = "PAINS_B"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalogPainsC             SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalog = "PAINS_C"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalogBrenk              SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalog = "BRENK"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalogChembl             SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalogChemblBms          SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL_BMS"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalogChemblDundee       SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL_Dundee"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalogChemblGlaxo        SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL_Glaxo"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalogChemblInpharmatica SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL_Inpharmatica"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalogChemblLint         SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL_LINT"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalogChemblMlsmr        SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL_MLSMR"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalogChemblSureChEmbl   SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL_SureChEMBL"
-	SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalogNih                SmallMoleculeDesignStartResponseInputMoleculeFiltersCustomFilterCatalog = "NIH"
-)
 
 type SmallMoleculeDesignStartResponseProgress struct {
 	// Number of molecules generated so far
@@ -4088,7 +4004,7 @@ type SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterUnion struct
 	Patterns []string                                                                                         `json:"patterns"`
 	// This field is from variant
 	// [SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponse].
-	Catalog SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog `json:"catalog"`
+	Catalog string `json:"catalog"`
 	JSON    struct {
 		MaxHba               respjson.Field
 		MaxHbd               respjson.Field
@@ -4495,8 +4411,8 @@ type SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalo
 	// Any of "PAINS", "PAINS_A", "PAINS_B", "PAINS_C", "BRENK", "CHEMBL",
 	// "CHEMBL_BMS", "CHEMBL_Dundee", "CHEMBL_Glaxo", "CHEMBL_Inpharmatica",
 	// "CHEMBL_LINT", "CHEMBL_MLSMR", "CHEMBL_SureChEMBL", "NIH".
-	Catalog SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog `json:"catalog" api:"required"`
-	Type    constant.SmartsCatalogFilter                                                                      `json:"type" default:"smarts_catalog_filter"`
+	Catalog string                       `json:"catalog" api:"required"`
+	Type    constant.SmartsCatalogFilter `json:"type" default:"smarts_catalog_filter"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Catalog     respjson.Field
@@ -4513,27 +4429,6 @@ func (r SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCat
 func (r *SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// Predefined SMARTS catalog to apply. PAINS, BRENK, ChEMBL, and NIH catalogs
-// reject known problematic substructures.
-type SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog string
-
-const (
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogPains              SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "PAINS"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogPainsA             SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "PAINS_A"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogPainsB             SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "PAINS_B"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogPainsC             SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "PAINS_C"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogBrenk              SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "BRENK"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChembl             SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChemblBms          SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL_BMS"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChemblDundee       SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL_Dundee"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChemblGlaxo        SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL_Glaxo"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChemblInpharmatica SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL_Inpharmatica"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChemblLint         SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL_LINT"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChemblMlsmr        SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL_MLSMR"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogChemblSureChEmbl   SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "CHEMBL_SureChEMBL"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalogNih                SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponseCatalog = "NIH"
-)
 
 // Filter molecules by regex patterns on their SMILES representation.
 type SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmilesRegexFilterResponse struct {
@@ -4557,27 +4452,6 @@ func (r SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmilesReg
 func (r *SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterSmilesRegexFilterResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// Predefined SMARTS catalog to apply. PAINS, BRENK, ChEMBL, and NIH catalogs
-// reject known problematic substructures.
-type SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalog string
-
-const (
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalogPains              SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalog = "PAINS"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalogPainsA             SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalog = "PAINS_A"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalogPainsB             SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalog = "PAINS_B"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalogPainsC             SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalog = "PAINS_C"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalogBrenk              SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalog = "BRENK"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalogChembl             SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalogChemblBms          SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL_BMS"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalogChemblDundee       SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL_Dundee"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalogChemblGlaxo        SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL_Glaxo"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalogChemblInpharmatica SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL_Inpharmatica"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalogChemblLint         SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL_LINT"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalogChemblMlsmr        SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL_MLSMR"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalogChemblSureChEmbl   SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalog = "CHEMBL_SureChEMBL"
-	SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalogNih                SmallMoleculeDesignStopResponseInputMoleculeFiltersCustomFilterCatalog = "NIH"
-)
 
 type SmallMoleculeDesignStopResponseProgress struct {
 	// Number of molecules generated so far
@@ -5435,7 +5309,7 @@ type SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatal
 	// Any of "PAINS", "PAINS_A", "PAINS_B", "PAINS_C", "BRENK", "CHEMBL",
 	// "CHEMBL_BMS", "CHEMBL_Dundee", "CHEMBL_Glaxo", "CHEMBL_Inpharmatica",
 	// "CHEMBL_LINT", "CHEMBL_MLSMR", "CHEMBL_SureChEMBL", "NIH".
-	Catalog SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog `json:"catalog,omitzero" api:"required"`
+	Catalog string `json:"catalog,omitzero" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "smarts_catalog_filter".
 	Type constant.SmartsCatalogFilter `json:"type" default:"smarts_catalog_filter"`
@@ -5450,26 +5324,11 @@ func (r *SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsC
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Predefined SMARTS catalog to apply. PAINS, BRENK, ChEMBL, and NIH catalogs
-// reject known problematic substructures.
-type SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog string
-
-const (
-	SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogPains              SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "PAINS"
-	SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogPainsA             SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "PAINS_A"
-	SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogPainsB             SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "PAINS_B"
-	SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogPainsC             SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "PAINS_C"
-	SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogBrenk              SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "BRENK"
-	SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogChembl             SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "CHEMBL"
-	SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogChemblBms          SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "CHEMBL_BMS"
-	SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogChemblDundee       SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "CHEMBL_Dundee"
-	SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogChemblGlaxo        SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "CHEMBL_Glaxo"
-	SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogChemblInpharmatica SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "CHEMBL_Inpharmatica"
-	SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogChemblLint         SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "CHEMBL_LINT"
-	SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogChemblMlsmr        SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "CHEMBL_MLSMR"
-	SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogChemblSureChEmbl   SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "CHEMBL_SureChEMBL"
-	SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogNih                SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "NIH"
-)
+func init() {
+	apijson.RegisterFieldValidator[SmallMoleculeDesignEstimateCostParamsMoleculeFiltersCustomFilterSmartsCatalogFilter](
+		"catalog", "PAINS", "PAINS_A", "PAINS_B", "PAINS_C", "BRENK", "CHEMBL", "CHEMBL_BMS", "CHEMBL_Dundee", "CHEMBL_Glaxo", "CHEMBL_Inpharmatica", "CHEMBL_LINT", "CHEMBL_MLSMR", "CHEMBL_SureChEMBL", "NIH",
+	)
+}
 
 // Filter molecules by regex patterns on their SMILES representation.
 //
@@ -6298,7 +6157,7 @@ type SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilte
 	// Any of "PAINS", "PAINS_A", "PAINS_B", "PAINS_C", "BRENK", "CHEMBL",
 	// "CHEMBL_BMS", "CHEMBL_Dundee", "CHEMBL_Glaxo", "CHEMBL_Inpharmatica",
 	// "CHEMBL_LINT", "CHEMBL_MLSMR", "CHEMBL_SureChEMBL", "NIH".
-	Catalog SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog `json:"catalog,omitzero" api:"required"`
+	Catalog string `json:"catalog,omitzero" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "smarts_catalog_filter".
 	Type constant.SmartsCatalogFilter `json:"type" default:"smarts_catalog_filter"`
@@ -6313,26 +6172,11 @@ func (r *SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogF
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Predefined SMARTS catalog to apply. PAINS, BRENK, ChEMBL, and NIH catalogs
-// reject known problematic substructures.
-type SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog string
-
-const (
-	SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogPains              SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "PAINS"
-	SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogPainsA             SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "PAINS_A"
-	SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogPainsB             SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "PAINS_B"
-	SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogPainsC             SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "PAINS_C"
-	SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogBrenk              SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "BRENK"
-	SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogChembl             SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "CHEMBL"
-	SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogChemblBms          SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "CHEMBL_BMS"
-	SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogChemblDundee       SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "CHEMBL_Dundee"
-	SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogChemblGlaxo        SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "CHEMBL_Glaxo"
-	SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogChemblInpharmatica SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "CHEMBL_Inpharmatica"
-	SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogChemblLint         SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "CHEMBL_LINT"
-	SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogChemblMlsmr        SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "CHEMBL_MLSMR"
-	SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogChemblSureChEmbl   SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "CHEMBL_SureChEMBL"
-	SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalogNih                SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilterCatalog = "NIH"
-)
+func init() {
+	apijson.RegisterFieldValidator[SmallMoleculeDesignStartParamsMoleculeFiltersCustomFilterSmartsCatalogFilter](
+		"catalog", "PAINS", "PAINS_A", "PAINS_B", "PAINS_C", "BRENK", "CHEMBL", "CHEMBL_BMS", "CHEMBL_Dundee", "CHEMBL_Glaxo", "CHEMBL_Inpharmatica", "CHEMBL_LINT", "CHEMBL_MLSMR", "CHEMBL_SureChEMBL", "NIH",
+	)
+}
 
 // Filter molecules by regex patterns on their SMILES representation.
 //
