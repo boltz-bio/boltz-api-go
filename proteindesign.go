@@ -2855,8 +2855,8 @@ func (r *ProteinDesignEstimateCostResponse) UnmarshalJSON(data []byte) error {
 // Cost breakdown for the billed application.
 type ProteinDesignEstimateCostResponseBreakdown struct {
 	// Any of "structure_and_binding", "small_molecule_design",
-	// "small_molecule_library_screen", "protein_design", "protein_library_screen",
-	// "adme".
+	// "small_molecule_library_screen", "protein_design", "protein_redesign",
+	// "protein_library_screen", "adme".
 	Application ProteinDesignEstimateCostResponseBreakdownApplication `json:"application" api:"required"`
 	// Estimated cost per displayed unit as a decimal string, rounded up to 4 decimal
 	// places. This may include token-size multipliers or generation overhead;
@@ -2889,6 +2889,7 @@ const (
 	ProteinDesignEstimateCostResponseBreakdownApplicationSmallMoleculeDesign        ProteinDesignEstimateCostResponseBreakdownApplication = "small_molecule_design"
 	ProteinDesignEstimateCostResponseBreakdownApplicationSmallMoleculeLibraryScreen ProteinDesignEstimateCostResponseBreakdownApplication = "small_molecule_library_screen"
 	ProteinDesignEstimateCostResponseBreakdownApplicationProteinDesign              ProteinDesignEstimateCostResponseBreakdownApplication = "protein_design"
+	ProteinDesignEstimateCostResponseBreakdownApplicationProteinRedesign            ProteinDesignEstimateCostResponseBreakdownApplication = "protein_redesign"
 	ProteinDesignEstimateCostResponseBreakdownApplicationProteinLibraryScreen       ProteinDesignEstimateCostResponseBreakdownApplication = "protein_library_screen"
 	ProteinDesignEstimateCostResponseBreakdownApplicationAdme                       ProteinDesignEstimateCostResponseBreakdownApplication = "adme"
 )
