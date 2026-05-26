@@ -154,6 +154,22 @@ func TestPredictionStructureAndBindingEstimateCostWithOptionalParams(t *testing.
 				StepScale:      boltzapi.Float(1.3),
 			},
 			NumSamples: boltzapi.Int(1),
+			Templates: []boltzapi.PredictionStructureAndBindingEstimateCostParamsInputTemplate{{
+				Format: boltzapi.PredictionStructureAndBindingEstimateCostParamsInputTemplateFormatCif,
+				Source: boltzapi.PredictionStructureAndBindingEstimateCostParamsInputTemplateSourceUnion{
+					OfPredictionStructureAndBindingEstimateCostsInputTemplateSourceURLSource: &boltzapi.PredictionStructureAndBindingEstimateCostParamsInputTemplateSourceURLSource{
+						URL: "https://example.com",
+					},
+				},
+				ChainID: boltzapi.PredictionStructureAndBindingEstimateCostParamsInputTemplateChainIDUnion{
+					OfString: boltzapi.String("string"),
+				},
+				Force: boltzapi.Bool(true),
+				TemplateID: boltzapi.PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateIDUnion{
+					OfString: boltzapi.String("string"),
+				},
+				Threshold: boltzapi.Float(0),
+			}},
 		},
 		Model:          "boltz-2.1",
 		IdempotencyKey: boltzapi.String("idempotency_key"),
@@ -229,6 +245,22 @@ func TestPredictionStructureAndBindingStartWithOptionalParams(t *testing.T) {
 				StepScale:      boltzapi.Float(1.3),
 			},
 			NumSamples: boltzapi.Int(1),
+			Templates: []boltzapi.PredictionStructureAndBindingStartParamsInputTemplate{{
+				Format: boltzapi.PredictionStructureAndBindingStartParamsInputTemplateFormatCif,
+				Source: boltzapi.PredictionStructureAndBindingStartParamsInputTemplateSourceUnion{
+					OfPredictionStructureAndBindingStartsInputTemplateSourceURLSource: &boltzapi.PredictionStructureAndBindingStartParamsInputTemplateSourceURLSource{
+						URL: "https://example.com",
+					},
+				},
+				ChainID: boltzapi.PredictionStructureAndBindingStartParamsInputTemplateChainIDUnion{
+					OfString: boltzapi.String("string"),
+				},
+				Force: boltzapi.Bool(true),
+				TemplateID: boltzapi.PredictionStructureAndBindingStartParamsInputTemplateTemplateIDUnion{
+					OfString: boltzapi.String("string"),
+				},
+				Threshold: boltzapi.Float(0),
+			}},
 		},
 		Model:          "boltz-2.1",
 		IdempotencyKey: boltzapi.String("idempotency_key"),
