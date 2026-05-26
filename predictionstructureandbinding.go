@@ -1147,9 +1147,6 @@ func (r *PredictionStructureAndBindingGetResponseInputConstraintContactConstrain
 }
 
 type PredictionStructureAndBindingGetResponseInputModelOptions struct {
-	// Use the provided pocket constraint as input conditioning during affinity
-	// prediction.
-	EnablePocketConditioning bool `json:"enable_pocket_conditioning"`
 	// The number of recycling steps to use for prediction. Default is 3.
 	RecyclingSteps int64 `json:"recycling_steps"`
 	// The number of sampling steps to use for prediction. Default is 200.
@@ -1159,12 +1156,11 @@ type PredictionStructureAndBindingGetResponseInputModelOptions struct {
 	StepScale float64 `json:"step_scale"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		EnablePocketConditioning respjson.Field
-		RecyclingSteps           respjson.Field
-		SamplingSteps            respjson.Field
-		StepScale                respjson.Field
-		ExtraFields              map[string]respjson.Field
-		raw                      string
+		RecyclingSteps respjson.Field
+		SamplingSteps  respjson.Field
+		StepScale      respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
 	} `json:"-"`
 }
 
@@ -2695,9 +2691,6 @@ func (r *PredictionStructureAndBindingStartResponseInputConstraintContactConstra
 }
 
 type PredictionStructureAndBindingStartResponseInputModelOptions struct {
-	// Use the provided pocket constraint as input conditioning during affinity
-	// prediction.
-	EnablePocketConditioning bool `json:"enable_pocket_conditioning"`
 	// The number of recycling steps to use for prediction. Default is 3.
 	RecyclingSteps int64 `json:"recycling_steps"`
 	// The number of sampling steps to use for prediction. Default is 200.
@@ -2707,12 +2700,11 @@ type PredictionStructureAndBindingStartResponseInputModelOptions struct {
 	StepScale float64 `json:"step_scale"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		EnablePocketConditioning respjson.Field
-		RecyclingSteps           respjson.Field
-		SamplingSteps            respjson.Field
-		StepScale                respjson.Field
-		ExtraFields              map[string]respjson.Field
-		raw                      string
+		RecyclingSteps respjson.Field
+		SamplingSteps  respjson.Field
+		StepScale      respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
 	} `json:"-"`
 }
 
@@ -3694,9 +3686,6 @@ func (r *PredictionStructureAndBindingEstimateCostParamsInputConstraintContactCo
 }
 
 type PredictionStructureAndBindingEstimateCostParamsInputModelOptions struct {
-	// Use the provided pocket constraint as input conditioning during affinity
-	// prediction.
-	EnablePocketConditioning param.Opt[bool] `json:"enable_pocket_conditioning,omitzero"`
 	// The number of recycling steps to use for prediction. Default is 3.
 	RecyclingSteps param.Opt[int64] `json:"recycling_steps,omitzero"`
 	// The number of sampling steps to use for prediction. Default is 200.
@@ -4338,9 +4327,6 @@ func (r *PredictionStructureAndBindingStartParamsInputConstraintContactConstrain
 }
 
 type PredictionStructureAndBindingStartParamsInputModelOptions struct {
-	// Use the provided pocket constraint as input conditioning during affinity
-	// prediction.
-	EnablePocketConditioning param.Opt[bool] `json:"enable_pocket_conditioning,omitzero"`
 	// The number of recycling steps to use for prediction. Default is 3.
 	RecyclingSteps param.Opt[int64] `json:"recycling_steps,omitzero"`
 	// The number of sampling steps to use for prediction. Default is 200.

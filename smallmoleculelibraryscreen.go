@@ -284,9 +284,6 @@ type SmallMoleculeLibraryScreenGetResponseInputTarget struct {
 	// Structural constraints (pocket and contact). Atom-level ligand references
 	// currently support ligand_ccd only; ligand_smiles is unsupported.
 	Constraints []SmallMoleculeLibraryScreenGetResponseInputTargetConstraintUnion `json:"constraints"`
-	// When true, pocket_residues are also sent as a forced Boltz2 pocket constraint
-	// while scoring candidate molecules. Defaults to false.
-	EnablePocketConditioning bool `json:"enable_pocket_conditioning"`
 	// Binding pocket residues, keyed by chain ID. Each key is a chain ID (e.g. "A")
 	// and the value is an array of 0-indexed residue indices that define the binding
 	// pocket on that chain. When provided, these residues guide pocket extraction and
@@ -305,15 +302,14 @@ type SmallMoleculeLibraryScreenGetResponseInputTarget struct {
 	Type string `json:"type"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Entities                 respjson.Field
-		Bonds                    respjson.Field
-		Constraints              respjson.Field
-		EnablePocketConditioning respjson.Field
-		PocketResidues           respjson.Field
-		ReferenceLigands         respjson.Field
-		Type                     respjson.Field
-		ExtraFields              map[string]respjson.Field
-		raw                      string
+		Entities         respjson.Field
+		Bonds            respjson.Field
+		Constraints      respjson.Field
+		PocketResidues   respjson.Field
+		ReferenceLigands respjson.Field
+		Type             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
 	} `json:"-"`
 }
 
@@ -2069,9 +2065,6 @@ type SmallMoleculeLibraryScreenStartResponseInputTarget struct {
 	// Structural constraints (pocket and contact). Atom-level ligand references
 	// currently support ligand_ccd only; ligand_smiles is unsupported.
 	Constraints []SmallMoleculeLibraryScreenStartResponseInputTargetConstraintUnion `json:"constraints"`
-	// When true, pocket_residues are also sent as a forced Boltz2 pocket constraint
-	// while scoring candidate molecules. Defaults to false.
-	EnablePocketConditioning bool `json:"enable_pocket_conditioning"`
 	// Binding pocket residues, keyed by chain ID. Each key is a chain ID (e.g. "A")
 	// and the value is an array of 0-indexed residue indices that define the binding
 	// pocket on that chain. When provided, these residues guide pocket extraction and
@@ -2090,15 +2083,14 @@ type SmallMoleculeLibraryScreenStartResponseInputTarget struct {
 	Type string `json:"type"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Entities                 respjson.Field
-		Bonds                    respjson.Field
-		Constraints              respjson.Field
-		EnablePocketConditioning respjson.Field
-		PocketResidues           respjson.Field
-		ReferenceLigands         respjson.Field
-		Type                     respjson.Field
-		ExtraFields              map[string]respjson.Field
-		raw                      string
+		Entities         respjson.Field
+		Bonds            respjson.Field
+		Constraints      respjson.Field
+		PocketResidues   respjson.Field
+		ReferenceLigands respjson.Field
+		Type             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
 	} `json:"-"`
 }
 
@@ -3435,9 +3427,6 @@ type SmallMoleculeLibraryScreenStopResponseInputTarget struct {
 	// Structural constraints (pocket and contact). Atom-level ligand references
 	// currently support ligand_ccd only; ligand_smiles is unsupported.
 	Constraints []SmallMoleculeLibraryScreenStopResponseInputTargetConstraintUnion `json:"constraints"`
-	// When true, pocket_residues are also sent as a forced Boltz2 pocket constraint
-	// while scoring candidate molecules. Defaults to false.
-	EnablePocketConditioning bool `json:"enable_pocket_conditioning"`
 	// Binding pocket residues, keyed by chain ID. Each key is a chain ID (e.g. "A")
 	// and the value is an array of 0-indexed residue indices that define the binding
 	// pocket on that chain. When provided, these residues guide pocket extraction and
@@ -3456,15 +3445,14 @@ type SmallMoleculeLibraryScreenStopResponseInputTarget struct {
 	Type string `json:"type"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Entities                 respjson.Field
-		Bonds                    respjson.Field
-		Constraints              respjson.Field
-		EnablePocketConditioning respjson.Field
-		PocketResidues           respjson.Field
-		ReferenceLigands         respjson.Field
-		Type                     respjson.Field
-		ExtraFields              map[string]respjson.Field
-		raw                      string
+		Entities         respjson.Field
+		Bonds            respjson.Field
+		Constraints      respjson.Field
+		PocketResidues   respjson.Field
+		ReferenceLigands respjson.Field
+		Type             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
 	} `json:"-"`
 }
 
@@ -4756,9 +4744,6 @@ type SmallMoleculeLibraryScreenEstimateCostParamsTarget struct {
 	// Protein entities defining the target structure. Each entity represents a protein
 	// chain.
 	Entities []SmallMoleculeLibraryScreenEstimateCostParamsTargetEntity `json:"entities,omitzero" api:"required"`
-	// When true, pocket_residues are also sent as a forced Boltz2 pocket constraint
-	// while scoring candidate molecules. Defaults to false.
-	EnablePocketConditioning param.Opt[bool] `json:"enable_pocket_conditioning,omitzero"`
 	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
 	// references currently support ligand_ccd only; ligand_smiles is unsupported.
 	Bonds []SmallMoleculeLibraryScreenEstimateCostParamsTargetBond `json:"bonds,omitzero"`
@@ -5622,9 +5607,6 @@ type SmallMoleculeLibraryScreenStartParamsTarget struct {
 	// Protein entities defining the target structure. Each entity represents a protein
 	// chain.
 	Entities []SmallMoleculeLibraryScreenStartParamsTargetEntity `json:"entities,omitzero" api:"required"`
-	// When true, pocket_residues are also sent as a forced Boltz2 pocket constraint
-	// while scoring candidate molecules. Defaults to false.
-	EnablePocketConditioning param.Opt[bool] `json:"enable_pocket_conditioning,omitzero"`
 	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
 	// references currently support ligand_ccd only; ligand_smiles is unsupported.
 	Bonds []SmallMoleculeLibraryScreenStartParamsTargetBond `json:"bonds,omitzero"`

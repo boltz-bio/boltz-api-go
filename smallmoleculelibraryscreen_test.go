@@ -145,7 +145,6 @@ func TestSmallMoleculeLibraryScreenEstimateCostWithOptionalParams(t *testing.T) 
 					Force:               boltzapi.Bool(true),
 				},
 			}},
-			EnablePocketConditioning: boltzapi.Bool(true),
 			PocketResidues: map[string][]int64{
 				"A": {42, 43, 44, 67, 68, 69},
 			},
@@ -260,7 +259,6 @@ func TestSmallMoleculeLibraryScreenStartWithOptionalParams(t *testing.T) {
 					Force:               boltzapi.Bool(true),
 				},
 			}},
-			EnablePocketConditioning: boltzapi.Bool(true),
 			PocketResidues: map[string][]int64{
 				"A": {42, 43, 44, 67, 68, 69},
 			},
