@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.18.0 (2026-05-26)
+
+Full Changelog: [v0.17.1...v0.18.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.17.1...v0.18.0)
+
+### Features
+
+* Add Boltz2 templates to compute API ([ddb1515](https://github.com/boltz-bio/boltz-api-go/commit/ddb1515e0609151532146b8b5b2b1b82e36d1fb2))
+
 ## 0.17.1 (2026-05-26)
 
 Full Changelog: [v0.17.0...v0.17.1](https://github.com/boltz-bio/boltz-api-go/compare/v0.17.0...v0.17.1)
