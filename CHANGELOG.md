@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.17.0 (2026-05-26)
+
+Full Changelog: [v0.16.0...v0.17.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.16.0...v0.17.0)
+
+### Features
+
+* **compute-api:** add protein redesign endpoint ([be2a559](https://github.com/boltz-bio/boltz-api-go/commit/be2a5595e8aa8d7bb13895dbbb7e9fa8c18f1931))
+
 ## 0.16.0 (2026-05-25)
 
 Full Changelog: [v0.15.2...v0.16.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.15.2...v0.16.0)
