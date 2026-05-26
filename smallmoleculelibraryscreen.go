@@ -1702,8 +1702,8 @@ func (r *SmallMoleculeLibraryScreenEstimateCostResponse) UnmarshalJSON(data []by
 // Cost breakdown for the billed application.
 type SmallMoleculeLibraryScreenEstimateCostResponseBreakdown struct {
 	// Any of "structure_and_binding", "small_molecule_design",
-	// "small_molecule_library_screen", "protein_design", "protein_library_screen",
-	// "adme".
+	// "small_molecule_library_screen", "protein_design", "protein_redesign",
+	// "protein_library_screen", "adme".
 	Application SmallMoleculeLibraryScreenEstimateCostResponseBreakdownApplication `json:"application" api:"required"`
 	// Estimated cost per displayed unit as a decimal string, rounded up to 4 decimal
 	// places. This may include token-size multipliers or generation overhead;
@@ -1736,6 +1736,7 @@ const (
 	SmallMoleculeLibraryScreenEstimateCostResponseBreakdownApplicationSmallMoleculeDesign        SmallMoleculeLibraryScreenEstimateCostResponseBreakdownApplication = "small_molecule_design"
 	SmallMoleculeLibraryScreenEstimateCostResponseBreakdownApplicationSmallMoleculeLibraryScreen SmallMoleculeLibraryScreenEstimateCostResponseBreakdownApplication = "small_molecule_library_screen"
 	SmallMoleculeLibraryScreenEstimateCostResponseBreakdownApplicationProteinDesign              SmallMoleculeLibraryScreenEstimateCostResponseBreakdownApplication = "protein_design"
+	SmallMoleculeLibraryScreenEstimateCostResponseBreakdownApplicationProteinRedesign            SmallMoleculeLibraryScreenEstimateCostResponseBreakdownApplication = "protein_redesign"
 	SmallMoleculeLibraryScreenEstimateCostResponseBreakdownApplicationProteinLibraryScreen       SmallMoleculeLibraryScreenEstimateCostResponseBreakdownApplication = "protein_library_screen"
 	SmallMoleculeLibraryScreenEstimateCostResponseBreakdownApplicationAdme                       SmallMoleculeLibraryScreenEstimateCostResponseBreakdownApplication = "adme"
 )

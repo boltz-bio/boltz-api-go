@@ -72,8 +72,8 @@ type AdminUsageListResponse struct {
 	Quantity  int64     `json:"quantity" api:"required"`
 	StartTime time.Time `json:"start_time" api:"required" format:"date-time"`
 	// Any of "structure_and_binding", "small_molecule_design",
-	// "small_molecule_library_screen", "protein_design", "protein_library_screen",
-	// "adme".
+	// "small_molecule_library_screen", "protein_design", "protein_redesign",
+	// "protein_library_screen", "adme".
 	Application AdminUsageListResponseApplication `json:"application"`
 	// Present when grouped by workspace_id
 	WorkspaceID string `json:"workspace_id"`
@@ -102,6 +102,7 @@ const (
 	AdminUsageListResponseApplicationSmallMoleculeDesign        AdminUsageListResponseApplication = "small_molecule_design"
 	AdminUsageListResponseApplicationSmallMoleculeLibraryScreen AdminUsageListResponseApplication = "small_molecule_library_screen"
 	AdminUsageListResponseApplicationProteinDesign              AdminUsageListResponseApplication = "protein_design"
+	AdminUsageListResponseApplicationProteinRedesign            AdminUsageListResponseApplication = "protein_redesign"
 	AdminUsageListResponseApplicationProteinLibraryScreen       AdminUsageListResponseApplication = "protein_library_screen"
 	AdminUsageListResponseApplicationAdme                       AdminUsageListResponseApplication = "adme"
 )
@@ -166,6 +167,7 @@ const (
 	AdminUsageListParamsApplicationsStringSmallMoleculeDesign        AdminUsageListParamsApplicationsString = "small_molecule_design"
 	AdminUsageListParamsApplicationsStringSmallMoleculeLibraryScreen AdminUsageListParamsApplicationsString = "small_molecule_library_screen"
 	AdminUsageListParamsApplicationsStringProteinDesign              AdminUsageListParamsApplicationsString = "protein_design"
+	AdminUsageListParamsApplicationsStringProteinRedesign            AdminUsageListParamsApplicationsString = "protein_redesign"
 	AdminUsageListParamsApplicationsStringProteinLibraryScreen       AdminUsageListParamsApplicationsString = "protein_library_screen"
 	AdminUsageListParamsApplicationsStringAdme                       AdminUsageListParamsApplicationsString = "adme"
 )
@@ -177,6 +179,7 @@ const (
 	AdminUsageListParamsApplicationsArrayItemSmallMoleculeDesign        AdminUsageListParamsApplicationsArrayItem = "small_molecule_design"
 	AdminUsageListParamsApplicationsArrayItemSmallMoleculeLibraryScreen AdminUsageListParamsApplicationsArrayItem = "small_molecule_library_screen"
 	AdminUsageListParamsApplicationsArrayItemProteinDesign              AdminUsageListParamsApplicationsArrayItem = "protein_design"
+	AdminUsageListParamsApplicationsArrayItemProteinRedesign            AdminUsageListParamsApplicationsArrayItem = "protein_redesign"
 	AdminUsageListParamsApplicationsArrayItemProteinLibraryScreen       AdminUsageListParamsApplicationsArrayItem = "protein_library_screen"
 	AdminUsageListParamsApplicationsArrayItemAdme                       AdminUsageListParamsApplicationsArrayItem = "adme"
 )
