@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.17.1 (2026-05-26)
+
+Full Changelog: [v0.17.0...v0.17.1](https://github.com/boltz-bio/boltz-api-go/compare/v0.17.0...v0.17.1)
+
+### Bug Fixes
+
+* **compute-api:** gate pocket conditioning schemas ([99d8795](https://github.com/boltz-bio/boltz-api-go/commit/99d8795879ff2e4fa6e2b9fb29afcb44c1fa7584))
+
 ## 0.17.0 (2026-05-26)
 
 Full Changelog: [v0.16.0...v0.17.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.16.0...v0.17.0)
