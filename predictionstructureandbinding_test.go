@@ -109,14 +109,24 @@ func TestPredictionStructureAndBindingEstimateCostWithOptionalParams(t *testing.
 	_, err := client.Predictions.StructureAndBinding.EstimateCost(context.TODO(), boltzapi.PredictionStructureAndBindingEstimateCostParams{
 		Input: boltzapi.PredictionStructureAndBindingEstimateCostParamsInput{
 			Entities: []boltzapi.PredictionStructureAndBindingEstimateCostParamsInputEntityUnion{{
-				OfPredictionStructureAndBindingEstimateCostsInputEntityProteinEntity: &boltzapi.PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntity{
+				OfPredictionStructureAndBindingEstimateCostsInputEntityBoltz2ProteinEntity: &boltzapi.PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntity{
 					ChainIDs: []string{"string"},
 					Value:    "value",
 					Cyclic:   boltzapi.Bool(true),
-					Modifications: []boltzapi.PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModification{{
+					Modifications: []boltzapi.PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityModification{{
 						ResidueIndex: 0,
 						Value:        "value",
 					}},
+					Msa: boltzapi.PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaUnion{
+						OfPredictionStructureAndBindingEstimateCostsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsa: &boltzapi.PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsa{
+							Format: boltzapi.PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaFormatA3m,
+							Source: boltzapi.PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceUnion{
+								OfPredictionStructureAndBindingEstimateCostsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceURLSource: &boltzapi.PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceURLSource{
+									URL: "https://example.com",
+								},
+							},
+						},
+					},
 				},
 			}},
 			Binding: boltzapi.PredictionStructureAndBindingEstimateCostParamsInputBindingUnion{
@@ -200,14 +210,24 @@ func TestPredictionStructureAndBindingStartWithOptionalParams(t *testing.T) {
 	_, err := client.Predictions.StructureAndBinding.Start(context.TODO(), boltzapi.PredictionStructureAndBindingStartParams{
 		Input: boltzapi.PredictionStructureAndBindingStartParamsInput{
 			Entities: []boltzapi.PredictionStructureAndBindingStartParamsInputEntityUnion{{
-				OfPredictionStructureAndBindingStartsInputEntityProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityProteinEntity{
+				OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntity{
 					ChainIDs: []string{"string"},
 					Value:    "value",
 					Cyclic:   boltzapi.Bool(true),
-					Modifications: []boltzapi.PredictionStructureAndBindingStartParamsInputEntityProteinEntityModification{{
+					Modifications: []boltzapi.PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityModification{{
 						ResidueIndex: 0,
 						Value:        "value",
 					}},
+					Msa: boltzapi.PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaUnion{
+						OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsa: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsa{
+							Format: boltzapi.PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaFormatA3m,
+							Source: boltzapi.PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceUnion{
+								OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceURLSource: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceURLSource{
+									URL: "https://example.com",
+								},
+							},
+						},
+					},
 				},
 			}},
 			Binding: boltzapi.PredictionStructureAndBindingStartParamsInputBindingUnion{

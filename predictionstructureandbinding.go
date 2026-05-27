@@ -232,7 +232,7 @@ func (r *PredictionStructureAndBindingGetResponseInput) UnmarshalJSON(data []byt
 
 // PredictionStructureAndBindingGetResponseInputEntityUnion contains all possible
 // properties and values from
-// [PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponse],
+// [PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponse],
 // [PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponse],
 // [PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponse],
 // [PredictionStructureAndBindingGetResponseInputEntityLigandCcdEntityResponse],
@@ -245,21 +245,25 @@ type PredictionStructureAndBindingGetResponseInputEntityUnion struct {
 	Value    string   `json:"value"`
 	Cyclic   bool     `json:"cyclic"`
 	// This field is a union of
-	// [[]PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModification],
+	// [[]PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseModification],
 	// [[]PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModification],
 	// [[]PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModification]
 	Modifications PredictionStructureAndBindingGetResponseInputEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponse].
+	Msa  PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaUnion `json:"msa"`
+	JSON struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Msa           respjson.Field
 		raw           string
 	} `json:"-"`
 }
 
-func (u PredictionStructureAndBindingGetResponseInputEntityUnion) AsPredictionStructureAndBindingGetResponseInputEntityProteinEntityResponse() (v PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponse) {
+func (u PredictionStructureAndBindingGetResponseInputEntityUnion) AsPredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponse() (v PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -301,14 +305,14 @@ func (r *PredictionStructureAndBindingGetResponseInputEntityUnion) UnmarshalJSON
 //
 // If the underlying value is not a json object, one of the following properties
 // will be valid:
-// OfPredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModifications
+// OfPredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseModifications
 // OfPredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModifications
 // OfPredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModifications]
 type PredictionStructureAndBindingGetResponseInputEntityUnionModifications struct {
 	// This field will be present if the value is a
-	// [[]PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModification]
+	// [[]PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseModification]
 	// instead of an object.
-	OfPredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModifications []PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModification `json:",inline"`
+	OfPredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseModifications []PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseModification `json:",inline"`
 	// This field will be present if the value is a
 	// [[]PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModification]
 	// instead of an object.
@@ -318,10 +322,10 @@ type PredictionStructureAndBindingGetResponseInputEntityUnionModifications struc
 	// instead of an object.
 	OfPredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModifications []PredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModification `json:",inline"`
 	JSON                                                                                struct {
-		OfPredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModifications respjson.Field
-		OfPredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModifications     respjson.Field
-		OfPredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModifications     respjson.Field
-		raw                                                                                     string
+		OfPredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseModifications respjson.Field
+		OfPredictionStructureAndBindingGetResponseInputEntityRnaEntityResponseModifications           respjson.Field
+		OfPredictionStructureAndBindingGetResponseInputEntityDnaEntityResponseModifications           respjson.Field
+		raw                                                                                           string
 	} `json:"-"`
 }
 
@@ -329,7 +333,7 @@ func (r *PredictionStructureAndBindingGetResponseInputEntityUnionModifications) 
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponse struct {
+type PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponse struct {
 	// Chain IDs for this entity
 	ChainIDs []string         `json:"chain_ids" api:"required"`
 	Type     constant.Protein `json:"type" default:"protein"`
@@ -339,7 +343,10 @@ type PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponse st
 	Cyclic bool `json:"cyclic"`
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
-	Modifications []PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModification `json:"modifications"`
+	Modifications []PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseModification `json:"modifications"`
+	// Optional protein MSA control. Omit to use automatic MSA generation; use custom
+	// for user-provided A3M/CSV; use empty for single-sequence mode.
+	Msa PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaUnion `json:"msa"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainIDs      respjson.Field
@@ -347,20 +354,21 @@ type PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponse st
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Msa           respjson.Field
 		ExtraFields   map[string]respjson.Field
 		raw           string
 	} `json:"-"`
 }
 
 // Returns the unmodified JSON received from the API
-func (r PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponse) RawJSON() string {
+func (r PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponse) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModification struct {
+type PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64        `json:"residue_index" api:"required"`
 	Type         constant.Ccd `json:"type" default:"ccd"`
@@ -378,12 +386,136 @@ type PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseMod
 }
 
 // Returns the unmodified JSON received from the API
-func (r PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModification) RawJSON() string {
+func (r PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseModification) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *PredictionStructureAndBindingGetResponseInputEntityProteinEntityResponseModification) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaUnion
+// contains all possible properties and values from
+// [PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponse],
+// [PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2EmptyMsaResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaUnion struct {
+	// This field is from variant
+	// [PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponse].
+	Format PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseFormat `json:"format"`
+	// This field is from variant
+	// [PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponse].
+	Source PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseSource `json:"source"`
+	Type   string                                                                                                         `json:"type"`
+	JSON   struct {
+		Format respjson.Field
+		Source respjson.Field
+		Type   respjson.Field
+		raw    string
+	} `json:"-"`
+}
+
+func (u PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaUnion) AsPredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponse() (v PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaUnion) AsPredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2EmptyMsaResponse() (v PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2EmptyMsaResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Custom MSA file to use for this protein entity.
+type PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponse struct {
+	// Custom MSA file format. Boltz supports A3M and CSV MSA files.
+	//
+	// Any of "a3m", "csv".
+	Format PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseFormat `json:"format" api:"required"`
+	Source PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseSource `json:"source" api:"required"`
+	Type   constant.Custom                                                                                                `json:"type" default:"custom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Format      respjson.Field
+		Source      respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Custom MSA file format. Boltz supports A3M and CSV MSA files.
+type PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseFormat string
+
+const (
+	PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseFormatA3m PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseFormat = "a3m"
+	PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseFormatCsv PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseFormat = "csv"
+)
+
+type PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseSource struct {
+	// URL to download the file
+	URL string `json:"url" api:"required" format:"uri"`
+	// When the presigned URL expires
+	URLExpiresAt time.Time `json:"url_expires_at" api:"required" format:"date-time"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		URL          respjson.Field
+		URLExpiresAt respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseSource) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseSource) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Run this protein entity in single-sequence mode without an MSA.
+type PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2EmptyMsaResponse struct {
+	Type constant.Empty `json:"type" default:"empty"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2EmptyMsaResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2EmptyMsaResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Custom MSA file format. Boltz supports A3M and CSV MSA files.
+type PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaFormat string
+
+const (
+	PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaFormatA3m PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaFormat = "a3m"
+	PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaFormatCsv PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaFormat = "csv"
+)
 
 type PredictionStructureAndBindingGetResponseInputEntityRnaEntityResponse struct {
 	// Chain IDs for this entity
@@ -1916,7 +2048,7 @@ func (r *PredictionStructureAndBindingStartResponseInput) UnmarshalJSON(data []b
 
 // PredictionStructureAndBindingStartResponseInputEntityUnion contains all possible
 // properties and values from
-// [PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponse],
+// [PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponse],
 // [PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponse],
 // [PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponse],
 // [PredictionStructureAndBindingStartResponseInputEntityLigandCcdEntityResponse],
@@ -1929,21 +2061,25 @@ type PredictionStructureAndBindingStartResponseInputEntityUnion struct {
 	Value    string   `json:"value"`
 	Cyclic   bool     `json:"cyclic"`
 	// This field is a union of
-	// [[]PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModification],
+	// [[]PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseModification],
 	// [[]PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModification],
 	// [[]PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModification]
 	Modifications PredictionStructureAndBindingStartResponseInputEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponse].
+	Msa  PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaUnion `json:"msa"`
+	JSON struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Msa           respjson.Field
 		raw           string
 	} `json:"-"`
 }
 
-func (u PredictionStructureAndBindingStartResponseInputEntityUnion) AsPredictionStructureAndBindingStartResponseInputEntityProteinEntityResponse() (v PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponse) {
+func (u PredictionStructureAndBindingStartResponseInputEntityUnion) AsPredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponse() (v PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1988,14 +2124,14 @@ func (r *PredictionStructureAndBindingStartResponseInputEntityUnion) UnmarshalJS
 //
 // If the underlying value is not a json object, one of the following properties
 // will be valid:
-// OfPredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModifications
+// OfPredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseModifications
 // OfPredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModifications
 // OfPredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModifications]
 type PredictionStructureAndBindingStartResponseInputEntityUnionModifications struct {
 	// This field will be present if the value is a
-	// [[]PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModification]
+	// [[]PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseModification]
 	// instead of an object.
-	OfPredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModifications []PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModification `json:",inline"`
+	OfPredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseModifications []PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseModification `json:",inline"`
 	// This field will be present if the value is a
 	// [[]PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModification]
 	// instead of an object.
@@ -2005,10 +2141,10 @@ type PredictionStructureAndBindingStartResponseInputEntityUnionModifications str
 	// instead of an object.
 	OfPredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModifications []PredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModification `json:",inline"`
 	JSON                                                                                  struct {
-		OfPredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModifications respjson.Field
-		OfPredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModifications     respjson.Field
-		OfPredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModifications     respjson.Field
-		raw                                                                                       string
+		OfPredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseModifications respjson.Field
+		OfPredictionStructureAndBindingStartResponseInputEntityRnaEntityResponseModifications           respjson.Field
+		OfPredictionStructureAndBindingStartResponseInputEntityDnaEntityResponseModifications           respjson.Field
+		raw                                                                                             string
 	} `json:"-"`
 }
 
@@ -2016,7 +2152,7 @@ func (r *PredictionStructureAndBindingStartResponseInputEntityUnionModifications
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponse struct {
+type PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponse struct {
 	// Chain IDs for this entity
 	ChainIDs []string         `json:"chain_ids" api:"required"`
 	Type     constant.Protein `json:"type" default:"protein"`
@@ -2026,7 +2162,10 @@ type PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponse 
 	Cyclic bool `json:"cyclic"`
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
-	Modifications []PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModification `json:"modifications"`
+	Modifications []PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseModification `json:"modifications"`
+	// Optional protein MSA control. Omit to use automatic MSA generation; use custom
+	// for user-provided A3M/CSV; use empty for single-sequence mode.
+	Msa PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaUnion `json:"msa"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainIDs      respjson.Field
@@ -2034,20 +2173,21 @@ type PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponse 
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Msa           respjson.Field
 		ExtraFields   map[string]respjson.Field
 		raw           string
 	} `json:"-"`
 }
 
 // Returns the unmodified JSON received from the API
-func (r PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponse) RawJSON() string {
+func (r PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponse) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModification struct {
+type PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64        `json:"residue_index" api:"required"`
 	Type         constant.Ccd `json:"type" default:"ccd"`
@@ -2065,12 +2205,136 @@ type PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseM
 }
 
 // Returns the unmodified JSON received from the API
-func (r PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModification) RawJSON() string {
+func (r PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseModification) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *PredictionStructureAndBindingStartResponseInputEntityProteinEntityResponseModification) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaUnion
+// contains all possible properties and values from
+// [PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponse],
+// [PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2EmptyMsaResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaUnion struct {
+	// This field is from variant
+	// [PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponse].
+	Format PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseFormat `json:"format"`
+	// This field is from variant
+	// [PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponse].
+	Source PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseSource `json:"source"`
+	Type   string                                                                                                           `json:"type"`
+	JSON   struct {
+		Format respjson.Field
+		Source respjson.Field
+		Type   respjson.Field
+		raw    string
+	} `json:"-"`
+}
+
+func (u PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaUnion) AsPredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponse() (v PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaUnion) AsPredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2EmptyMsaResponse() (v PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2EmptyMsaResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Custom MSA file to use for this protein entity.
+type PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponse struct {
+	// Custom MSA file format. Boltz supports A3M and CSV MSA files.
+	//
+	// Any of "a3m", "csv".
+	Format PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseFormat `json:"format" api:"required"`
+	Source PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseSource `json:"source" api:"required"`
+	Type   constant.Custom                                                                                                  `json:"type" default:"custom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Format      respjson.Field
+		Source      respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Custom MSA file format. Boltz supports A3M and CSV MSA files.
+type PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseFormat string
+
+const (
+	PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseFormatA3m PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseFormat = "a3m"
+	PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseFormatCsv PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseFormat = "csv"
+)
+
+type PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseSource struct {
+	// URL to download the file
+	URL string `json:"url" api:"required" format:"uri"`
+	// When the presigned URL expires
+	URLExpiresAt time.Time `json:"url_expires_at" api:"required" format:"date-time"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		URL          respjson.Field
+		URLExpiresAt respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseSource) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseSource) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Run this protein entity in single-sequence mode without an MSA.
+type PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2EmptyMsaResponse struct {
+	Type constant.Empty `json:"type" default:"empty"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2EmptyMsaResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2EmptyMsaResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Custom MSA file format. Boltz supports A3M and CSV MSA files.
+type PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaFormat string
+
+const (
+	PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaFormatA3m PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaFormat = "a3m"
+	PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaFormatCsv PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaFormat = "csv"
+)
 
 type PredictionStructureAndBindingStartResponseInputEntityRnaEntityResponse struct {
 	// Chain IDs for this entity
@@ -3403,16 +3667,16 @@ func (r *PredictionStructureAndBindingEstimateCostParamsInput) UnmarshalJSON(dat
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type PredictionStructureAndBindingEstimateCostParamsInputEntityUnion struct {
-	OfPredictionStructureAndBindingEstimateCostsInputEntityProteinEntity      *PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntity      `json:",omitzero,inline"`
-	OfPredictionStructureAndBindingEstimateCostsInputEntityRnaEntity          *PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntity          `json:",omitzero,inline"`
-	OfPredictionStructureAndBindingEstimateCostsInputEntityDnaEntity          *PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntity          `json:",omitzero,inline"`
-	OfPredictionStructureAndBindingEstimateCostsInputEntityLigandCcdEntity    *PredictionStructureAndBindingEstimateCostParamsInputEntityLigandCcdEntity    `json:",omitzero,inline"`
-	OfPredictionStructureAndBindingEstimateCostsInputEntityLigandSmilesEntity *PredictionStructureAndBindingEstimateCostParamsInputEntityLigandSmilesEntity `json:",omitzero,inline"`
+	OfPredictionStructureAndBindingEstimateCostsInputEntityBoltz2ProteinEntity *PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntity `json:",omitzero,inline"`
+	OfPredictionStructureAndBindingEstimateCostsInputEntityRnaEntity           *PredictionStructureAndBindingEstimateCostParamsInputEntityRnaEntity           `json:",omitzero,inline"`
+	OfPredictionStructureAndBindingEstimateCostsInputEntityDnaEntity           *PredictionStructureAndBindingEstimateCostParamsInputEntityDnaEntity           `json:",omitzero,inline"`
+	OfPredictionStructureAndBindingEstimateCostsInputEntityLigandCcdEntity     *PredictionStructureAndBindingEstimateCostParamsInputEntityLigandCcdEntity     `json:",omitzero,inline"`
+	OfPredictionStructureAndBindingEstimateCostsInputEntityLigandSmilesEntity  *PredictionStructureAndBindingEstimateCostParamsInputEntityLigandSmilesEntity  `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u PredictionStructureAndBindingEstimateCostParamsInputEntityUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfPredictionStructureAndBindingEstimateCostsInputEntityProteinEntity,
+	return param.MarshalUnion(u, u.OfPredictionStructureAndBindingEstimateCostsInputEntityBoltz2ProteinEntity,
 		u.OfPredictionStructureAndBindingEstimateCostsInputEntityRnaEntity,
 		u.OfPredictionStructureAndBindingEstimateCostsInputEntityDnaEntity,
 		u.OfPredictionStructureAndBindingEstimateCostsInputEntityLigandCcdEntity,
@@ -3423,7 +3687,7 @@ func (u *PredictionStructureAndBindingEstimateCostParamsInputEntityUnion) Unmars
 }
 
 // The properties ChainIDs, Type, Value are required.
-type PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntity struct {
+type PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntity struct {
 	// Chain IDs for this entity
 	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
 	// Amino acid sequence (one-letter codes)
@@ -3432,22 +3696,25 @@ type PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntity str
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
-	Modifications []PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModification `json:"modifications,omitzero"`
+	Modifications []PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityModification `json:"modifications,omitzero"`
+	// Optional protein MSA control. Omit to use automatic MSA generation; use custom
+	// for user-provided A3M/CSV; use empty for single-sequence mode.
+	Msa PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaUnion `json:"msa,omitzero"`
 	// This field can be elided, and will marshal its zero value as "protein".
 	Type constant.Protein `json:"type" default:"protein"`
 	paramObj
 }
 
-func (r PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntity) MarshalJSON() (data []byte, err error) {
-	type shadow PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntity
+func (r PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntity) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntity
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntity) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntity) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties ResidueIndex, Type, Value are required.
-type PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModification struct {
+type PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64 `json:"residue_index" api:"required"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
@@ -3458,11 +3725,132 @@ type PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModi
 	paramObj
 }
 
-func (r PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModification) MarshalJSON() (data []byte, err error) {
-	type shadow PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModification
+func (r PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityModification
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *PredictionStructureAndBindingEstimateCostParamsInputEntityProteinEntityModification) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaUnion struct {
+	OfPredictionStructureAndBindingEstimateCostsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsa *PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsa `json:",omitzero,inline"`
+	OfPredictionStructureAndBindingEstimateCostsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa  *PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfPredictionStructureAndBindingEstimateCostsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsa, u.OfPredictionStructureAndBindingEstimateCostsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa)
+}
+func (u *PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// Custom MSA file to use for this protein entity.
+//
+// The properties Format, Source, Type are required.
+type PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsa struct {
+	// Custom MSA file format. Boltz supports A3M and CSV MSA files.
+	//
+	// Any of "a3m", "csv".
+	Format PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaFormat `json:"format,omitzero" api:"required"`
+	// How to provide a file to the API
+	Source PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceUnion `json:"source,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "custom".
+	Type constant.Custom `json:"type" default:"custom"`
+	paramObj
+}
+
+func (r PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsa) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsa
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsa) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Custom MSA file format. Boltz supports A3M and CSV MSA files.
+type PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaFormat string
+
+const (
+	PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaFormatA3m PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaFormat = "a3m"
+	PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaFormatCsv PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaFormat = "csv"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceUnion struct {
+	OfPredictionStructureAndBindingEstimateCostsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceURLSource    *PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceURLSource    `json:",omitzero,inline"`
+	OfPredictionStructureAndBindingEstimateCostsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceBase64Source *PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceBase64Source `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfPredictionStructureAndBindingEstimateCostsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceURLSource, u.OfPredictionStructureAndBindingEstimateCostsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceBase64Source)
+}
+func (u *PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// The properties Type, URL are required.
+type PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceURLSource struct {
+	URL string `json:"url" api:"required" format:"uri"`
+	// This field can be elided, and will marshal its zero value as "url".
+	Type constant.URL `json:"type" default:"url"`
+	paramObj
+}
+
+func (r PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceURLSource) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceURLSource
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceURLSource) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Data, MediaType, Type are required.
+type PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceBase64Source struct {
+	// Base64-encoded file contents
+	Data string `json:"data" api:"required"`
+	// MIME type (e.g., text/csv)
+	MediaType string `json:"media_type" api:"required"`
+	// This field can be elided, and will marshal its zero value as "base64".
+	Type constant.Base64 `json:"type" default:"base64"`
+	paramObj
+}
+
+func (r PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceBase64Source) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceBase64Source
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceBase64Source) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func NewPredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa() PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa {
+	return PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa{
+		Type: "empty",
+	}
+}
+
+// Run this protein entity in single-sequence mode without an MSA.
+//
+// This struct has a constant value, construct it with
+// [NewPredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa].
+type PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa struct {
+	Type constant.Empty `json:"type" default:"empty"`
+	paramObj
+}
+
+func (r PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -4165,16 +4553,16 @@ func (r *PredictionStructureAndBindingStartParamsInput) UnmarshalJSON(data []byt
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type PredictionStructureAndBindingStartParamsInputEntityUnion struct {
-	OfPredictionStructureAndBindingStartsInputEntityProteinEntity      *PredictionStructureAndBindingStartParamsInputEntityProteinEntity      `json:",omitzero,inline"`
-	OfPredictionStructureAndBindingStartsInputEntityRnaEntity          *PredictionStructureAndBindingStartParamsInputEntityRnaEntity          `json:",omitzero,inline"`
-	OfPredictionStructureAndBindingStartsInputEntityDnaEntity          *PredictionStructureAndBindingStartParamsInputEntityDnaEntity          `json:",omitzero,inline"`
-	OfPredictionStructureAndBindingStartsInputEntityLigandCcdEntity    *PredictionStructureAndBindingStartParamsInputEntityLigandCcdEntity    `json:",omitzero,inline"`
-	OfPredictionStructureAndBindingStartsInputEntityLigandSmilesEntity *PredictionStructureAndBindingStartParamsInputEntityLigandSmilesEntity `json:",omitzero,inline"`
+	OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntity *PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntity `json:",omitzero,inline"`
+	OfPredictionStructureAndBindingStartsInputEntityRnaEntity           *PredictionStructureAndBindingStartParamsInputEntityRnaEntity           `json:",omitzero,inline"`
+	OfPredictionStructureAndBindingStartsInputEntityDnaEntity           *PredictionStructureAndBindingStartParamsInputEntityDnaEntity           `json:",omitzero,inline"`
+	OfPredictionStructureAndBindingStartsInputEntityLigandCcdEntity     *PredictionStructureAndBindingStartParamsInputEntityLigandCcdEntity     `json:",omitzero,inline"`
+	OfPredictionStructureAndBindingStartsInputEntityLigandSmilesEntity  *PredictionStructureAndBindingStartParamsInputEntityLigandSmilesEntity  `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u PredictionStructureAndBindingStartParamsInputEntityUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfPredictionStructureAndBindingStartsInputEntityProteinEntity,
+	return param.MarshalUnion(u, u.OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntity,
 		u.OfPredictionStructureAndBindingStartsInputEntityRnaEntity,
 		u.OfPredictionStructureAndBindingStartsInputEntityDnaEntity,
 		u.OfPredictionStructureAndBindingStartsInputEntityLigandCcdEntity,
@@ -4185,7 +4573,7 @@ func (u *PredictionStructureAndBindingStartParamsInputEntityUnion) UnmarshalJSON
 }
 
 // The properties ChainIDs, Type, Value are required.
-type PredictionStructureAndBindingStartParamsInputEntityProteinEntity struct {
+type PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntity struct {
 	// Chain IDs for this entity
 	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
 	// Amino acid sequence (one-letter codes)
@@ -4194,22 +4582,25 @@ type PredictionStructureAndBindingStartParamsInputEntityProteinEntity struct {
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
-	Modifications []PredictionStructureAndBindingStartParamsInputEntityProteinEntityModification `json:"modifications,omitzero"`
+	Modifications []PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityModification `json:"modifications,omitzero"`
+	// Optional protein MSA control. Omit to use automatic MSA generation; use custom
+	// for user-provided A3M/CSV; use empty for single-sequence mode.
+	Msa PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaUnion `json:"msa,omitzero"`
 	// This field can be elided, and will marshal its zero value as "protein".
 	Type constant.Protein `json:"type" default:"protein"`
 	paramObj
 }
 
-func (r PredictionStructureAndBindingStartParamsInputEntityProteinEntity) MarshalJSON() (data []byte, err error) {
-	type shadow PredictionStructureAndBindingStartParamsInputEntityProteinEntity
+func (r PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntity) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntity
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *PredictionStructureAndBindingStartParamsInputEntityProteinEntity) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntity) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties ResidueIndex, Type, Value are required.
-type PredictionStructureAndBindingStartParamsInputEntityProteinEntityModification struct {
+type PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64 `json:"residue_index" api:"required"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
@@ -4220,11 +4611,132 @@ type PredictionStructureAndBindingStartParamsInputEntityProteinEntityModificatio
 	paramObj
 }
 
-func (r PredictionStructureAndBindingStartParamsInputEntityProteinEntityModification) MarshalJSON() (data []byte, err error) {
-	type shadow PredictionStructureAndBindingStartParamsInputEntityProteinEntityModification
+func (r PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityModification
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *PredictionStructureAndBindingStartParamsInputEntityProteinEntityModification) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaUnion struct {
+	OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsa *PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsa `json:",omitzero,inline"`
+	OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa  *PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsa, u.OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa)
+}
+func (u *PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// Custom MSA file to use for this protein entity.
+//
+// The properties Format, Source, Type are required.
+type PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsa struct {
+	// Custom MSA file format. Boltz supports A3M and CSV MSA files.
+	//
+	// Any of "a3m", "csv".
+	Format PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaFormat `json:"format,omitzero" api:"required"`
+	// How to provide a file to the API
+	Source PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceUnion `json:"source,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "custom".
+	Type constant.Custom `json:"type" default:"custom"`
+	paramObj
+}
+
+func (r PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsa) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsa
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsa) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Custom MSA file format. Boltz supports A3M and CSV MSA files.
+type PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaFormat string
+
+const (
+	PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaFormatA3m PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaFormat = "a3m"
+	PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaFormatCsv PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaFormat = "csv"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceUnion struct {
+	OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceURLSource    *PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceURLSource    `json:",omitzero,inline"`
+	OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceBase64Source *PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceBase64Source `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceURLSource, u.OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceBase64Source)
+}
+func (u *PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// The properties Type, URL are required.
+type PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceURLSource struct {
+	URL string `json:"url" api:"required" format:"uri"`
+	// This field can be elided, and will marshal its zero value as "url".
+	Type constant.URL `json:"type" default:"url"`
+	paramObj
+}
+
+func (r PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceURLSource) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceURLSource
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceURLSource) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Data, MediaType, Type are required.
+type PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceBase64Source struct {
+	// Base64-encoded file contents
+	Data string `json:"data" api:"required"`
+	// MIME type (e.g., text/csv)
+	MediaType string `json:"media_type" api:"required"`
+	// This field can be elided, and will marshal its zero value as "base64".
+	Type constant.Base64 `json:"type" default:"base64"`
+	paramObj
+}
+
+func (r PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceBase64Source) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceBase64Source
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaSourceBase64Source) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func NewPredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa() PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa {
+	return PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa{
+		Type: "empty",
+	}
+}
+
+// Run this protein entity in single-sequence mode without an MSA.
+//
+// This struct has a constant value, construct it with
+// [NewPredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa].
+type PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa struct {
+	Type constant.Empty `json:"type" default:"empty"`
+	paramObj
+}
+
+func (r PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

@@ -31,8 +31,10 @@ type BoltzSmScreen string                // Always "boltz-sm-screen"
 type Ccd string                          // Always "ccd"
 type ChemicalXCif string                 // Always "chemical/x-cif"
 type Contact string                      // Always "contact"
+type Custom string                       // Always "custom"
 type DesignedProtein string              // Always "designed_protein"
 type Dna string                          // Always "dna"
+type Empty string                        // Always "empty"
 type Failed string                       // Always "failed"
 type Insertion string                    // Always "insertion"
 type Lifetime string                     // Always "lifetime"
@@ -78,8 +80,10 @@ func (c BoltzSmScreen) Default() BoltzSmScreen               { return "boltz-sm-
 func (c Ccd) Default() Ccd                                   { return "ccd" }
 func (c ChemicalXCif) Default() ChemicalXCif                 { return "chemical/x-cif" }
 func (c Contact) Default() Contact                           { return "contact" }
+func (c Custom) Default() Custom                             { return "custom" }
 func (c DesignedProtein) Default() DesignedProtein           { return "designed_protein" }
 func (c Dna) Default() Dna                                   { return "dna" }
+func (c Empty) Default() Empty                               { return "empty" }
 func (c Failed) Default() Failed                             { return "failed" }
 func (c Insertion) Default() Insertion                       { return "insertion" }
 func (c Lifetime) Default() Lifetime                         { return "lifetime" }
@@ -129,8 +133,10 @@ func (c BoltzSmScreen) MarshalJSON() ([]byte, error)                { return mar
 func (c Ccd) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c ChemicalXCif) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c Contact) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c Custom) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c DesignedProtein) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c Dna) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c Empty) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c Failed) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Insertion) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c Lifetime) MarshalJSON() ([]byte, error)                     { return marshalString(c) }

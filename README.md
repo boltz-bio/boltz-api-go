@@ -28,7 +28,7 @@ Or to pin the version:
 <!-- x-release-please-start-version -->
 
 ```sh
-go get -u 'github.com/boltz-bio/boltz-api-go@v0.18.0'
+go get -u 'github.com/boltz-bio/boltz-api-go@v0.19.0'
 ```
 
 <!-- x-release-please-end -->
@@ -59,7 +59,7 @@ func main() {
 	response, err := client.Predictions.StructureAndBinding.Start(context.TODO(), boltzapi.PredictionStructureAndBindingStartParams{
 		Input: boltzapi.PredictionStructureAndBindingStartParamsInput{
 			Entities: []boltzapi.PredictionStructureAndBindingStartParamsInputEntityUnion{{
-				OfPredictionStructureAndBindingStartsInputEntityProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityProteinEntity{
+				OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntity{
 					ChainIDs: []string{"string"},
 					Value:    "value",
 				},
@@ -335,7 +335,7 @@ To handle errors, we recommend that you use the `errors.As` pattern:
 _, err := client.Predictions.StructureAndBinding.Start(context.TODO(), boltzapi.PredictionStructureAndBindingStartParams{
 	Input: boltzapi.PredictionStructureAndBindingStartParamsInput{
 		Entities: []boltzapi.PredictionStructureAndBindingStartParamsInputEntityUnion{{
-			OfPredictionStructureAndBindingStartsInputEntityProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityProteinEntity{
+			OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntity{
 				ChainIDs: []string{"string"},
 				Value:    "value",
 			},
@@ -372,7 +372,7 @@ client.Predictions.StructureAndBinding.Start(
 	boltzapi.PredictionStructureAndBindingStartParams{
 		Input: boltzapi.PredictionStructureAndBindingStartParamsInput{
 			Entities: []boltzapi.PredictionStructureAndBindingStartParamsInputEntityUnion{{
-				OfPredictionStructureAndBindingStartsInputEntityProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityProteinEntity{
+				OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntity{
 					ChainIDs: []string{"string"},
 					Value:    "value",
 				},
@@ -418,7 +418,7 @@ client.Predictions.StructureAndBinding.Start(
 	boltzapi.PredictionStructureAndBindingStartParams{
 		Input: boltzapi.PredictionStructureAndBindingStartParamsInput{
 			Entities: []boltzapi.PredictionStructureAndBindingStartParamsInputEntityUnion{{
-				OfPredictionStructureAndBindingStartsInputEntityProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityProteinEntity{
+				OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntity{
 					ChainIDs: []string{"string"},
 					Value:    "value",
 				},
@@ -443,7 +443,7 @@ response, err := client.Predictions.StructureAndBinding.Start(
 	boltzapi.PredictionStructureAndBindingStartParams{
 		Input: boltzapi.PredictionStructureAndBindingStartParamsInput{
 			Entities: []boltzapi.PredictionStructureAndBindingStartParamsInputEntityUnion{{
-				OfPredictionStructureAndBindingStartsInputEntityProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityProteinEntity{
+				OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntity{
 					ChainIDs: []string{"string"},
 					Value:    "value",
 				},

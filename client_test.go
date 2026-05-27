@@ -41,7 +41,7 @@ func TestUserAgentHeader(t *testing.T) {
 	_, _ = client.Predictions.StructureAndBinding.Start(context.Background(), boltzapi.PredictionStructureAndBindingStartParams{
 		Input: boltzapi.PredictionStructureAndBindingStartParamsInput{
 			Entities: []boltzapi.PredictionStructureAndBindingStartParamsInputEntityUnion{{
-				OfPredictionStructureAndBindingStartsInputEntityProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityProteinEntity{
+				OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntity{
 					ChainIDs: []string{"string"},
 					Value:    "value",
 				},
@@ -75,7 +75,7 @@ func TestRetryAfter(t *testing.T) {
 	_, err := client.Predictions.StructureAndBinding.Start(context.Background(), boltzapi.PredictionStructureAndBindingStartParams{
 		Input: boltzapi.PredictionStructureAndBindingStartParamsInput{
 			Entities: []boltzapi.PredictionStructureAndBindingStartParamsInputEntityUnion{{
-				OfPredictionStructureAndBindingStartsInputEntityProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityProteinEntity{
+				OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntity{
 					ChainIDs: []string{"string"},
 					Value:    "value",
 				},
@@ -120,7 +120,7 @@ func TestDeleteRetryCountHeader(t *testing.T) {
 	_, err := client.Predictions.StructureAndBinding.Start(context.Background(), boltzapi.PredictionStructureAndBindingStartParams{
 		Input: boltzapi.PredictionStructureAndBindingStartParamsInput{
 			Entities: []boltzapi.PredictionStructureAndBindingStartParamsInputEntityUnion{{
-				OfPredictionStructureAndBindingStartsInputEntityProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityProteinEntity{
+				OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntity{
 					ChainIDs: []string{"string"},
 					Value:    "value",
 				},
@@ -160,7 +160,7 @@ func TestOverwriteRetryCountHeader(t *testing.T) {
 	_, err := client.Predictions.StructureAndBinding.Start(context.Background(), boltzapi.PredictionStructureAndBindingStartParams{
 		Input: boltzapi.PredictionStructureAndBindingStartParamsInput{
 			Entities: []boltzapi.PredictionStructureAndBindingStartParamsInputEntityUnion{{
-				OfPredictionStructureAndBindingStartsInputEntityProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityProteinEntity{
+				OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntity{
 					ChainIDs: []string{"string"},
 					Value:    "value",
 				},
@@ -199,7 +199,7 @@ func TestRetryAfterMs(t *testing.T) {
 	_, err := client.Predictions.StructureAndBinding.Start(context.Background(), boltzapi.PredictionStructureAndBindingStartParams{
 		Input: boltzapi.PredictionStructureAndBindingStartParamsInput{
 			Entities: []boltzapi.PredictionStructureAndBindingStartParamsInputEntityUnion{{
-				OfPredictionStructureAndBindingStartsInputEntityProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityProteinEntity{
+				OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntity{
 					ChainIDs: []string{"string"},
 					Value:    "value",
 				},
@@ -232,7 +232,7 @@ func TestContextCancel(t *testing.T) {
 	_, err := client.Predictions.StructureAndBinding.Start(cancelCtx, boltzapi.PredictionStructureAndBindingStartParams{
 		Input: boltzapi.PredictionStructureAndBindingStartParamsInput{
 			Entities: []boltzapi.PredictionStructureAndBindingStartParamsInputEntityUnion{{
-				OfPredictionStructureAndBindingStartsInputEntityProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityProteinEntity{
+				OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntity{
 					ChainIDs: []string{"string"},
 					Value:    "value",
 				},
@@ -262,7 +262,7 @@ func TestContextCancelDelay(t *testing.T) {
 	_, err := client.Predictions.StructureAndBinding.Start(cancelCtx, boltzapi.PredictionStructureAndBindingStartParams{
 		Input: boltzapi.PredictionStructureAndBindingStartParamsInput{
 			Entities: []boltzapi.PredictionStructureAndBindingStartParamsInputEntityUnion{{
-				OfPredictionStructureAndBindingStartsInputEntityProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityProteinEntity{
+				OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntity{
 					ChainIDs: []string{"string"},
 					Value:    "value",
 				},
@@ -298,7 +298,7 @@ func TestContextDeadline(t *testing.T) {
 		_, err := client.Predictions.StructureAndBinding.Start(deadlineCtx, boltzapi.PredictionStructureAndBindingStartParams{
 			Input: boltzapi.PredictionStructureAndBindingStartParamsInput{
 				Entities: []boltzapi.PredictionStructureAndBindingStartParamsInputEntityUnion{{
-					OfPredictionStructureAndBindingStartsInputEntityProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityProteinEntity{
+					OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntity{
 						ChainIDs: []string{"string"},
 						Value:    "value",
 					},
