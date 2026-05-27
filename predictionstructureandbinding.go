@@ -23,7 +23,8 @@ import (
 )
 
 // Predict 3D structure coordinates, per-residue confidence scores, and binding
-// metrics for a molecular complex.
+// metrics for a molecular complex. Supports optional template-guided folding and
+// per-protein MSA control.
 //
 // PredictionStructureAndBindingService contains methods and other services that
 // help with interacting with the boltz API.
@@ -103,7 +104,10 @@ func (r *PredictionStructureAndBindingService) EstimateCost(ctx context.Context,
 }
 
 // Submit a prediction job that produces 3D structure coordinates and confidence
-// scores for the input molecular complex, with optional binding metrics.
+// scores for the input molecular complex, with optional binding metrics. Protein
+// entities can use automatic MSA generation, custom A3M/CSV MSAs, or empty MSA
+// mode. Boltz-2.1 predictions can also include up to 4 CIF or PDB templates to
+// guide protein-chain geometry.
 func (r *PredictionStructureAndBindingService) Start(ctx context.Context, body PredictionStructureAndBindingStartParams, opts ...option.RequestOption) (res *PredictionStructureAndBindingStartResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "compute/v1/predictions/structure-and-binding"
@@ -208,7 +212,9 @@ type PredictionStructureAndBindingGetResponseInput struct {
 	// Number of structure samples to generate
 	NumSamples int64 `json:"num_samples"`
 	// Template structure files to guide protein-chain prediction. Supports up to 4 CIF
-	// or PDB templates from HTTPS URLs or base64 uploads.
+	// or PDB templates from HTTPS URLs or base64 uploads. Use chain_id and template_id
+	// to map request chains to template chains when the IDs differ or when providing
+	// multi-chain templates.
 	Templates []PredictionStructureAndBindingGetResponseInputTemplate `json:"templates"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -344,8 +350,10 @@ type PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityRespo
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
 	Modifications []PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseModification `json:"modifications"`
-	// Optional protein MSA control. Omit to use automatic MSA generation; use custom
-	// for user-provided A3M/CSV; use empty for single-sequence mode.
+	// Optional protein MSA control. Omit msa on all protein entities to use automatic
+	// MSA generation. Use custom for user-provided A3M/CSV files, or empty for
+	// single-sequence mode. Custom MSA and automatic MSA cannot be mixed in one
+	// request.
 	Msa PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaUnion `json:"msa"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -434,9 +442,12 @@ func (r *PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityR
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Custom MSA file to use for this protein entity.
+// Use a user-provided MSA for this protein entity. If any protein entity uses a
+// custom MSA, every other protein entity must use either custom or empty MSA;
+// automatic MSA generation cannot be mixed with custom MSAs in the same request.
 type PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponse struct {
-	// Custom MSA file format. Boltz supports A3M and CSV MSA files.
+	// Custom MSA file format. Base64 uploads must use media_type text/x-a3m for A3M or
+	// text/csv for CSV.
 	//
 	// Any of "a3m", "csv".
 	Format PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseFormat `json:"format" api:"required"`
@@ -460,7 +471,8 @@ func (r *PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityR
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Custom MSA file format. Boltz supports A3M and CSV MSA files.
+// Custom MSA file format. Base64 uploads must use media_type text/x-a3m for A3M or
+// text/csv for CSV.
 type PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseFormat string
 
 const (
@@ -490,7 +502,9 @@ func (r *PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityR
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Run this protein entity in single-sequence mode without an MSA.
+// Run this protein entity in single-sequence mode without an MSA. Use this for
+// chains that should not use automatic MSA generation, including non-homologous
+// chains in a request that also includes custom MSAs.
 type PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2EmptyMsaResponse struct {
 	Type constant.Empty `json:"type" default:"empty"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -509,7 +523,8 @@ func (r *PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityR
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Custom MSA file format. Boltz supports A3M and CSV MSA files.
+// Custom MSA file format. Base64 uploads must use media_type text/x-a3m for A3M or
+// text/csv for CSV.
 type PredictionStructureAndBindingGetResponseInputEntityBoltz2ProteinEntityResponseMsaFormat string
 
 const (
@@ -1308,17 +1323,24 @@ func (r *PredictionStructureAndBindingGetResponseInputModelOptions) UnmarshalJSO
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Template structure used as an inference-time guide for Boltz-2.1 protein-chain
+// geometry. Provide a CIF or PDB file from an HTTPS URL or base64 upload.
 type PredictionStructureAndBindingGetResponseInputTemplate struct {
-	// Template structure format. Base64 sources must use a matching media_type.
+	// Template structure format. Base64 uploads must use media_type chemical/x-cif for
+	// CIF or chemical/x-pdb for PDB.
 	//
 	// Any of "cif", "pdb".
 	Format PredictionStructureAndBindingGetResponseInputTemplateFormat `json:"format" api:"required"`
 	Source PredictionStructureAndBindingGetResponseInputTemplateSource `json:"source" api:"required"`
-	// One query/template chain ID, or an ordered list of chain IDs.
+	// One chain ID, or an ordered list of chain IDs for multi-chain templates. For
+	// chain_id, values refer to input chains; for template_id, values refer to chains
+	// in the template file.
 	ChainID PredictionStructureAndBindingGetResponseInputTemplateChainIDUnion `json:"chain_id"`
 	// Force the template alignment within threshold.
 	Force bool `json:"force"`
-	// One query/template chain ID, or an ordered list of chain IDs.
+	// One chain ID, or an ordered list of chain IDs for multi-chain templates. For
+	// chain_id, values refer to input chains; for template_id, values refer to chains
+	// in the template file.
 	TemplateID PredictionStructureAndBindingGetResponseInputTemplateTemplateIDUnion `json:"template_id"`
 	// Distance threshold in angstroms used when force is true.
 	Threshold float64 `json:"threshold"`
@@ -1341,7 +1363,8 @@ func (r *PredictionStructureAndBindingGetResponseInputTemplate) UnmarshalJSON(da
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Template structure format. Base64 sources must use a matching media_type.
+// Template structure format. Base64 uploads must use media_type chemical/x-cif for
+// CIF or chemical/x-pdb for PDB.
 type PredictionStructureAndBindingGetResponseInputTemplateFormat string
 
 const (
@@ -2024,7 +2047,9 @@ type PredictionStructureAndBindingStartResponseInput struct {
 	// Number of structure samples to generate
 	NumSamples int64 `json:"num_samples"`
 	// Template structure files to guide protein-chain prediction. Supports up to 4 CIF
-	// or PDB templates from HTTPS URLs or base64 uploads.
+	// or PDB templates from HTTPS URLs or base64 uploads. Use chain_id and template_id
+	// to map request chains to template chains when the IDs differ or when providing
+	// multi-chain templates.
 	Templates []PredictionStructureAndBindingStartResponseInputTemplate `json:"templates"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -2163,8 +2188,10 @@ type PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityRes
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
 	Modifications []PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseModification `json:"modifications"`
-	// Optional protein MSA control. Omit to use automatic MSA generation; use custom
-	// for user-provided A3M/CSV; use empty for single-sequence mode.
+	// Optional protein MSA control. Omit msa on all protein entities to use automatic
+	// MSA generation. Use custom for user-provided A3M/CSV files, or empty for
+	// single-sequence mode. Custom MSA and automatic MSA cannot be mixed in one
+	// request.
 	Msa PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaUnion `json:"msa"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -2253,9 +2280,12 @@ func (r *PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntit
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Custom MSA file to use for this protein entity.
+// Use a user-provided MSA for this protein entity. If any protein entity uses a
+// custom MSA, every other protein entity must use either custom or empty MSA;
+// automatic MSA generation cannot be mixed with custom MSAs in the same request.
 type PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponse struct {
-	// Custom MSA file format. Boltz supports A3M and CSV MSA files.
+	// Custom MSA file format. Base64 uploads must use media_type text/x-a3m for A3M or
+	// text/csv for CSV.
 	//
 	// Any of "a3m", "csv".
 	Format PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseFormat `json:"format" api:"required"`
@@ -2279,7 +2309,8 @@ func (r *PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntit
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Custom MSA file format. Boltz supports A3M and CSV MSA files.
+// Custom MSA file format. Base64 uploads must use media_type text/x-a3m for A3M or
+// text/csv for CSV.
 type PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2CustomMsaResponseFormat string
 
 const (
@@ -2309,7 +2340,9 @@ func (r *PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntit
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Run this protein entity in single-sequence mode without an MSA.
+// Run this protein entity in single-sequence mode without an MSA. Use this for
+// chains that should not use automatic MSA generation, including non-homologous
+// chains in a request that also includes custom MSAs.
 type PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaBoltz2EmptyMsaResponse struct {
 	Type constant.Empty `json:"type" default:"empty"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -2328,7 +2361,8 @@ func (r *PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntit
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Custom MSA file format. Boltz supports A3M and CSV MSA files.
+// Custom MSA file format. Base64 uploads must use media_type text/x-a3m for A3M or
+// text/csv for CSV.
 type PredictionStructureAndBindingStartResponseInputEntityBoltz2ProteinEntityResponseMsaFormat string
 
 const (
@@ -3127,17 +3161,24 @@ func (r *PredictionStructureAndBindingStartResponseInputModelOptions) UnmarshalJ
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Template structure used as an inference-time guide for Boltz-2.1 protein-chain
+// geometry. Provide a CIF or PDB file from an HTTPS URL or base64 upload.
 type PredictionStructureAndBindingStartResponseInputTemplate struct {
-	// Template structure format. Base64 sources must use a matching media_type.
+	// Template structure format. Base64 uploads must use media_type chemical/x-cif for
+	// CIF or chemical/x-pdb for PDB.
 	//
 	// Any of "cif", "pdb".
 	Format PredictionStructureAndBindingStartResponseInputTemplateFormat `json:"format" api:"required"`
 	Source PredictionStructureAndBindingStartResponseInputTemplateSource `json:"source" api:"required"`
-	// One query/template chain ID, or an ordered list of chain IDs.
+	// One chain ID, or an ordered list of chain IDs for multi-chain templates. For
+	// chain_id, values refer to input chains; for template_id, values refer to chains
+	// in the template file.
 	ChainID PredictionStructureAndBindingStartResponseInputTemplateChainIDUnion `json:"chain_id"`
 	// Force the template alignment within threshold.
 	Force bool `json:"force"`
-	// One query/template chain ID, or an ordered list of chain IDs.
+	// One chain ID, or an ordered list of chain IDs for multi-chain templates. For
+	// chain_id, values refer to input chains; for template_id, values refer to chains
+	// in the template file.
 	TemplateID PredictionStructureAndBindingStartResponseInputTemplateTemplateIDUnion `json:"template_id"`
 	// Distance threshold in angstroms used when force is true.
 	Threshold float64 `json:"threshold"`
@@ -3160,7 +3201,8 @@ func (r *PredictionStructureAndBindingStartResponseInputTemplate) UnmarshalJSON(
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Template structure format. Base64 sources must use a matching media_type.
+// Template structure format. Base64 uploads must use media_type chemical/x-cif for
+// CIF or chemical/x-pdb for PDB.
 type PredictionStructureAndBindingStartResponseInputTemplateFormat string
 
 const (
@@ -3650,7 +3692,9 @@ type PredictionStructureAndBindingEstimateCostParamsInput struct {
 	Constraints  []PredictionStructureAndBindingEstimateCostParamsInputConstraintUnion `json:"constraints,omitzero"`
 	ModelOptions PredictionStructureAndBindingEstimateCostParamsInputModelOptions      `json:"model_options,omitzero"`
 	// Template structure files to guide protein-chain prediction. Supports up to 4 CIF
-	// or PDB templates from HTTPS URLs or base64 uploads.
+	// or PDB templates from HTTPS URLs or base64 uploads. Use chain_id and template_id
+	// to map request chains to template chains when the IDs differ or when providing
+	// multi-chain templates.
 	Templates []PredictionStructureAndBindingEstimateCostParamsInputTemplate `json:"templates,omitzero"`
 	paramObj
 }
@@ -3697,8 +3741,10 @@ type PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEnti
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
 	Modifications []PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityModification `json:"modifications,omitzero"`
-	// Optional protein MSA control. Omit to use automatic MSA generation; use custom
-	// for user-provided A3M/CSV; use empty for single-sequence mode.
+	// Optional protein MSA control. Omit msa on all protein entities to use automatic
+	// MSA generation. Use custom for user-provided A3M/CSV files, or empty for
+	// single-sequence mode. Custom MSA and automatic MSA cannot be mixed in one
+	// request.
 	Msa PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaUnion `json:"msa,omitzero"`
 	// This field can be elided, and will marshal its zero value as "protein".
 	Type constant.Protein `json:"type" default:"protein"`
@@ -3749,11 +3795,14 @@ func (u *PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2Protein
 	return apijson.UnmarshalRoot(data, u)
 }
 
-// Custom MSA file to use for this protein entity.
+// Use a user-provided MSA for this protein entity. If any protein entity uses a
+// custom MSA, every other protein entity must use either custom or empty MSA;
+// automatic MSA generation cannot be mixed with custom MSAs in the same request.
 //
 // The properties Format, Source, Type are required.
 type PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsa struct {
-	// Custom MSA file format. Boltz supports A3M and CSV MSA files.
+	// Custom MSA file format. Base64 uploads must use media_type text/x-a3m for A3M or
+	// text/csv for CSV.
 	//
 	// Any of "a3m", "csv".
 	Format PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaFormat `json:"format,omitzero" api:"required"`
@@ -3772,7 +3821,8 @@ func (r *PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2Protein
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Custom MSA file format. Boltz supports A3M and CSV MSA files.
+// Custom MSA file format. Base64 uploads must use media_type text/x-a3m for A3M or
+// text/csv for CSV.
 type PredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaFormat string
 
 const (
@@ -3837,7 +3887,9 @@ func NewPredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinE
 	}
 }
 
-// Run this protein entity in single-sequence mode without an MSA.
+// Run this protein entity in single-sequence mode without an MSA. Use this for
+// chains that should not use automatic MSA generation, including non-homologous
+// chains in a request that also includes custom MSAs.
 //
 // This struct has a constant value, construct it with
 // [NewPredictionStructureAndBindingEstimateCostParamsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa].
@@ -4381,9 +4433,13 @@ func (r *PredictionStructureAndBindingEstimateCostParamsInputModelOptions) Unmar
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Template structure used as an inference-time guide for Boltz-2.1 protein-chain
+// geometry. Provide a CIF or PDB file from an HTTPS URL or base64 upload.
+//
 // The properties Format, Source are required.
 type PredictionStructureAndBindingEstimateCostParamsInputTemplate struct {
-	// Template structure format. Base64 sources must use a matching media_type.
+	// Template structure format. Base64 uploads must use media_type chemical/x-cif for
+	// CIF or chemical/x-pdb for PDB.
 	//
 	// Any of "cif", "pdb".
 	Format PredictionStructureAndBindingEstimateCostParamsInputTemplateFormat `json:"format,omitzero" api:"required"`
@@ -4393,9 +4449,13 @@ type PredictionStructureAndBindingEstimateCostParamsInputTemplate struct {
 	Force param.Opt[bool] `json:"force,omitzero"`
 	// Distance threshold in angstroms used when force is true.
 	Threshold param.Opt[float64] `json:"threshold,omitzero"`
-	// One query/template chain ID, or an ordered list of chain IDs.
+	// One chain ID, or an ordered list of chain IDs for multi-chain templates. For
+	// chain_id, values refer to input chains; for template_id, values refer to chains
+	// in the template file.
 	ChainID PredictionStructureAndBindingEstimateCostParamsInputTemplateChainIDUnion `json:"chain_id,omitzero"`
-	// One query/template chain ID, or an ordered list of chain IDs.
+	// One chain ID, or an ordered list of chain IDs for multi-chain templates. For
+	// chain_id, values refer to input chains; for template_id, values refer to chains
+	// in the template file.
 	TemplateID PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateIDUnion `json:"template_id,omitzero"`
 	paramObj
 }
@@ -4408,7 +4468,8 @@ func (r *PredictionStructureAndBindingEstimateCostParamsInputTemplate) Unmarshal
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Template structure format. Base64 sources must use a matching media_type.
+// Template structure format. Base64 uploads must use media_type chemical/x-cif for
+// CIF or chemical/x-pdb for PDB.
 type PredictionStructureAndBindingEstimateCostParamsInputTemplateFormat string
 
 const (
@@ -4536,7 +4597,9 @@ type PredictionStructureAndBindingStartParamsInput struct {
 	Constraints  []PredictionStructureAndBindingStartParamsInputConstraintUnion `json:"constraints,omitzero"`
 	ModelOptions PredictionStructureAndBindingStartParamsInputModelOptions      `json:"model_options,omitzero"`
 	// Template structure files to guide protein-chain prediction. Supports up to 4 CIF
-	// or PDB templates from HTTPS URLs or base64 uploads.
+	// or PDB templates from HTTPS URLs or base64 uploads. Use chain_id and template_id
+	// to map request chains to template chains when the IDs differ or when providing
+	// multi-chain templates.
 	Templates []PredictionStructureAndBindingStartParamsInputTemplate `json:"templates,omitzero"`
 	paramObj
 }
@@ -4583,8 +4646,10 @@ type PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntity stru
 	// Post-translational modifications. Optional; defaults to an empty list when
 	// omitted.
 	Modifications []PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityModification `json:"modifications,omitzero"`
-	// Optional protein MSA control. Omit to use automatic MSA generation; use custom
-	// for user-provided A3M/CSV; use empty for single-sequence mode.
+	// Optional protein MSA control. Omit msa on all protein entities to use automatic
+	// MSA generation. Use custom for user-provided A3M/CSV files, or empty for
+	// single-sequence mode. Custom MSA and automatic MSA cannot be mixed in one
+	// request.
 	Msa PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaUnion `json:"msa,omitzero"`
 	// This field can be elided, and will marshal its zero value as "protein".
 	Type constant.Protein `json:"type" default:"protein"`
@@ -4635,11 +4700,14 @@ func (u *PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityM
 	return apijson.UnmarshalRoot(data, u)
 }
 
-// Custom MSA file to use for this protein entity.
+// Use a user-provided MSA for this protein entity. If any protein entity uses a
+// custom MSA, every other protein entity must use either custom or empty MSA;
+// automatic MSA generation cannot be mixed with custom MSAs in the same request.
 //
 // The properties Format, Source, Type are required.
 type PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsa struct {
-	// Custom MSA file format. Boltz supports A3M and CSV MSA files.
+	// Custom MSA file format. Base64 uploads must use media_type text/x-a3m for A3M or
+	// text/csv for CSV.
 	//
 	// Any of "a3m", "csv".
 	Format PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaFormat `json:"format,omitzero" api:"required"`
@@ -4658,7 +4726,8 @@ func (r *PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityM
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Custom MSA file format. Boltz supports A3M and CSV MSA files.
+// Custom MSA file format. Base64 uploads must use media_type text/x-a3m for A3M or
+// text/csv for CSV.
 type PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2CustomMsaFormat string
 
 const (
@@ -4723,7 +4792,9 @@ func NewPredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMs
 	}
 }
 
-// Run this protein entity in single-sequence mode without an MSA.
+// Run this protein entity in single-sequence mode without an MSA. Use this for
+// chains that should not use automatic MSA generation, including non-homologous
+// chains in a request that also includes custom MSAs.
 //
 // This struct has a constant value, construct it with
 // [NewPredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntityMsaBoltz2EmptyMsa].
@@ -5267,9 +5338,13 @@ func (r *PredictionStructureAndBindingStartParamsInputModelOptions) UnmarshalJSO
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Template structure used as an inference-time guide for Boltz-2.1 protein-chain
+// geometry. Provide a CIF or PDB file from an HTTPS URL or base64 upload.
+//
 // The properties Format, Source are required.
 type PredictionStructureAndBindingStartParamsInputTemplate struct {
-	// Template structure format. Base64 sources must use a matching media_type.
+	// Template structure format. Base64 uploads must use media_type chemical/x-cif for
+	// CIF or chemical/x-pdb for PDB.
 	//
 	// Any of "cif", "pdb".
 	Format PredictionStructureAndBindingStartParamsInputTemplateFormat `json:"format,omitzero" api:"required"`
@@ -5279,9 +5354,13 @@ type PredictionStructureAndBindingStartParamsInputTemplate struct {
 	Force param.Opt[bool] `json:"force,omitzero"`
 	// Distance threshold in angstroms used when force is true.
 	Threshold param.Opt[float64] `json:"threshold,omitzero"`
-	// One query/template chain ID, or an ordered list of chain IDs.
+	// One chain ID, or an ordered list of chain IDs for multi-chain templates. For
+	// chain_id, values refer to input chains; for template_id, values refer to chains
+	// in the template file.
 	ChainID PredictionStructureAndBindingStartParamsInputTemplateChainIDUnion `json:"chain_id,omitzero"`
-	// One query/template chain ID, or an ordered list of chain IDs.
+	// One chain ID, or an ordered list of chain IDs for multi-chain templates. For
+	// chain_id, values refer to input chains; for template_id, values refer to chains
+	// in the template file.
 	TemplateID PredictionStructureAndBindingStartParamsInputTemplateTemplateIDUnion `json:"template_id,omitzero"`
 	paramObj
 }
@@ -5294,7 +5373,8 @@ func (r *PredictionStructureAndBindingStartParamsInputTemplate) UnmarshalJSON(da
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Template structure format. Base64 sources must use a matching media_type.
+// Template structure format. Base64 uploads must use media_type chemical/x-cif for
+// CIF or chemical/x-pdb for PDB.
 type PredictionStructureAndBindingStartParamsInputTemplateFormat string
 
 const (
