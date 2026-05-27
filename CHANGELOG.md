@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.19.0 (2026-05-27)
+
+Full Changelog: [v0.18.0...v0.19.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.18.0...v0.19.0)
+
+### Features
+
+* [codex] Add custom MSA support to structure predictions ([fecafd7](https://github.com/boltz-bio/boltz-api-go/commit/fecafd7e02f2362dc5d0905de70c1c7573d511fb))
+
 ## 0.18.0 (2026-05-26)
 
 Full Changelog: [v0.17.1...v0.18.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.17.1...v0.18.0)
