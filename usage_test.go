@@ -28,7 +28,7 @@ func TestUsage(t *testing.T) {
 	response, err := client.Predictions.StructureAndBinding.Start(context.TODO(), boltzapi.PredictionStructureAndBindingStartParams{
 		Input: boltzapi.PredictionStructureAndBindingStartParamsInput{
 			Entities: []boltzapi.PredictionStructureAndBindingStartParamsInputEntityUnion{{
-				OfPredictionStructureAndBindingStartsInputEntityProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityProteinEntity{
+				OfPredictionStructureAndBindingStartsInputEntityBoltz2ProteinEntity: &boltzapi.PredictionStructureAndBindingStartParamsInputEntityBoltz2ProteinEntity{
 					ChainIDs: []string{"string"},
 					Value:    "value",
 				},
