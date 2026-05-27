@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.19.1 (2026-05-27)
+
+Full Changelog: [v0.19.0...v0.19.1](https://github.com/boltz-bio/boltz-api-go/compare/v0.19.0...v0.19.1)
+
+### Documentation
+
+* document structure templates and custom MSA ([673a9ab](https://github.com/boltz-bio/boltz-api-go/commit/673a9ab7ea2db2c50b7bcc6d8a33a96010042361))
+
 ## 0.19.0 (2026-05-27)
 
 Full Changelog: [v0.18.0...v0.19.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.18.0...v0.19.0)
