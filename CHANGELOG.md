@@ -1,5 +1,72 @@
 # Changelog
 
+## 0.20.0 (2026-05-27)
+
+Full Changelog: [v0.19.0...v0.20.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.19.0...v0.20.0)
+
+### ⚠ BREAKING CHANGES
+
+* **compute-api:** rename pipeline route params to id
+
+### Features
+
+* [codex] Add ADME scoring for small molecule pipelines ([205f228](https://github.com/boltz-bio/boltz-api-go/commit/205f228930859100d0220aed79f24672351e2a30))
+* [codex] Add Baseten ADME model and public prediction API ([caf0e4d](https://github.com/boltz-bio/boltz-api-go/commit/caf0e4d66aa3241f2bf4cafdc8b67730b74bf26d))
+* [codex] Add Benchling workspace spending limits ([f063b0c](https://github.com/boltz-bio/boltz-api-go/commit/f063b0cb168276a5efeae6740b70eab4a1cfee59))
+* [codex] Add custom MSA support to structure predictions ([fecafd7](https://github.com/boltz-bio/boltz-api-go/commit/fecafd7e02f2362dc5d0905de70c1c7573d511fb))
+* Add Boltz2 templates to compute API ([b1bf5b7](https://github.com/boltz-bio/boltz-api-go/commit/b1bf5b789b4979d0b865b1bf1ae026e9509ac213))
+* Address ADME API review followups ([ed0c95e](https://github.com/boltz-bio/boltz-api-go/commit/ed0c95efe0cc1511a95dfb795e78fa8b0237069a))
+* **billing:** attribute usage by product category ([b6747ce](https://github.com/boltz-bio/boltz-api-go/commit/b6747ce8b23c206ee02198d60f5766b9b19c7fcc))
+* **client:** optimize json encoder for internal types ([f014a10](https://github.com/boltz-bio/boltz-api-go/commit/f014a1039ee16b4c95de7832920292366f7833ad))
+* **compute-api:** add auth context endpoint ([0921572](https://github.com/boltz-bio/boltz-api-go/commit/0921572068177df2e2e9029529a89dcc156ef06c))
+* **compute-api:** add CLI version metadata endpoint ([c7cb0ce](https://github.com/boltz-bio/boltz-api-go/commit/c7cb0ceb58a5834a34ebcb7abe5dcadf442186cb))
+* **compute-api:** add protein redesign endpoint ([86ecb23](https://github.com/boltz-bio/boltz-api-go/commit/86ecb23ffb0e8212297bdbd8e2c43b7781a0d69a))
+* **compute-api:** add small molecule structure templates ([f39dc9d](https://github.com/boltz-bio/boltz-api-go/commit/f39dc9d83d411da1b9aa72f8271f2011b4c86bf8))
+* **compute-api:** prefix structure-binding ids with sab_pred ([65e677f](https://github.com/boltz-bio/boltz-api-go/commit/65e677f3c7dd88ff5d25d83ae3fbbfb89848d344))
+* **compute-api:** support non-binding target residues ([b1c05cc](https://github.com/boltz-bio/boltz-api-go/commit/b1c05cc97f2eb387cf80de4609c2dd58fb492998))
+* **compute:** accept user OAuth bearer tokens ([c0f9879](https://github.com/boltz-bio/boltz-api-go/commit/c0f9879e1cf319e3e51f69a665880258266625fa))
+* **compute:** filter workspaces by name prefix ([7a9df49](https://github.com/boltz-bio/boltz-api-go/commit/7a9df49e7b00886e5a936f8d674793814b75c520))
+* **compute:** gate console backend by compute roles ([b60b172](https://github.com/boltz-bio/boltz-api-go/commit/b60b172b5323070f22e30717ab2293d866b760ea))
+* **compute:** support curated binder specs ([3931d6a](https://github.com/boltz-bio/boltz-api-go/commit/3931d6a787e5b1e0adb57e447d866facb0831e3c))
+* **go:** add default http client with timeout ([89409f6](https://github.com/boltz-bio/boltz-api-go/commit/89409f63c1bf48fc8ef658a96acb53ae4e7d5f54))
+* rename cli command ([8b05561](https://github.com/boltz-bio/boltz-api-go/commit/8b055612f34bb1f4c06c4ba6b3bbf6a38b0b826b))
+* support setting headers via env ([0100a89](https://github.com/boltz-bio/boltz-api-go/commit/0100a89c2ef270616495cd2ae0aceea6caf87398))
+
+
+### Bug Fixes
+
+* **backend:** narrow hydrophobic set to "very hydrophobic" residues ([ca068d3](https://github.com/boltz-bio/boltz-api-go/commit/ca068d38856bd5c6a9305bc38f4f2a9f6f8d5bcb))
+* **compute-api:** default omitted polymer modifications ([994bfd2](https://github.com/boltz-bio/boltz-api-go/commit/994bfd2bfcaa7d0e3cba20ba183d022a6f849e04))
+* **compute-api:** display requested estimate units ([a4e9fe6](https://github.com/boltz-bio/boltz-api-go/commit/a4e9fe620f7d26c2df0d3e73b009e8d62b26d12b))
+* **compute-api:** gate pocket conditioning schemas ([bfa741c](https://github.com/boltz-bio/boltz-api-go/commit/bfa741cb06253807289fbd701f8d95c6c8ab358e))
+* **compute-api:** hide ADME from small-molecule results ([fc35230](https://github.com/boltz-bio/boltz-api-go/commit/fc35230fd3b2274b692012320b657c6008db75ca))
+* **compute-api:** make design motifs optional ([60aba58](https://github.com/boltz-bio/boltz-api-go/commit/60aba58bd5da101dcbb02b5c5d5be7ad8d4c0078))
+* **compute-api:** polish reference docs for CLI and auth ([d352953](https://github.com/boltz-bio/boltz-api-go/commit/d352953e7299887410935531aef64102a3eef2a6))
+* **compute-api:** reject idempotency key input mismatches ([cc42427](https://github.com/boltz-bio/boltz-api-go/commit/cc424279e6ee96bc28e33d504a86479a27b82900))
+* **compute-api:** replace unsafe application schema ([71f52bd](https://github.com/boltz-bio/boltz-api-go/commit/71f52bdd0bb889a712cdde0a4fe473b81683e3c6))
+* **compute-api:** support SM target bonds and constraints ([2b33f46](https://github.com/boltz-bio/boltz-api-go/commit/2b33f46dd870c3cc4da57cfe56f6ed2bd00bdda3))
+* **go:** avoid panic when http.DefaultTransport is wrapped ([cb6d66c](https://github.com/boltz-bio/boltz-api-go/commit/cb6d66c6bc063fed67380ae6e126b7ba31cca3c4))
+* **sdk:** serialize usage arrays as repeated params ([dfd269d](https://github.com/boltz-bio/boltz-api-go/commit/dfd269d182c3b7fe42b4c2228248a64b64532340))
+* stainless changes ([efde456](https://github.com/boltz-bio/boltz-api-go/commit/efde456a842a9989d0b587821fa0019c347ec3a5))
+* **stainless:** expose auth context as auth me ([1354d93](https://github.com/boltz-bio/boltz-api-go/commit/1354d93aa9840c38637dd96b18e092f517ed773c))
+* use friendly Go SDK package name ([c04b501](https://github.com/boltz-bio/boltz-api-go/commit/c04b50111928ada106ea9492965a89b5a9e8cdc1))
+
+
+### Chores
+
+* avoid embedding reflect.Type for dead code elimination ([a50f0e6](https://github.com/boltz-bio/boltz-api-go/commit/a50f0e618d961567656c3c2b3cb03ff7411813eb))
+* configure new SDK language ([2270974](https://github.com/boltz-bio/boltz-api-go/commit/22709743fc68132e1f53e4b9a22f8343a0d36dbf))
+* **internal:** more robust bootstrap script ([58962d2](https://github.com/boltz-bio/boltz-api-go/commit/58962d21c88ec5f9ecc83a7a2478ac992c42f137))
+* redact api-key headers in debug logs ([6d94030](https://github.com/boltz-bio/boltz-api-go/commit/6d9403072095bf7671925f6c06f6ddb910b64512))
+* **typebox:** upgrade backend schemas to v1 ([f357a7d](https://github.com/boltz-bio/boltz-api-go/commit/f357a7dda08584dcfa7d40813d4df07c794d3ac3))
+* update SDK settings ([b7d10e6](https://github.com/boltz-bio/boltz-api-go/commit/b7d10e621a02df387122c5f69f6e0975bcc88d4f))
+* update SDK settings ([ed32489](https://github.com/boltz-bio/boltz-api-go/commit/ed324898f9ba836625a19dc8b514d81c2d7203e5))
+
+
+### Refactors
+
+* **compute-api:** rename pipeline route params to id ([f10b31e](https://github.com/boltz-bio/boltz-api-go/commit/f10b31ea983f2b50804ce84e1d1a1c04dbe789cd))
+
 ## 0.19.0 (2026-05-27)
 
 Full Changelog: [v0.18.0...v0.19.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.18.0...v0.19.0)
