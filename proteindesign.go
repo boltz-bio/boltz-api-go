@@ -728,9 +728,9 @@ type ProteinDesignGetResponseInputBinderSpecificationStructureTemplateBinderSpec
 	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
 	// (e.g. "NGS", "NXS").
 	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
-	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W) in designed
-	// regions. Designs exceeding this threshold are filtered out before scoring. Leave
-	// empty to disable.
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
 	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1411,9 +1411,9 @@ type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecRespons
 	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
 	// (e.g. "NGS", "NXS").
 	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
-	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W) in designed
-	// regions. Designs exceeding this threshold are filtered out before scoring. Leave
-	// empty to disable.
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
 	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1482,9 +1482,9 @@ type ProteinDesignGetResponseInputBinderSpecificationBoltzCuratedBinderSpecRespo
 	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
 	// (e.g. "NGS", "NXS").
 	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
-	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W) in designed
-	// regions. Designs exceeding this threshold are filtered out before scoring. Leave
-	// empty to disable.
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
 	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -3921,9 +3921,9 @@ type ProteinDesignStartResponseInputBinderSpecificationStructureTemplateBinderSp
 	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
 	// (e.g. "NGS", "NXS").
 	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
-	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W) in designed
-	// regions. Designs exceeding this threshold are filtered out before scoring. Leave
-	// empty to disable.
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
 	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -4604,9 +4604,9 @@ type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecRespo
 	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
 	// (e.g. "NGS", "NXS").
 	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
-	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W) in designed
-	// regions. Designs exceeding this threshold are filtered out before scoring. Leave
-	// empty to disable.
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
 	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -4675,9 +4675,9 @@ type ProteinDesignStartResponseInputBinderSpecificationBoltzCuratedBinderSpecRes
 	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
 	// (e.g. "NGS", "NXS").
 	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
-	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W) in designed
-	// regions. Designs exceeding this threshold are filtered out before scoring. Leave
-	// empty to disable.
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
 	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -6467,9 +6467,9 @@ type ProteinDesignStopResponseInputBinderSpecificationStructureTemplateBinderSpe
 	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
 	// (e.g. "NGS", "NXS").
 	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
-	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W) in designed
-	// regions. Designs exceeding this threshold are filtered out before scoring. Leave
-	// empty to disable.
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
 	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -7150,9 +7150,9 @@ type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecRespon
 	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
 	// (e.g. "NGS", "NXS").
 	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
-	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W) in designed
-	// regions. Designs exceeding this threshold are filtered out before scoring. Leave
-	// empty to disable.
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
 	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -7221,9 +7221,9 @@ type ProteinDesignStopResponseInputBinderSpecificationBoltzCuratedBinderSpecResp
 	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
 	// (e.g. "NGS", "NXS").
 	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
-	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W) in designed
-	// regions. Designs exceeding this threshold are filtered out before scoring. Leave
-	// empty to disable.
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
 	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -8795,9 +8795,9 @@ func (r *ProteinDesignEstimateCostParamsBinderSpecificationStructureTemplateBind
 
 // Constraints applied during sequence design
 type ProteinDesignEstimateCostParamsBinderSpecificationStructureTemplateBinderSpecRules struct {
-	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W) in designed
-	// regions. Designs exceeding this threshold are filtered out before scoring. Leave
-	// empty to disable.
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
 	MaxHydrophobicFraction param.Opt[float64] `json:"max_hydrophobic_fraction,omitzero"`
 	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
 	// exclude cysteine and proline)
@@ -9245,9 +9245,9 @@ func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecB
 
 // Constraints applied during sequence design
 type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecRules struct {
-	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W) in designed
-	// regions. Designs exceeding this threshold are filtered out before scoring. Leave
-	// empty to disable.
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
 	MaxHydrophobicFraction param.Opt[float64] `json:"max_hydrophobic_fraction,omitzero"`
 	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
 	// exclude cysteine and proline)
@@ -9305,9 +9305,9 @@ const (
 
 // Constraints applied during sequence design
 type ProteinDesignEstimateCostParamsBinderSpecificationBoltzCuratedBinderSpecRules struct {
-	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W) in designed
-	// regions. Designs exceeding this threshold are filtered out before scoring. Leave
-	// empty to disable.
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
 	MaxHydrophobicFraction param.Opt[float64] `json:"max_hydrophobic_fraction,omitzero"`
 	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
 	// exclude cysteine and proline)
@@ -10411,9 +10411,9 @@ func (r *ProteinDesignStartParamsBinderSpecificationStructureTemplateBinderSpecS
 
 // Constraints applied during sequence design
 type ProteinDesignStartParamsBinderSpecificationStructureTemplateBinderSpecRules struct {
-	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W) in designed
-	// regions. Designs exceeding this threshold are filtered out before scoring. Leave
-	// empty to disable.
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
 	MaxHydrophobicFraction param.Opt[float64] `json:"max_hydrophobic_fraction,omitzero"`
 	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
 	// exclude cysteine and proline)
@@ -10861,9 +10861,9 @@ func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom
 
 // Constraints applied during sequence design
 type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecRules struct {
-	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W) in designed
-	// regions. Designs exceeding this threshold are filtered out before scoring. Leave
-	// empty to disable.
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
 	MaxHydrophobicFraction param.Opt[float64] `json:"max_hydrophobic_fraction,omitzero"`
 	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
 	// exclude cysteine and proline)
@@ -10921,9 +10921,9 @@ const (
 
 // Constraints applied during sequence design
 type ProteinDesignStartParamsBinderSpecificationBoltzCuratedBinderSpecRules struct {
-	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W) in designed
-	// regions. Designs exceeding this threshold are filtered out before scoring. Leave
-	// empty to disable.
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
 	MaxHydrophobicFraction param.Opt[float64] `json:"max_hydrophobic_fraction,omitzero"`
 	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
 	// exclude cysteine and proline)
