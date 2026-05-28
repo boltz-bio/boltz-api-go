@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.19.2 (2026-05-28)
+
+Full Changelog: [v0.19.1...v0.19.2](https://github.com/boltz-bio/boltz-api-go/compare/v0.19.1...v0.19.2)
+
+### Bug Fixes
+
+* **protein-design:** count tyrosine in hydrophobic filter ([3b9594e](https://github.com/boltz-bio/boltz-api-go/commit/3b9594e6e2380028846abcc38cf4542b9318e644))
+
 ## 0.19.1 (2026-05-27)
 
 Full Changelog: [v0.19.0...v0.19.1](https://github.com/boltz-bio/boltz-api-go/compare/v0.19.0...v0.19.1)
