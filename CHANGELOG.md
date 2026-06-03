@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.19.3 (2026-06-03)
+
+Full Changelog: [v0.19.2...v0.19.3](https://github.com/boltz-bio/boltz-api-go/compare/v0.19.2...v0.19.3)
+
+### Documentation
+
+* **api:** document CCD-only polymer modifications ([2190dea](https://github.com/boltz-bio/boltz-api-go/commit/2190deabf4d0992906979c38ffe8ceeca06d48d1))
+
 ## 0.19.2 (2026-05-28)
 
 Full Changelog: [v0.19.1...v0.19.2](https://github.com/boltz-bio/boltz-api-go/compare/v0.19.1...v0.19.2)
