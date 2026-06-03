@@ -916,7 +916,8 @@ type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecRespons
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Optional polymer modifications. Defaults to [] when omitted.
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
 	Modifications []ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -938,10 +939,13 @@ func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecRes
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -972,7 +976,8 @@ type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecRespons
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Optional polymer modifications. Defaults to [] when omitted.
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
 	Modifications []ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -994,10 +999,13 @@ func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecRes
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -1027,7 +1035,8 @@ type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecRespons
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Optional polymer modifications. Defaults to [] when omitted.
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
 	Modifications []ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1049,10 +1058,13 @@ func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecRes
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -1082,7 +1094,8 @@ type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecRespons
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Optional polymer modifications. Defaults to [] when omitted.
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
 	Modifications []ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1104,10 +1117,13 @@ func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecRes
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -1934,8 +1950,8 @@ type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityProteinEnt
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Post-translational modifications. Optional; defaults to an empty list when
-	// omitted.
+	// CCD post-translational modifications. Optional; defaults to an empty list when
+	// omitted. SMILES modifications are not supported.
 	Modifications []ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityProteinEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1957,10 +1973,13 @@ func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityProtei
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityProteinEntityResponseModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -1990,7 +2009,8 @@ type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityRnaEntityR
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Chemical modifications. Optional; defaults to an empty list when omitted.
+	// CCD chemical modifications. Optional; defaults to an empty list when omitted.
+	// SMILES modifications are not supported.
 	Modifications []ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -2012,10 +2032,13 @@ func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityRnaEnt
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponseModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -2045,7 +2068,8 @@ type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityDnaEntityR
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Chemical modifications. Optional; defaults to an empty list when omitted.
+	// CCD chemical modifications. Optional; defaults to an empty list when omitted.
+	// SMILES modifications are not supported.
 	Modifications []ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -2067,10 +2091,13 @@ func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityDnaEnt
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponseModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -3090,8 +3117,8 @@ type ProteinDesignListResultsResponseEntityProteinEntity struct {
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Post-translational modifications. Optional; defaults to an empty list when
-	// omitted.
+	// CCD post-translational modifications. Optional; defaults to an empty list when
+	// omitted. SMILES modifications are not supported.
 	Modifications []ProteinDesignListResultsResponseEntityProteinEntityModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -3111,10 +3138,13 @@ func (r *ProteinDesignListResultsResponseEntityProteinEntity) UnmarshalJSON(data
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignListResultsResponseEntityProteinEntityModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -3144,7 +3174,8 @@ type ProteinDesignListResultsResponseEntityRnaEntity struct {
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Chemical modifications. Optional; defaults to an empty list when omitted.
+	// CCD chemical modifications. Optional; defaults to an empty list when omitted.
+	// SMILES modifications are not supported.
 	Modifications []ProteinDesignListResultsResponseEntityRnaEntityModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -3164,10 +3195,13 @@ func (r *ProteinDesignListResultsResponseEntityRnaEntity) UnmarshalJSON(data []b
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignListResultsResponseEntityRnaEntityModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -3197,7 +3231,8 @@ type ProteinDesignListResultsResponseEntityDnaEntity struct {
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Chemical modifications. Optional; defaults to an empty list when omitted.
+	// CCD chemical modifications. Optional; defaults to an empty list when omitted.
+	// SMILES modifications are not supported.
 	Modifications []ProteinDesignListResultsResponseEntityDnaEntityModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -3217,10 +3252,13 @@ func (r *ProteinDesignListResultsResponseEntityDnaEntity) UnmarshalJSON(data []b
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignListResultsResponseEntityDnaEntityModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -4109,7 +4147,8 @@ type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecRespo
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Optional polymer modifications. Defaults to [] when omitted.
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
 	Modifications []ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -4131,10 +4170,13 @@ func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecR
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -4165,7 +4207,8 @@ type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecRespo
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Optional polymer modifications. Defaults to [] when omitted.
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
 	Modifications []ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -4187,10 +4230,13 @@ func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecR
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -4220,7 +4266,8 @@ type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecRespo
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Optional polymer modifications. Defaults to [] when omitted.
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
 	Modifications []ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -4242,10 +4289,13 @@ func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecR
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -4275,7 +4325,8 @@ type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecRespo
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Optional polymer modifications. Defaults to [] when omitted.
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
 	Modifications []ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -4297,10 +4348,13 @@ func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecR
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -5127,8 +5181,8 @@ type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityProteinE
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Post-translational modifications. Optional; defaults to an empty list when
-	// omitted.
+	// CCD post-translational modifications. Optional; defaults to an empty list when
+	// omitted. SMILES modifications are not supported.
 	Modifications []ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityProteinEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -5150,10 +5204,13 @@ func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityProt
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityProteinEntityResponseModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -5183,7 +5240,8 @@ type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityRnaEntit
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Chemical modifications. Optional; defaults to an empty list when omitted.
+	// CCD chemical modifications. Optional; defaults to an empty list when omitted.
+	// SMILES modifications are not supported.
 	Modifications []ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -5205,10 +5263,13 @@ func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityRnaE
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponseModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -5238,7 +5299,8 @@ type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityDnaEntit
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Chemical modifications. Optional; defaults to an empty list when omitted.
+	// CCD chemical modifications. Optional; defaults to an empty list when omitted.
+	// SMILES modifications are not supported.
 	Modifications []ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -5260,10 +5322,13 @@ func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityDnaE
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponseModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -6655,7 +6720,8 @@ type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecRespon
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Optional polymer modifications. Defaults to [] when omitted.
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
 	Modifications []ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -6677,10 +6743,13 @@ func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecRe
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -6711,7 +6780,8 @@ type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecRespon
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Optional polymer modifications. Defaults to [] when omitted.
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
 	Modifications []ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -6733,10 +6803,13 @@ func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecRe
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -6766,7 +6839,8 @@ type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecRespon
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Optional polymer modifications. Defaults to [] when omitted.
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
 	Modifications []ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -6788,10 +6862,13 @@ func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecRe
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -6821,7 +6898,8 @@ type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecRespon
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Optional polymer modifications. Defaults to [] when omitted.
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
 	Modifications []ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -6843,10 +6921,13 @@ func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecRe
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -7673,8 +7754,8 @@ type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityProteinEn
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Post-translational modifications. Optional; defaults to an empty list when
-	// omitted.
+	// CCD post-translational modifications. Optional; defaults to an empty list when
+	// omitted. SMILES modifications are not supported.
 	Modifications []ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityProteinEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -7696,10 +7777,13 @@ func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityProte
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityProteinEntityResponseModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -7729,7 +7813,8 @@ type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityRnaEntity
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Chemical modifications. Optional; defaults to an empty list when omitted.
+	// CCD chemical modifications. Optional; defaults to an empty list when omitted.
+	// SMILES modifications are not supported.
 	Modifications []ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -7751,10 +7836,13 @@ func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityRnaEn
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponseModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -7784,7 +7872,8 @@ type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityDnaEntity
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic bool `json:"cyclic"`
-	// Chemical modifications. Optional; defaults to an empty list when omitted.
+	// CCD chemical modifications. Optional; defaults to an empty list when omitted.
+	// SMILES modifications are not supported.
 	Modifications []ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -7806,10 +7895,13 @@ func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityDnaEn
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
 type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponseModification struct {
 	// 0-based index of the residue to modify
-	ResidueIndex int64        `json:"residue_index" api:"required"`
-	Type         constant.Ccd `json:"type" default:"ccd"`
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
@@ -8888,7 +8980,8 @@ type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntit
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
-	// Optional polymer modifications. Defaults to [] when omitted.
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
 	Modifications []ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "designed_protein".
 	Type constant.DesignedProtein `json:"type" default:"designed_protein"`
@@ -8903,6 +8996,9 @@ func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecE
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
 // The properties ResidueIndex, Type, Value are required.
 type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification struct {
 	// 0-based index of the residue to modify
@@ -8910,6 +9006,8 @@ type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntit
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
 	// This field can be elided, and will marshal its zero value as "ccd".
 	Type constant.Ccd `json:"type" default:"ccd"`
 	paramObj
@@ -8933,7 +9031,8 @@ type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntit
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
-	// Optional polymer modifications. Defaults to [] when omitted.
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
 	Modifications []ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "protein".
 	Type constant.Protein `json:"type" default:"protein"`
@@ -8948,6 +9047,9 @@ func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecE
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
 // The properties ResidueIndex, Type, Value are required.
 type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification struct {
 	// 0-based index of the residue to modify
@@ -8955,6 +9057,8 @@ type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntit
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
 	// This field can be elided, and will marshal its zero value as "ccd".
 	Type constant.Ccd `json:"type" default:"ccd"`
 	paramObj
@@ -8976,7 +9080,8 @@ type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntit
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
-	// Optional polymer modifications. Defaults to [] when omitted.
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
 	Modifications []ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "rna".
 	Type constant.Rna `json:"type" default:"rna"`
@@ -8991,6 +9096,9 @@ func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecE
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
 // The properties ResidueIndex, Type, Value are required.
 type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification struct {
 	// 0-based index of the residue to modify
@@ -8998,6 +9106,8 @@ type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntit
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
 	// This field can be elided, and will marshal its zero value as "ccd".
 	Type constant.Ccd `json:"type" default:"ccd"`
 	paramObj
@@ -9019,7 +9129,8 @@ type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntit
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
-	// Optional polymer modifications. Defaults to [] when omitted.
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
 	Modifications []ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "dna".
 	Type constant.Dna `json:"type" default:"dna"`
@@ -9034,6 +9145,9 @@ func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecE
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
 // The properties ResidueIndex, Type, Value are required.
 type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification struct {
 	// 0-based index of the residue to modify
@@ -9041,6 +9155,8 @@ type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntit
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
 	// This field can be elided, and will marshal its zero value as "ccd".
 	Type constant.Ccd `json:"type" default:"ccd"`
 	paramObj
@@ -9578,8 +9694,8 @@ type ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityProteinEntity st
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
-	// Post-translational modifications. Optional; defaults to an empty list when
-	// omitted.
+	// CCD post-translational modifications. Optional; defaults to an empty list when
+	// omitted. SMILES modifications are not supported.
 	Modifications []ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityProteinEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "protein".
 	Type constant.Protein `json:"type" default:"protein"`
@@ -9594,6 +9710,9 @@ func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityProteinEntit
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
 // The properties ResidueIndex, Type, Value are required.
 type ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityProteinEntityModification struct {
 	// 0-based index of the residue to modify
@@ -9601,6 +9720,8 @@ type ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityProteinEntityMod
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
 	// This field can be elided, and will marshal its zero value as "ccd".
 	Type constant.Ccd `json:"type" default:"ccd"`
 	paramObj
@@ -9622,7 +9743,8 @@ type ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityRnaEntity struct
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
-	// Chemical modifications. Optional; defaults to an empty list when omitted.
+	// CCD chemical modifications. Optional; defaults to an empty list when omitted.
+	// SMILES modifications are not supported.
 	Modifications []ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityRnaEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "rna".
 	Type constant.Rna `json:"type" default:"rna"`
@@ -9637,6 +9759,9 @@ func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityRnaEntity) U
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
 // The properties ResidueIndex, Type, Value are required.
 type ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityRnaEntityModification struct {
 	// 0-based index of the residue to modify
@@ -9644,6 +9769,8 @@ type ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityRnaEntityModific
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
 	// This field can be elided, and will marshal its zero value as "ccd".
 	Type constant.Ccd `json:"type" default:"ccd"`
 	paramObj
@@ -9665,7 +9792,8 @@ type ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityDnaEntity struct
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
-	// Chemical modifications. Optional; defaults to an empty list when omitted.
+	// CCD chemical modifications. Optional; defaults to an empty list when omitted.
+	// SMILES modifications are not supported.
 	Modifications []ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityDnaEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "dna".
 	Type constant.Dna `json:"type" default:"dna"`
@@ -9680,6 +9808,9 @@ func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityDnaEntity) U
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
 // The properties ResidueIndex, Type, Value are required.
 type ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityDnaEntityModification struct {
 	// 0-based index of the residue to modify
@@ -9687,6 +9818,8 @@ type ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityDnaEntityModific
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
 	// This field can be elided, and will marshal its zero value as "ccd".
 	Type constant.Ccd `json:"type" default:"ccd"`
 	paramObj
@@ -10504,7 +10637,8 @@ type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityDesign
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
-	// Optional polymer modifications. Defaults to [] when omitted.
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
 	Modifications []ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "designed_protein".
 	Type constant.DesignedProtein `json:"type" default:"designed_protein"`
@@ -10519,6 +10653,9 @@ func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityDe
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
 // The properties ResidueIndex, Type, Value are required.
 type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification struct {
 	// 0-based index of the residue to modify
@@ -10526,6 +10663,8 @@ type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityDesign
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
 	// This field can be elided, and will marshal its zero value as "ccd".
 	Type constant.Ccd `json:"type" default:"ccd"`
 	paramObj
@@ -10549,7 +10688,8 @@ type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityFixedP
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
-	// Optional polymer modifications. Defaults to [] when omitted.
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
 	Modifications []ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "protein".
 	Type constant.Protein `json:"type" default:"protein"`
@@ -10564,6 +10704,9 @@ func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityFi
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
 // The properties ResidueIndex, Type, Value are required.
 type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification struct {
 	// 0-based index of the residue to modify
@@ -10571,6 +10714,8 @@ type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityFixedP
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
 	// This field can be elided, and will marshal its zero value as "ccd".
 	Type constant.Ccd `json:"type" default:"ccd"`
 	paramObj
@@ -10592,7 +10737,8 @@ type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityFixedR
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
-	// Optional polymer modifications. Defaults to [] when omitted.
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
 	Modifications []ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "rna".
 	Type constant.Rna `json:"type" default:"rna"`
@@ -10607,6 +10753,9 @@ func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityFi
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
 // The properties ResidueIndex, Type, Value are required.
 type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification struct {
 	// 0-based index of the residue to modify
@@ -10614,6 +10763,8 @@ type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityFixedR
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
 	// This field can be elided, and will marshal its zero value as "ccd".
 	Type constant.Ccd `json:"type" default:"ccd"`
 	paramObj
@@ -10635,7 +10786,8 @@ type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityFixedD
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
-	// Optional polymer modifications. Defaults to [] when omitted.
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
 	Modifications []ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "dna".
 	Type constant.Dna `json:"type" default:"dna"`
@@ -10650,6 +10802,9 @@ func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityFi
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
 // The properties ResidueIndex, Type, Value are required.
 type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification struct {
 	// 0-based index of the residue to modify
@@ -10657,6 +10812,8 @@ type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityFixedD
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
 	// This field can be elided, and will marshal its zero value as "ccd".
 	Type constant.Ccd `json:"type" default:"ccd"`
 	paramObj
@@ -11194,8 +11351,8 @@ type ProteinDesignStartParamsTargetNoTemplateTargetEntityProteinEntity struct {
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
-	// Post-translational modifications. Optional; defaults to an empty list when
-	// omitted.
+	// CCD post-translational modifications. Optional; defaults to an empty list when
+	// omitted. SMILES modifications are not supported.
 	Modifications []ProteinDesignStartParamsTargetNoTemplateTargetEntityProteinEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "protein".
 	Type constant.Protein `json:"type" default:"protein"`
@@ -11210,6 +11367,9 @@ func (r *ProteinDesignStartParamsTargetNoTemplateTargetEntityProteinEntity) Unma
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
 // The properties ResidueIndex, Type, Value are required.
 type ProteinDesignStartParamsTargetNoTemplateTargetEntityProteinEntityModification struct {
 	// 0-based index of the residue to modify
@@ -11217,6 +11377,8 @@ type ProteinDesignStartParamsTargetNoTemplateTargetEntityProteinEntityModificati
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
 	// This field can be elided, and will marshal its zero value as "ccd".
 	Type constant.Ccd `json:"type" default:"ccd"`
 	paramObj
@@ -11238,7 +11400,8 @@ type ProteinDesignStartParamsTargetNoTemplateTargetEntityRnaEntity struct {
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
-	// Chemical modifications. Optional; defaults to an empty list when omitted.
+	// CCD chemical modifications. Optional; defaults to an empty list when omitted.
+	// SMILES modifications are not supported.
 	Modifications []ProteinDesignStartParamsTargetNoTemplateTargetEntityRnaEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "rna".
 	Type constant.Rna `json:"type" default:"rna"`
@@ -11253,6 +11416,9 @@ func (r *ProteinDesignStartParamsTargetNoTemplateTargetEntityRnaEntity) Unmarsha
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
 // The properties ResidueIndex, Type, Value are required.
 type ProteinDesignStartParamsTargetNoTemplateTargetEntityRnaEntityModification struct {
 	// 0-based index of the residue to modify
@@ -11260,6 +11426,8 @@ type ProteinDesignStartParamsTargetNoTemplateTargetEntityRnaEntityModification s
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
 	// This field can be elided, and will marshal its zero value as "ccd".
 	Type constant.Ccd `json:"type" default:"ccd"`
 	paramObj
@@ -11281,7 +11449,8 @@ type ProteinDesignStartParamsTargetNoTemplateTargetEntityDnaEntity struct {
 	Value string `json:"value" api:"required"`
 	// Whether the sequence is cyclic
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
-	// Chemical modifications. Optional; defaults to an empty list when omitted.
+	// CCD chemical modifications. Optional; defaults to an empty list when omitted.
+	// SMILES modifications are not supported.
 	Modifications []ProteinDesignStartParamsTargetNoTemplateTargetEntityDnaEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "dna".
 	Type constant.Dna `json:"type" default:"dna"`
@@ -11296,6 +11465,9 @@ func (r *ProteinDesignStartParamsTargetNoTemplateTargetEntityDnaEntity) Unmarsha
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
 // The properties ResidueIndex, Type, Value are required.
 type ProteinDesignStartParamsTargetNoTemplateTargetEntityDnaEntityModification struct {
 	// 0-based index of the residue to modify
@@ -11303,6 +11475,8 @@ type ProteinDesignStartParamsTargetNoTemplateTargetEntityDnaEntityModification s
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
 	// phosphoserine)
 	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
 	// This field can be elided, and will marshal its zero value as "ccd".
 	Type constant.Ccd `json:"type" default:"ccd"`
 	paramObj
