@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.20.0 (2026-06-04)
+
+Full Changelog: [v0.19.3...v0.20.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.19.3...v0.20.0)
+
+### Features
+
+* **compute-api:** abort generative pipelines when filter+dedup rate exceeds 95% ([5fecf72](https://github.com/boltz-bio/boltz-api-go/commit/5fecf72b69dc68ce78e05bd57b0229d9b21f5dd5))
+
 ## 0.19.3 (2026-06-03)
 
 Full Changelog: [v0.19.2...v0.19.3](https://github.com/boltz-bio/boltz-api-go/compare/v0.19.2...v0.19.3)
