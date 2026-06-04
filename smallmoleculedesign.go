@@ -1450,13 +1450,21 @@ type SmallMoleculeDesignGetResponseProgress struct {
 	TotalMoleculesToGenerate int64 `json:"total_molecules_to_generate" api:"required"`
 	// ID of the most recently generated result
 	LatestResultID string `json:"latest_result_id"`
+	// Cumulative number of molecules produced by the model before filtering and
+	// deduplication. Useful for monitoring generation efficiency.
+	TotalMoleculesGeneratedPreFilter int64 `json:"total_molecules_generated_pre_filter"`
+	// Cumulative number of molecules that survived filtering and deduplication and
+	// became scoreable samples.
+	TotalMoleculesInserted int64 `json:"total_molecules_inserted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		NumMoleculesGenerated    respjson.Field
-		TotalMoleculesToGenerate respjson.Field
-		LatestResultID           respjson.Field
-		ExtraFields              map[string]respjson.Field
-		raw                      string
+		NumMoleculesGenerated            respjson.Field
+		TotalMoleculesToGenerate         respjson.Field
+		LatestResultID                   respjson.Field
+		TotalMoleculesGeneratedPreFilter respjson.Field
+		TotalMoleculesInserted           respjson.Field
+		ExtraFields                      map[string]respjson.Field
+		raw                              string
 	} `json:"-"`
 }
 
@@ -1558,13 +1566,21 @@ type SmallMoleculeDesignListResponseProgress struct {
 	TotalMoleculesToGenerate int64 `json:"total_molecules_to_generate" api:"required"`
 	// ID of the most recently generated result
 	LatestResultID string `json:"latest_result_id"`
+	// Cumulative number of molecules produced by the model before filtering and
+	// deduplication. Useful for monitoring generation efficiency.
+	TotalMoleculesGeneratedPreFilter int64 `json:"total_molecules_generated_pre_filter"`
+	// Cumulative number of molecules that survived filtering and deduplication and
+	// became scoreable samples.
+	TotalMoleculesInserted int64 `json:"total_molecules_inserted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		NumMoleculesGenerated    respjson.Field
-		TotalMoleculesToGenerate respjson.Field
-		LatestResultID           respjson.Field
-		ExtraFields              map[string]respjson.Field
-		raw                      string
+		NumMoleculesGenerated            respjson.Field
+		TotalMoleculesToGenerate         respjson.Field
+		LatestResultID                   respjson.Field
+		TotalMoleculesGeneratedPreFilter respjson.Field
+		TotalMoleculesInserted           respjson.Field
+		ExtraFields                      map[string]respjson.Field
+		raw                              string
 	} `json:"-"`
 }
 
@@ -3163,13 +3179,21 @@ type SmallMoleculeDesignStartResponseProgress struct {
 	TotalMoleculesToGenerate int64 `json:"total_molecules_to_generate" api:"required"`
 	// ID of the most recently generated result
 	LatestResultID string `json:"latest_result_id"`
+	// Cumulative number of molecules produced by the model before filtering and
+	// deduplication. Useful for monitoring generation efficiency.
+	TotalMoleculesGeneratedPreFilter int64 `json:"total_molecules_generated_pre_filter"`
+	// Cumulative number of molecules that survived filtering and deduplication and
+	// became scoreable samples.
+	TotalMoleculesInserted int64 `json:"total_molecules_inserted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		NumMoleculesGenerated    respjson.Field
-		TotalMoleculesToGenerate respjson.Field
-		LatestResultID           respjson.Field
-		ExtraFields              map[string]respjson.Field
-		raw                      string
+		NumMoleculesGenerated            respjson.Field
+		TotalMoleculesToGenerate         respjson.Field
+		LatestResultID                   respjson.Field
+		TotalMoleculesGeneratedPreFilter respjson.Field
+		TotalMoleculesInserted           respjson.Field
+		ExtraFields                      map[string]respjson.Field
+		raw                              string
 	} `json:"-"`
 }
 
@@ -4488,13 +4512,21 @@ type SmallMoleculeDesignStopResponseProgress struct {
 	TotalMoleculesToGenerate int64 `json:"total_molecules_to_generate" api:"required"`
 	// ID of the most recently generated result
 	LatestResultID string `json:"latest_result_id"`
+	// Cumulative number of molecules produced by the model before filtering and
+	// deduplication. Useful for monitoring generation efficiency.
+	TotalMoleculesGeneratedPreFilter int64 `json:"total_molecules_generated_pre_filter"`
+	// Cumulative number of molecules that survived filtering and deduplication and
+	// became scoreable samples.
+	TotalMoleculesInserted int64 `json:"total_molecules_inserted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		NumMoleculesGenerated    respjson.Field
-		TotalMoleculesToGenerate respjson.Field
-		LatestResultID           respjson.Field
-		ExtraFields              map[string]respjson.Field
-		raw                      string
+		NumMoleculesGenerated            respjson.Field
+		TotalMoleculesToGenerate         respjson.Field
+		LatestResultID                   respjson.Field
+		TotalMoleculesGeneratedPreFilter respjson.Field
+		TotalMoleculesInserted           respjson.Field
+		ExtraFields                      map[string]respjson.Field
+		raw                              string
 	} `json:"-"`
 }
 
