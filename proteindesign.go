@@ -2699,21 +2699,13 @@ type ProteinDesignGetResponseProgress struct {
 	TotalProteinsToGenerate int64 `json:"total_proteins_to_generate" api:"required"`
 	// ID of the most recently generated result
 	LatestResultID string `json:"latest_result_id"`
-	// Cumulative number of designs produced by the model before filtering and
-	// deduplication. Useful for monitoring generation efficiency.
-	TotalProteinsGeneratedPreFilter int64 `json:"total_proteins_generated_pre_filter"`
-	// Cumulative number of designs that survived filtering and deduplication and
-	// became scoreable samples.
-	TotalProteinsInserted int64 `json:"total_proteins_inserted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		NumProteinsGenerated            respjson.Field
-		TotalProteinsToGenerate         respjson.Field
-		LatestResultID                  respjson.Field
-		TotalProteinsGeneratedPreFilter respjson.Field
-		TotalProteinsInserted           respjson.Field
-		ExtraFields                     map[string]respjson.Field
-		raw                             string
+		NumProteinsGenerated    respjson.Field
+		TotalProteinsToGenerate respjson.Field
+		LatestResultID          respjson.Field
+		ExtraFields             map[string]respjson.Field
+		raw                     string
 	} `json:"-"`
 }
 
@@ -2815,21 +2807,13 @@ type ProteinDesignListResponseProgress struct {
 	TotalProteinsToGenerate int64 `json:"total_proteins_to_generate" api:"required"`
 	// ID of the most recently generated result
 	LatestResultID string `json:"latest_result_id"`
-	// Cumulative number of designs produced by the model before filtering and
-	// deduplication. Useful for monitoring generation efficiency.
-	TotalProteinsGeneratedPreFilter int64 `json:"total_proteins_generated_pre_filter"`
-	// Cumulative number of designs that survived filtering and deduplication and
-	// became scoreable samples.
-	TotalProteinsInserted int64 `json:"total_proteins_inserted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		NumProteinsGenerated            respjson.Field
-		TotalProteinsToGenerate         respjson.Field
-		LatestResultID                  respjson.Field
-		TotalProteinsGeneratedPreFilter respjson.Field
-		TotalProteinsInserted           respjson.Field
-		ExtraFields                     map[string]respjson.Field
-		raw                             string
+		NumProteinsGenerated    respjson.Field
+		TotalProteinsToGenerate respjson.Field
+		LatestResultID          respjson.Field
+		ExtraFields             map[string]respjson.Field
+		raw                     string
 	} `json:"-"`
 }
 
@@ -5946,21 +5930,13 @@ type ProteinDesignStartResponseProgress struct {
 	TotalProteinsToGenerate int64 `json:"total_proteins_to_generate" api:"required"`
 	// ID of the most recently generated result
 	LatestResultID string `json:"latest_result_id"`
-	// Cumulative number of designs produced by the model before filtering and
-	// deduplication. Useful for monitoring generation efficiency.
-	TotalProteinsGeneratedPreFilter int64 `json:"total_proteins_generated_pre_filter"`
-	// Cumulative number of designs that survived filtering and deduplication and
-	// became scoreable samples.
-	TotalProteinsInserted int64 `json:"total_proteins_inserted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		NumProteinsGenerated            respjson.Field
-		TotalProteinsToGenerate         respjson.Field
-		LatestResultID                  respjson.Field
-		TotalProteinsGeneratedPreFilter respjson.Field
-		TotalProteinsInserted           respjson.Field
-		ExtraFields                     map[string]respjson.Field
-		raw                             string
+		NumProteinsGenerated    respjson.Field
+		TotalProteinsToGenerate respjson.Field
+		LatestResultID          respjson.Field
+		ExtraFields             map[string]respjson.Field
+		raw                     string
 	} `json:"-"`
 }
 
@@ -8527,21 +8503,13 @@ type ProteinDesignStopResponseProgress struct {
 	TotalProteinsToGenerate int64 `json:"total_proteins_to_generate" api:"required"`
 	// ID of the most recently generated result
 	LatestResultID string `json:"latest_result_id"`
-	// Cumulative number of designs produced by the model before filtering and
-	// deduplication. Useful for monitoring generation efficiency.
-	TotalProteinsGeneratedPreFilter int64 `json:"total_proteins_generated_pre_filter"`
-	// Cumulative number of designs that survived filtering and deduplication and
-	// became scoreable samples.
-	TotalProteinsInserted int64 `json:"total_proteins_inserted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		NumProteinsGenerated            respjson.Field
-		TotalProteinsToGenerate         respjson.Field
-		LatestResultID                  respjson.Field
-		TotalProteinsGeneratedPreFilter respjson.Field
-		TotalProteinsInserted           respjson.Field
-		ExtraFields                     map[string]respjson.Field
-		raw                             string
+		NumProteinsGenerated    respjson.Field
+		TotalProteinsToGenerate respjson.Field
+		LatestResultID          respjson.Field
+		ExtraFields             map[string]respjson.Field
+		raw                     string
 	} `json:"-"`
 }
 

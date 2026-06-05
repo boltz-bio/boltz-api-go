@@ -148,6 +148,11 @@ func TestSmallMoleculeLibraryScreenEstimateCostWithOptionalParams(t *testing.T) 
 			PocketResidues: map[string][]int64{
 				"A": {42, 43, 44, 67, 68, 69},
 			},
+			PrecomputedAffinityPocket: boltzapi.SmallMoleculeLibraryScreenEstimateCostParamsTargetPrecomputedAffinityPocket{
+				Method:           boltzapi.SmallMoleculeLibraryScreenEstimateCostParamsTargetPrecomputedAffinityPocketMethodReferenceLigands,
+				PocketFileURL:    "s3://J!/&*z57",
+				StructureFileURL: "s3://J!/&*z57",
+			},
 			ReferenceLigands: []string{"string"},
 			Type:             "no_template",
 		},
@@ -261,6 +266,11 @@ func TestSmallMoleculeLibraryScreenStartWithOptionalParams(t *testing.T) {
 			}},
 			PocketResidues: map[string][]int64{
 				"A": {42, 43, 44, 67, 68, 69},
+			},
+			PrecomputedAffinityPocket: boltzapi.SmallMoleculeLibraryScreenStartParamsTargetPrecomputedAffinityPocket{
+				Method:           boltzapi.SmallMoleculeLibraryScreenStartParamsTargetPrecomputedAffinityPocketMethodReferenceLigands,
+				PocketFileURL:    "s3://J!/&*z57",
+				StructureFileURL: "s3://J!/&*z57",
 			},
 			ReferenceLigands: []string{"string"},
 			Type:             "no_template",
