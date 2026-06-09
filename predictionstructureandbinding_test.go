@@ -165,19 +165,16 @@ func TestPredictionStructureAndBindingEstimateCostWithOptionalParams(t *testing.
 			},
 			NumSamples: boltzapi.Int(1),
 			Templates: []boltzapi.PredictionStructureAndBindingEstimateCostParamsInputTemplate{{
-				Format: boltzapi.PredictionStructureAndBindingEstimateCostParamsInputTemplateFormatCif,
-				Source: boltzapi.PredictionStructureAndBindingEstimateCostParamsInputTemplateSourceUnion{
-					OfPredictionStructureAndBindingEstimateCostsInputTemplateSourceURLSource: &boltzapi.PredictionStructureAndBindingEstimateCostParamsInputTemplateSourceURLSource{
+				TemplateChains: []boltzapi.PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateChain{{
+					InputChainID:    "input_chain_id",
+					TemplateChainID: "template_chain_id",
+				}},
+				TemplateStructure: boltzapi.PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureUnion{
+					OfPredictionStructureAndBindingEstimateCostsInputTemplateTemplateStructureURLSource: &boltzapi.PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureURLSource{
 						URL: "https://example.com",
 					},
 				},
-				ChainID: boltzapi.PredictionStructureAndBindingEstimateCostParamsInputTemplateChainIDUnion{
-					OfString: boltzapi.String("string"),
-				},
-				Force: boltzapi.Bool(true),
-				TemplateID: boltzapi.PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateIDUnion{
-					OfString: boltzapi.String("string"),
-				},
+				Force:     boltzapi.Bool(true),
 				Threshold: boltzapi.Float(0),
 			}},
 		},
@@ -266,19 +263,16 @@ func TestPredictionStructureAndBindingStartWithOptionalParams(t *testing.T) {
 			},
 			NumSamples: boltzapi.Int(1),
 			Templates: []boltzapi.PredictionStructureAndBindingStartParamsInputTemplate{{
-				Format: boltzapi.PredictionStructureAndBindingStartParamsInputTemplateFormatCif,
-				Source: boltzapi.PredictionStructureAndBindingStartParamsInputTemplateSourceUnion{
-					OfPredictionStructureAndBindingStartsInputTemplateSourceURLSource: &boltzapi.PredictionStructureAndBindingStartParamsInputTemplateSourceURLSource{
+				TemplateChains: []boltzapi.PredictionStructureAndBindingStartParamsInputTemplateTemplateChain{{
+					InputChainID:    "input_chain_id",
+					TemplateChainID: "template_chain_id",
+				}},
+				TemplateStructure: boltzapi.PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureUnion{
+					OfPredictionStructureAndBindingStartsInputTemplateTemplateStructureURLSource: &boltzapi.PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureURLSource{
 						URL: "https://example.com",
 					},
 				},
-				ChainID: boltzapi.PredictionStructureAndBindingStartParamsInputTemplateChainIDUnion{
-					OfString: boltzapi.String("string"),
-				},
-				Force: boltzapi.Bool(true),
-				TemplateID: boltzapi.PredictionStructureAndBindingStartParamsInputTemplateTemplateIDUnion{
-					OfString: boltzapi.String("string"),
-				},
+				Force:     boltzapi.Bool(true),
 				Threshold: boltzapi.Float(0),
 			}},
 		},
