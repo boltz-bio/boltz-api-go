@@ -287,10 +287,6 @@ type SmallMoleculeDesignGetResponseInputTarget struct {
 	// constraint remains separate from any explicit pocket constraints in
 	// target.constraints. When omitted, the model auto-detects the pocket.
 	PocketResidues map[string][]int64 `json:"pocket_residues"`
-	// Precomputed affinity-pocket artifacts for this target. When provided,
-	// small-molecule design/screen pipelines reuse this pocket and skip Compute
-	// affinity pocket search.
-	PrecomputedAffinityPocket SmallMoleculeDesignGetResponseInputTargetPrecomputedAffinityPocket `json:"precomputed_affinity_pocket"`
 	// Reference ligands as SMILES strings that help the model identify the binding
 	// pocket. When omitted, a set of drug-like default ligands is used for pocket
 	// detection.
@@ -302,15 +298,14 @@ type SmallMoleculeDesignGetResponseInputTarget struct {
 	Type string `json:"type"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Entities                  respjson.Field
-		Bonds                     respjson.Field
-		Constraints               respjson.Field
-		PocketResidues            respjson.Field
-		PrecomputedAffinityPocket respjson.Field
-		ReferenceLigands          respjson.Field
-		Type                      respjson.Field
-		ExtraFields               map[string]respjson.Field
-		raw                       string
+		Entities         respjson.Field
+		Bonds            respjson.Field
+		Constraints      respjson.Field
+		PocketResidues   respjson.Field
+		ReferenceLigands respjson.Field
+		Type             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
 	} `json:"-"`
 }
 
@@ -893,39 +888,6 @@ func (r SmallMoleculeDesignGetResponseInputTargetConstraintContactConstraintResp
 func (r *SmallMoleculeDesignGetResponseInputTargetConstraintContactConstraintResponseToken2LigandContactTokenResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// Precomputed affinity-pocket artifacts for this target. When provided,
-// small-molecule design/screen pipelines reuse this pocket and skip Compute
-// affinity pocket search.
-type SmallMoleculeDesignGetResponseInputTargetPrecomputedAffinityPocket struct {
-	// Any of "reference_ligands", "residue_ids".
-	Method           SmallMoleculeDesignGetResponseInputTargetPrecomputedAffinityPocketMethod `json:"method" api:"required"`
-	PocketFileURL    string                                                                   `json:"pocket_file_url" api:"required"`
-	StructureFileURL string                                                                   `json:"structure_file_url" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Method           respjson.Field
-		PocketFileURL    respjson.Field
-		StructureFileURL respjson.Field
-		ExtraFields      map[string]respjson.Field
-		raw              string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r SmallMoleculeDesignGetResponseInputTargetPrecomputedAffinityPocket) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *SmallMoleculeDesignGetResponseInputTargetPrecomputedAffinityPocket) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type SmallMoleculeDesignGetResponseInputTargetPrecomputedAffinityPocketMethod string
-
-const (
-	SmallMoleculeDesignGetResponseInputTargetPrecomputedAffinityPocketMethodReferenceLigands SmallMoleculeDesignGetResponseInputTargetPrecomputedAffinityPocketMethod = "reference_ligands"
-	SmallMoleculeDesignGetResponseInputTargetPrecomputedAffinityPocketMethodResidueIDs       SmallMoleculeDesignGetResponseInputTargetPrecomputedAffinityPocketMethod = "residue_ids"
-)
 
 // Molecule filtering configuration. Controls both Boltz built-in SMARTS filtering
 // and custom filters.
@@ -2032,10 +1994,6 @@ type SmallMoleculeDesignStartResponseInputTarget struct {
 	// constraint remains separate from any explicit pocket constraints in
 	// target.constraints. When omitted, the model auto-detects the pocket.
 	PocketResidues map[string][]int64 `json:"pocket_residues"`
-	// Precomputed affinity-pocket artifacts for this target. When provided,
-	// small-molecule design/screen pipelines reuse this pocket and skip Compute
-	// affinity pocket search.
-	PrecomputedAffinityPocket SmallMoleculeDesignStartResponseInputTargetPrecomputedAffinityPocket `json:"precomputed_affinity_pocket"`
 	// Reference ligands as SMILES strings that help the model identify the binding
 	// pocket. When omitted, a set of drug-like default ligands is used for pocket
 	// detection.
@@ -2047,15 +2005,14 @@ type SmallMoleculeDesignStartResponseInputTarget struct {
 	Type string `json:"type"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Entities                  respjson.Field
-		Bonds                     respjson.Field
-		Constraints               respjson.Field
-		PocketResidues            respjson.Field
-		PrecomputedAffinityPocket respjson.Field
-		ReferenceLigands          respjson.Field
-		Type                      respjson.Field
-		ExtraFields               map[string]respjson.Field
-		raw                       string
+		Entities         respjson.Field
+		Bonds            respjson.Field
+		Constraints      respjson.Field
+		PocketResidues   respjson.Field
+		ReferenceLigands respjson.Field
+		Type             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
 	} `json:"-"`
 }
 
@@ -2644,39 +2601,6 @@ func (r SmallMoleculeDesignStartResponseInputTargetConstraintContactConstraintRe
 func (r *SmallMoleculeDesignStartResponseInputTargetConstraintContactConstraintResponseToken2LigandContactTokenResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// Precomputed affinity-pocket artifacts for this target. When provided,
-// small-molecule design/screen pipelines reuse this pocket and skip Compute
-// affinity pocket search.
-type SmallMoleculeDesignStartResponseInputTargetPrecomputedAffinityPocket struct {
-	// Any of "reference_ligands", "residue_ids".
-	Method           SmallMoleculeDesignStartResponseInputTargetPrecomputedAffinityPocketMethod `json:"method" api:"required"`
-	PocketFileURL    string                                                                     `json:"pocket_file_url" api:"required"`
-	StructureFileURL string                                                                     `json:"structure_file_url" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Method           respjson.Field
-		PocketFileURL    respjson.Field
-		StructureFileURL respjson.Field
-		ExtraFields      map[string]respjson.Field
-		raw              string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r SmallMoleculeDesignStartResponseInputTargetPrecomputedAffinityPocket) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *SmallMoleculeDesignStartResponseInputTargetPrecomputedAffinityPocket) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type SmallMoleculeDesignStartResponseInputTargetPrecomputedAffinityPocketMethod string
-
-const (
-	SmallMoleculeDesignStartResponseInputTargetPrecomputedAffinityPocketMethodReferenceLigands SmallMoleculeDesignStartResponseInputTargetPrecomputedAffinityPocketMethod = "reference_ligands"
-	SmallMoleculeDesignStartResponseInputTargetPrecomputedAffinityPocketMethodResidueIDs       SmallMoleculeDesignStartResponseInputTargetPrecomputedAffinityPocketMethod = "residue_ids"
-)
 
 // Molecule filtering configuration. Controls both Boltz built-in SMARTS filtering
 // and custom filters.
@@ -3399,10 +3323,6 @@ type SmallMoleculeDesignStopResponseInputTarget struct {
 	// constraint remains separate from any explicit pocket constraints in
 	// target.constraints. When omitted, the model auto-detects the pocket.
 	PocketResidues map[string][]int64 `json:"pocket_residues"`
-	// Precomputed affinity-pocket artifacts for this target. When provided,
-	// small-molecule design/screen pipelines reuse this pocket and skip Compute
-	// affinity pocket search.
-	PrecomputedAffinityPocket SmallMoleculeDesignStopResponseInputTargetPrecomputedAffinityPocket `json:"precomputed_affinity_pocket"`
 	// Reference ligands as SMILES strings that help the model identify the binding
 	// pocket. When omitted, a set of drug-like default ligands is used for pocket
 	// detection.
@@ -3414,15 +3334,14 @@ type SmallMoleculeDesignStopResponseInputTarget struct {
 	Type string `json:"type"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Entities                  respjson.Field
-		Bonds                     respjson.Field
-		Constraints               respjson.Field
-		PocketResidues            respjson.Field
-		PrecomputedAffinityPocket respjson.Field
-		ReferenceLigands          respjson.Field
-		Type                      respjson.Field
-		ExtraFields               map[string]respjson.Field
-		raw                       string
+		Entities         respjson.Field
+		Bonds            respjson.Field
+		Constraints      respjson.Field
+		PocketResidues   respjson.Field
+		ReferenceLigands respjson.Field
+		Type             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
 	} `json:"-"`
 }
 
@@ -4007,39 +3926,6 @@ func (r SmallMoleculeDesignStopResponseInputTargetConstraintContactConstraintRes
 func (r *SmallMoleculeDesignStopResponseInputTargetConstraintContactConstraintResponseToken2LigandContactTokenResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// Precomputed affinity-pocket artifacts for this target. When provided,
-// small-molecule design/screen pipelines reuse this pocket and skip Compute
-// affinity pocket search.
-type SmallMoleculeDesignStopResponseInputTargetPrecomputedAffinityPocket struct {
-	// Any of "reference_ligands", "residue_ids".
-	Method           SmallMoleculeDesignStopResponseInputTargetPrecomputedAffinityPocketMethod `json:"method" api:"required"`
-	PocketFileURL    string                                                                    `json:"pocket_file_url" api:"required"`
-	StructureFileURL string                                                                    `json:"structure_file_url" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Method           respjson.Field
-		PocketFileURL    respjson.Field
-		StructureFileURL respjson.Field
-		ExtraFields      map[string]respjson.Field
-		raw              string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r SmallMoleculeDesignStopResponseInputTargetPrecomputedAffinityPocket) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *SmallMoleculeDesignStopResponseInputTargetPrecomputedAffinityPocket) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type SmallMoleculeDesignStopResponseInputTargetPrecomputedAffinityPocketMethod string
-
-const (
-	SmallMoleculeDesignStopResponseInputTargetPrecomputedAffinityPocketMethodReferenceLigands SmallMoleculeDesignStopResponseInputTargetPrecomputedAffinityPocketMethod = "reference_ligands"
-	SmallMoleculeDesignStopResponseInputTargetPrecomputedAffinityPocketMethodResidueIDs       SmallMoleculeDesignStopResponseInputTargetPrecomputedAffinityPocketMethod = "residue_ids"
-)
 
 // Molecule filtering configuration. Controls both Boltz built-in SMARTS filtering
 // and custom filters.
@@ -4716,10 +4602,6 @@ type SmallMoleculeDesignEstimateCostParamsTarget struct {
 	// constraint remains separate from any explicit pocket constraints in
 	// target.constraints. When omitted, the model auto-detects the pocket.
 	PocketResidues map[string][]int64 `json:"pocket_residues,omitzero"`
-	// Precomputed affinity-pocket artifacts for this target. When provided,
-	// small-molecule design/screen pipelines reuse this pocket and skip Compute
-	// affinity pocket search.
-	PrecomputedAffinityPocket SmallMoleculeDesignEstimateCostParamsTargetPrecomputedAffinityPocket `json:"precomputed_affinity_pocket,omitzero"`
 	// Reference ligands as SMILES strings that help the model identify the binding
 	// pocket. When omitted, a set of drug-like default ligands is used for pocket
 	// detection.
@@ -5125,34 +5007,6 @@ func (r SmallMoleculeDesignEstimateCostParamsTargetConstraintContactConstraintTo
 func (r *SmallMoleculeDesignEstimateCostParamsTargetConstraintContactConstraintToken2LigandContactToken) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// Precomputed affinity-pocket artifacts for this target. When provided,
-// small-molecule design/screen pipelines reuse this pocket and skip Compute
-// affinity pocket search.
-//
-// The properties Method, PocketFileURL, StructureFileURL are required.
-type SmallMoleculeDesignEstimateCostParamsTargetPrecomputedAffinityPocket struct {
-	// Any of "reference_ligands", "residue_ids".
-	Method           SmallMoleculeDesignEstimateCostParamsTargetPrecomputedAffinityPocketMethod `json:"method,omitzero" api:"required"`
-	PocketFileURL    string                                                                     `json:"pocket_file_url" api:"required"`
-	StructureFileURL string                                                                     `json:"structure_file_url" api:"required"`
-	paramObj
-}
-
-func (r SmallMoleculeDesignEstimateCostParamsTargetPrecomputedAffinityPocket) MarshalJSON() (data []byte, err error) {
-	type shadow SmallMoleculeDesignEstimateCostParamsTargetPrecomputedAffinityPocket
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *SmallMoleculeDesignEstimateCostParamsTargetPrecomputedAffinityPocket) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type SmallMoleculeDesignEstimateCostParamsTargetPrecomputedAffinityPocketMethod string
-
-const (
-	SmallMoleculeDesignEstimateCostParamsTargetPrecomputedAffinityPocketMethodReferenceLigands SmallMoleculeDesignEstimateCostParamsTargetPrecomputedAffinityPocketMethod = "reference_ligands"
-	SmallMoleculeDesignEstimateCostParamsTargetPrecomputedAffinityPocketMethodResidueIDs       SmallMoleculeDesignEstimateCostParamsTargetPrecomputedAffinityPocketMethod = "residue_ids"
-)
 
 // Chemical space to constrain generated molecules. Currently only 'enamine_real'
 // (Enamine REAL chemical space) is supported. Additional options may be added in
@@ -5612,10 +5466,6 @@ type SmallMoleculeDesignStartParamsTarget struct {
 	// constraint remains separate from any explicit pocket constraints in
 	// target.constraints. When omitted, the model auto-detects the pocket.
 	PocketResidues map[string][]int64 `json:"pocket_residues,omitzero"`
-	// Precomputed affinity-pocket artifacts for this target. When provided,
-	// small-molecule design/screen pipelines reuse this pocket and skip Compute
-	// affinity pocket search.
-	PrecomputedAffinityPocket SmallMoleculeDesignStartParamsTargetPrecomputedAffinityPocket `json:"precomputed_affinity_pocket,omitzero"`
 	// Reference ligands as SMILES strings that help the model identify the binding
 	// pocket. When omitted, a set of drug-like default ligands is used for pocket
 	// detection.
@@ -6021,34 +5871,6 @@ func (r SmallMoleculeDesignStartParamsTargetConstraintContactConstraintToken2Lig
 func (r *SmallMoleculeDesignStartParamsTargetConstraintContactConstraintToken2LigandContactToken) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// Precomputed affinity-pocket artifacts for this target. When provided,
-// small-molecule design/screen pipelines reuse this pocket and skip Compute
-// affinity pocket search.
-//
-// The properties Method, PocketFileURL, StructureFileURL are required.
-type SmallMoleculeDesignStartParamsTargetPrecomputedAffinityPocket struct {
-	// Any of "reference_ligands", "residue_ids".
-	Method           SmallMoleculeDesignStartParamsTargetPrecomputedAffinityPocketMethod `json:"method,omitzero" api:"required"`
-	PocketFileURL    string                                                              `json:"pocket_file_url" api:"required"`
-	StructureFileURL string                                                              `json:"structure_file_url" api:"required"`
-	paramObj
-}
-
-func (r SmallMoleculeDesignStartParamsTargetPrecomputedAffinityPocket) MarshalJSON() (data []byte, err error) {
-	type shadow SmallMoleculeDesignStartParamsTargetPrecomputedAffinityPocket
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *SmallMoleculeDesignStartParamsTargetPrecomputedAffinityPocket) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type SmallMoleculeDesignStartParamsTargetPrecomputedAffinityPocketMethod string
-
-const (
-	SmallMoleculeDesignStartParamsTargetPrecomputedAffinityPocketMethodReferenceLigands SmallMoleculeDesignStartParamsTargetPrecomputedAffinityPocketMethod = "reference_ligands"
-	SmallMoleculeDesignStartParamsTargetPrecomputedAffinityPocketMethodResidueIDs       SmallMoleculeDesignStartParamsTargetPrecomputedAffinityPocketMethod = "residue_ids"
-)
 
 // Chemical space to constrain generated molecules. Currently only 'enamine_real'
 // (Enamine REAL chemical space) is supported. Additional options may be added in

@@ -1340,18 +1340,16 @@ type PredictionStructureAndBindingGetResponseInputTemplate struct {
 	// must be unique within this template.
 	TemplateChains    []PredictionStructureAndBindingGetResponseInputTemplateTemplateChain   `json:"template_chains" api:"required"`
 	TemplateStructure PredictionStructureAndBindingGetResponseInputTemplateTemplateStructure `json:"template_structure" api:"required"`
-	// Force the template alignment within threshold.
-	Force bool `json:"force"`
-	// Distance threshold in angstroms used when force is true.
-	Threshold float64 `json:"threshold"`
+	// Force the template reference potential with this distance threshold in
+	// angstroms. Omit to use the template without force.
+	ForceThresholdAngstroms float64 `json:"force_threshold_angstroms"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		TemplateChains    respjson.Field
-		TemplateStructure respjson.Field
-		Force             respjson.Field
-		Threshold         respjson.Field
-		ExtraFields       map[string]respjson.Field
-		raw               string
+		TemplateChains          respjson.Field
+		TemplateStructure       respjson.Field
+		ForceThresholdAngstroms respjson.Field
+		ExtraFields             map[string]respjson.Field
+		raw                     string
 	} `json:"-"`
 }
 
@@ -3115,18 +3113,16 @@ type PredictionStructureAndBindingStartResponseInputTemplate struct {
 	// must be unique within this template.
 	TemplateChains    []PredictionStructureAndBindingStartResponseInputTemplateTemplateChain   `json:"template_chains" api:"required"`
 	TemplateStructure PredictionStructureAndBindingStartResponseInputTemplateTemplateStructure `json:"template_structure" api:"required"`
-	// Force the template alignment within threshold.
-	Force bool `json:"force"`
-	// Distance threshold in angstroms used when force is true.
-	Threshold float64 `json:"threshold"`
+	// Force the template reference potential with this distance threshold in
+	// angstroms. Omit to use the template without force.
+	ForceThresholdAngstroms float64 `json:"force_threshold_angstroms"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		TemplateChains    respjson.Field
-		TemplateStructure respjson.Field
-		Force             respjson.Field
-		Threshold         respjson.Field
-		ExtraFields       map[string]respjson.Field
-		raw               string
+		TemplateChains          respjson.Field
+		TemplateStructure       respjson.Field
+		ForceThresholdAngstroms respjson.Field
+		ExtraFields             map[string]respjson.Field
+		raw                     string
 	} `json:"-"`
 }
 
@@ -4334,10 +4330,9 @@ type PredictionStructureAndBindingEstimateCostParamsInputTemplate struct {
 	// How to provide a template structure file. URLs must point to a CIF or PDB file;
 	// base64 uploads must use chemical/x-cif or chemical/x-pdb.
 	TemplateStructure PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureUnion `json:"template_structure,omitzero" api:"required"`
-	// Force the template alignment within threshold.
-	Force param.Opt[bool] `json:"force,omitzero"`
-	// Distance threshold in angstroms used when force is true.
-	Threshold param.Opt[float64] `json:"threshold,omitzero"`
+	// Force the template reference potential with this distance threshold in
+	// angstroms. Omit to use the template without force.
+	ForceThresholdAngstroms param.Opt[float64] `json:"force_threshold_angstroms,omitzero"`
 	paramObj
 }
 
@@ -5235,10 +5230,9 @@ type PredictionStructureAndBindingStartParamsInputTemplate struct {
 	// How to provide a template structure file. URLs must point to a CIF or PDB file;
 	// base64 uploads must use chemical/x-cif or chemical/x-pdb.
 	TemplateStructure PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureUnion `json:"template_structure,omitzero" api:"required"`
-	// Force the template alignment within threshold.
-	Force param.Opt[bool] `json:"force,omitzero"`
-	// Distance threshold in angstroms used when force is true.
-	Threshold param.Opt[float64] `json:"threshold,omitzero"`
+	// Force the template reference potential with this distance threshold in
+	// angstroms. Omit to use the template without force.
+	ForceThresholdAngstroms param.Opt[float64] `json:"force_threshold_angstroms,omitzero"`
 	paramObj
 }
 
