@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.23.0 (2026-06-09)
+
+Full Changelog: [v0.22.0...v0.23.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.22.0...v0.23.0)
+
+### Features
+
+* **compute:** accept legacy Boltz template inputs ([b4be1d6](https://github.com/boltz-bio/boltz-api-go/commit/b4be1d6caa2c7f37976aea72ab98d288f0c19508))
+
 ## 0.22.0 (2026-06-09)
 
 Full Changelog: [v0.21.0...v0.22.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.21.0...v0.22.0)
