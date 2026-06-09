@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.22.0 (2026-06-09)
+
+Full Changelog: [v0.21.0...v0.22.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.21.0...v0.22.0)
+
+### Features
+
+* **compute:** canonicalize Boltz template inputs ([30d59ea](https://github.com/boltz-bio/boltz-api-go/commit/30d59eac760d7f74dd762589f7f8e7f596e435aa))
+
 ## 0.21.0 (2026-06-05)
 
 Full Changelog: [v0.20.0...v0.21.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.20.0...v0.21.0)
