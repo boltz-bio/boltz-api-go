@@ -212,9 +212,8 @@ type PredictionStructureAndBindingGetResponseInput struct {
 	// Number of structure samples to generate
 	NumSamples int64 `json:"num_samples"`
 	// Template structure files to guide protein-chain prediction. Supports up to 4 CIF
-	// or PDB templates from HTTPS URLs or base64 uploads. Use chain_id and template_id
-	// to map request chains to template chains when the IDs differ or when providing
-	// multi-chain templates.
+	// or PDB templates from HTTPS URLs or base64 uploads. Use template_chains to map
+	// request chains to template-file chains.
 	Templates []PredictionStructureAndBindingGetResponseInputTemplate `json:"templates"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1337,34 +1336,22 @@ func (r *PredictionStructureAndBindingGetResponseInputModelOptions) UnmarshalJSO
 // Template structure used as an inference-time guide for Boltz-2.1 protein-chain
 // geometry. Provide a CIF or PDB file from an HTTPS URL or base64 upload.
 type PredictionStructureAndBindingGetResponseInputTemplate struct {
-	// Template structure format. Base64 uploads must use media_type chemical/x-cif for
-	// CIF or chemical/x-pdb for PDB.
-	//
-	// Any of "cif", "pdb".
-	Format PredictionStructureAndBindingGetResponseInputTemplateFormat `json:"format" api:"required"`
-	Source PredictionStructureAndBindingGetResponseInputTemplateSource `json:"source" api:"required"`
-	// One chain ID, or an ordered list of chain IDs for multi-chain templates. For
-	// chain_id, values refer to input chains; for template_id, values refer to chains
-	// in the template file.
-	ChainID PredictionStructureAndBindingGetResponseInputTemplateChainIDUnion `json:"chain_id"`
+	// Request-to-template chain mappings. Each input_chain_id and template_chain_id
+	// must be unique within this template.
+	TemplateChains    []PredictionStructureAndBindingGetResponseInputTemplateTemplateChain   `json:"template_chains" api:"required"`
+	TemplateStructure PredictionStructureAndBindingGetResponseInputTemplateTemplateStructure `json:"template_structure" api:"required"`
 	// Force the template alignment within threshold.
 	Force bool `json:"force"`
-	// One chain ID, or an ordered list of chain IDs for multi-chain templates. For
-	// chain_id, values refer to input chains; for template_id, values refer to chains
-	// in the template file.
-	TemplateID PredictionStructureAndBindingGetResponseInputTemplateTemplateIDUnion `json:"template_id"`
 	// Distance threshold in angstroms used when force is true.
 	Threshold float64 `json:"threshold"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Format      respjson.Field
-		Source      respjson.Field
-		ChainID     respjson.Field
-		Force       respjson.Field
-		TemplateID  respjson.Field
-		Threshold   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		TemplateChains    respjson.Field
+		TemplateStructure respjson.Field
+		Force             respjson.Field
+		Threshold         respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
 	} `json:"-"`
 }
 
@@ -1374,16 +1361,31 @@ func (r *PredictionStructureAndBindingGetResponseInputTemplate) UnmarshalJSON(da
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Template structure format. Base64 uploads must use media_type chemical/x-cif for
-// CIF or chemical/x-pdb for PDB.
-type PredictionStructureAndBindingGetResponseInputTemplateFormat string
+// Mapping from one request chain to the corresponding chain in the template
+// structure file.
+type PredictionStructureAndBindingGetResponseInputTemplateTemplateChain struct {
+	// Chain ID in this prediction request
+	InputChainID string `json:"input_chain_id" api:"required"`
+	// Corresponding chain ID in the template structure file
+	TemplateChainID string `json:"template_chain_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		InputChainID    respjson.Field
+		TemplateChainID respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
+}
 
-const (
-	PredictionStructureAndBindingGetResponseInputTemplateFormatCif PredictionStructureAndBindingGetResponseInputTemplateFormat = "cif"
-	PredictionStructureAndBindingGetResponseInputTemplateFormatPdb PredictionStructureAndBindingGetResponseInputTemplateFormat = "pdb"
-)
+// Returns the unmodified JSON received from the API
+func (r PredictionStructureAndBindingGetResponseInputTemplateTemplateChain) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *PredictionStructureAndBindingGetResponseInputTemplateTemplateChain) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
-type PredictionStructureAndBindingGetResponseInputTemplateSource struct {
+type PredictionStructureAndBindingGetResponseInputTemplateTemplateStructure struct {
 	// URL to download the file
 	URL string `json:"url" api:"required" format:"uri"`
 	// When the presigned URL expires
@@ -1398,86 +1400,10 @@ type PredictionStructureAndBindingGetResponseInputTemplateSource struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r PredictionStructureAndBindingGetResponseInputTemplateSource) RawJSON() string {
+func (r PredictionStructureAndBindingGetResponseInputTemplateTemplateStructure) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *PredictionStructureAndBindingGetResponseInputTemplateSource) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// PredictionStructureAndBindingGetResponseInputTemplateChainIDUnion contains all
-// possible properties and values from [string], [[]string].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-//
-// If the underlying value is not a json object, one of the following properties
-// will be valid: OfString OfStringArray]
-type PredictionStructureAndBindingGetResponseInputTemplateChainIDUnion struct {
-	// This field will be present if the value is a [string] instead of an object.
-	OfString string `json:",inline"`
-	// This field will be present if the value is a [[]string] instead of an object.
-	OfStringArray []string `json:",inline"`
-	JSON          struct {
-		OfString      respjson.Field
-		OfStringArray respjson.Field
-		raw           string
-	} `json:"-"`
-}
-
-func (u PredictionStructureAndBindingGetResponseInputTemplateChainIDUnion) AsString() (v string) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u PredictionStructureAndBindingGetResponseInputTemplateChainIDUnion) AsStringArray() (v []string) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u PredictionStructureAndBindingGetResponseInputTemplateChainIDUnion) RawJSON() string {
-	return u.JSON.raw
-}
-
-func (r *PredictionStructureAndBindingGetResponseInputTemplateChainIDUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// PredictionStructureAndBindingGetResponseInputTemplateTemplateIDUnion contains
-// all possible properties and values from [string], [[]string].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-//
-// If the underlying value is not a json object, one of the following properties
-// will be valid: OfString OfStringArray]
-type PredictionStructureAndBindingGetResponseInputTemplateTemplateIDUnion struct {
-	// This field will be present if the value is a [string] instead of an object.
-	OfString string `json:",inline"`
-	// This field will be present if the value is a [[]string] instead of an object.
-	OfStringArray []string `json:",inline"`
-	JSON          struct {
-		OfString      respjson.Field
-		OfStringArray respjson.Field
-		raw           string
-	} `json:"-"`
-}
-
-func (u PredictionStructureAndBindingGetResponseInputTemplateTemplateIDUnion) AsString() (v string) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u PredictionStructureAndBindingGetResponseInputTemplateTemplateIDUnion) AsStringArray() (v []string) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u PredictionStructureAndBindingGetResponseInputTemplateTemplateIDUnion) RawJSON() string {
-	return u.JSON.raw
-}
-
-func (r *PredictionStructureAndBindingGetResponseInputTemplateTemplateIDUnion) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingGetResponseInputTemplateTemplateStructure) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -2058,9 +1984,8 @@ type PredictionStructureAndBindingStartResponseInput struct {
 	// Number of structure samples to generate
 	NumSamples int64 `json:"num_samples"`
 	// Template structure files to guide protein-chain prediction. Supports up to 4 CIF
-	// or PDB templates from HTTPS URLs or base64 uploads. Use chain_id and template_id
-	// to map request chains to template chains when the IDs differ or when providing
-	// multi-chain templates.
+	// or PDB templates from HTTPS URLs or base64 uploads. Use template_chains to map
+	// request chains to template-file chains.
 	Templates []PredictionStructureAndBindingStartResponseInputTemplate `json:"templates"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -3186,34 +3111,22 @@ func (r *PredictionStructureAndBindingStartResponseInputModelOptions) UnmarshalJ
 // Template structure used as an inference-time guide for Boltz-2.1 protein-chain
 // geometry. Provide a CIF or PDB file from an HTTPS URL or base64 upload.
 type PredictionStructureAndBindingStartResponseInputTemplate struct {
-	// Template structure format. Base64 uploads must use media_type chemical/x-cif for
-	// CIF or chemical/x-pdb for PDB.
-	//
-	// Any of "cif", "pdb".
-	Format PredictionStructureAndBindingStartResponseInputTemplateFormat `json:"format" api:"required"`
-	Source PredictionStructureAndBindingStartResponseInputTemplateSource `json:"source" api:"required"`
-	// One chain ID, or an ordered list of chain IDs for multi-chain templates. For
-	// chain_id, values refer to input chains; for template_id, values refer to chains
-	// in the template file.
-	ChainID PredictionStructureAndBindingStartResponseInputTemplateChainIDUnion `json:"chain_id"`
+	// Request-to-template chain mappings. Each input_chain_id and template_chain_id
+	// must be unique within this template.
+	TemplateChains    []PredictionStructureAndBindingStartResponseInputTemplateTemplateChain   `json:"template_chains" api:"required"`
+	TemplateStructure PredictionStructureAndBindingStartResponseInputTemplateTemplateStructure `json:"template_structure" api:"required"`
 	// Force the template alignment within threshold.
 	Force bool `json:"force"`
-	// One chain ID, or an ordered list of chain IDs for multi-chain templates. For
-	// chain_id, values refer to input chains; for template_id, values refer to chains
-	// in the template file.
-	TemplateID PredictionStructureAndBindingStartResponseInputTemplateTemplateIDUnion `json:"template_id"`
 	// Distance threshold in angstroms used when force is true.
 	Threshold float64 `json:"threshold"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Format      respjson.Field
-		Source      respjson.Field
-		ChainID     respjson.Field
-		Force       respjson.Field
-		TemplateID  respjson.Field
-		Threshold   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		TemplateChains    respjson.Field
+		TemplateStructure respjson.Field
+		Force             respjson.Field
+		Threshold         respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
 	} `json:"-"`
 }
 
@@ -3223,16 +3136,31 @@ func (r *PredictionStructureAndBindingStartResponseInputTemplate) UnmarshalJSON(
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Template structure format. Base64 uploads must use media_type chemical/x-cif for
-// CIF or chemical/x-pdb for PDB.
-type PredictionStructureAndBindingStartResponseInputTemplateFormat string
+// Mapping from one request chain to the corresponding chain in the template
+// structure file.
+type PredictionStructureAndBindingStartResponseInputTemplateTemplateChain struct {
+	// Chain ID in this prediction request
+	InputChainID string `json:"input_chain_id" api:"required"`
+	// Corresponding chain ID in the template structure file
+	TemplateChainID string `json:"template_chain_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		InputChainID    respjson.Field
+		TemplateChainID respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
+}
 
-const (
-	PredictionStructureAndBindingStartResponseInputTemplateFormatCif PredictionStructureAndBindingStartResponseInputTemplateFormat = "cif"
-	PredictionStructureAndBindingStartResponseInputTemplateFormatPdb PredictionStructureAndBindingStartResponseInputTemplateFormat = "pdb"
-)
+// Returns the unmodified JSON received from the API
+func (r PredictionStructureAndBindingStartResponseInputTemplateTemplateChain) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *PredictionStructureAndBindingStartResponseInputTemplateTemplateChain) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
-type PredictionStructureAndBindingStartResponseInputTemplateSource struct {
+type PredictionStructureAndBindingStartResponseInputTemplateTemplateStructure struct {
 	// URL to download the file
 	URL string `json:"url" api:"required" format:"uri"`
 	// When the presigned URL expires
@@ -3247,86 +3175,10 @@ type PredictionStructureAndBindingStartResponseInputTemplateSource struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r PredictionStructureAndBindingStartResponseInputTemplateSource) RawJSON() string {
+func (r PredictionStructureAndBindingStartResponseInputTemplateTemplateStructure) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *PredictionStructureAndBindingStartResponseInputTemplateSource) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// PredictionStructureAndBindingStartResponseInputTemplateChainIDUnion contains all
-// possible properties and values from [string], [[]string].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-//
-// If the underlying value is not a json object, one of the following properties
-// will be valid: OfString OfStringArray]
-type PredictionStructureAndBindingStartResponseInputTemplateChainIDUnion struct {
-	// This field will be present if the value is a [string] instead of an object.
-	OfString string `json:",inline"`
-	// This field will be present if the value is a [[]string] instead of an object.
-	OfStringArray []string `json:",inline"`
-	JSON          struct {
-		OfString      respjson.Field
-		OfStringArray respjson.Field
-		raw           string
-	} `json:"-"`
-}
-
-func (u PredictionStructureAndBindingStartResponseInputTemplateChainIDUnion) AsString() (v string) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u PredictionStructureAndBindingStartResponseInputTemplateChainIDUnion) AsStringArray() (v []string) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u PredictionStructureAndBindingStartResponseInputTemplateChainIDUnion) RawJSON() string {
-	return u.JSON.raw
-}
-
-func (r *PredictionStructureAndBindingStartResponseInputTemplateChainIDUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// PredictionStructureAndBindingStartResponseInputTemplateTemplateIDUnion contains
-// all possible properties and values from [string], [[]string].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-//
-// If the underlying value is not a json object, one of the following properties
-// will be valid: OfString OfStringArray]
-type PredictionStructureAndBindingStartResponseInputTemplateTemplateIDUnion struct {
-	// This field will be present if the value is a [string] instead of an object.
-	OfString string `json:",inline"`
-	// This field will be present if the value is a [[]string] instead of an object.
-	OfStringArray []string `json:",inline"`
-	JSON          struct {
-		OfString      respjson.Field
-		OfStringArray respjson.Field
-		raw           string
-	} `json:"-"`
-}
-
-func (u PredictionStructureAndBindingStartResponseInputTemplateTemplateIDUnion) AsString() (v string) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u PredictionStructureAndBindingStartResponseInputTemplateTemplateIDUnion) AsStringArray() (v []string) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u PredictionStructureAndBindingStartResponseInputTemplateTemplateIDUnion) RawJSON() string {
-	return u.JSON.raw
-}
-
-func (r *PredictionStructureAndBindingStartResponseInputTemplateTemplateIDUnion) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingStartResponseInputTemplateTemplateStructure) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -3714,9 +3566,8 @@ type PredictionStructureAndBindingEstimateCostParamsInput struct {
 	Constraints  []PredictionStructureAndBindingEstimateCostParamsInputConstraintUnion `json:"constraints,omitzero"`
 	ModelOptions PredictionStructureAndBindingEstimateCostParamsInputModelOptions      `json:"model_options,omitzero"`
 	// Template structure files to guide protein-chain prediction. Supports up to 4 CIF
-	// or PDB templates from HTTPS URLs or base64 uploads. Use chain_id and template_id
-	// to map request chains to template chains when the IDs differ or when providing
-	// multi-chain templates.
+	// or PDB templates from HTTPS URLs or base64 uploads. Use template_chains to map
+	// request chains to template-file chains.
 	Templates []PredictionStructureAndBindingEstimateCostParamsInputTemplate `json:"templates,omitzero"`
 	paramObj
 }
@@ -4475,27 +4326,18 @@ func (r *PredictionStructureAndBindingEstimateCostParamsInputModelOptions) Unmar
 // Template structure used as an inference-time guide for Boltz-2.1 protein-chain
 // geometry. Provide a CIF or PDB file from an HTTPS URL or base64 upload.
 //
-// The properties Format, Source are required.
+// The properties TemplateChains, TemplateStructure are required.
 type PredictionStructureAndBindingEstimateCostParamsInputTemplate struct {
-	// Template structure format. Base64 uploads must use media_type chemical/x-cif for
-	// CIF or chemical/x-pdb for PDB.
-	//
-	// Any of "cif", "pdb".
-	Format PredictionStructureAndBindingEstimateCostParamsInputTemplateFormat `json:"format,omitzero" api:"required"`
-	// How to provide a file to the API
-	Source PredictionStructureAndBindingEstimateCostParamsInputTemplateSourceUnion `json:"source,omitzero" api:"required"`
+	// Request-to-template chain mappings. Each input_chain_id and template_chain_id
+	// must be unique within this template.
+	TemplateChains []PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateChain `json:"template_chains,omitzero" api:"required"`
+	// How to provide a template structure file. URLs must point to a CIF or PDB file;
+	// base64 uploads must use chemical/x-cif or chemical/x-pdb.
+	TemplateStructure PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureUnion `json:"template_structure,omitzero" api:"required"`
 	// Force the template alignment within threshold.
 	Force param.Opt[bool] `json:"force,omitzero"`
 	// Distance threshold in angstroms used when force is true.
 	Threshold param.Opt[float64] `json:"threshold,omitzero"`
-	// One chain ID, or an ordered list of chain IDs for multi-chain templates. For
-	// chain_id, values refer to input chains; for template_id, values refer to chains
-	// in the template file.
-	ChainID PredictionStructureAndBindingEstimateCostParamsInputTemplateChainIDUnion `json:"chain_id,omitzero"`
-	// One chain ID, or an ordered list of chain IDs for multi-chain templates. For
-	// chain_id, values refer to input chains; for template_id, values refer to chains
-	// in the template file.
-	TemplateID PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateIDUnion `json:"template_id,omitzero"`
 	paramObj
 }
 
@@ -4507,97 +4349,86 @@ func (r *PredictionStructureAndBindingEstimateCostParamsInputTemplate) Unmarshal
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Template structure format. Base64 uploads must use media_type chemical/x-cif for
-// CIF or chemical/x-pdb for PDB.
-type PredictionStructureAndBindingEstimateCostParamsInputTemplateFormat string
+// Mapping from one request chain to the corresponding chain in the template
+// structure file.
+//
+// The properties InputChainID, TemplateChainID are required.
+type PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateChain struct {
+	// Chain ID in this prediction request
+	InputChainID string `json:"input_chain_id" api:"required"`
+	// Corresponding chain ID in the template structure file
+	TemplateChainID string `json:"template_chain_id" api:"required"`
+	paramObj
+}
 
-const (
-	PredictionStructureAndBindingEstimateCostParamsInputTemplateFormatCif PredictionStructureAndBindingEstimateCostParamsInputTemplateFormat = "cif"
-	PredictionStructureAndBindingEstimateCostParamsInputTemplateFormatPdb PredictionStructureAndBindingEstimateCostParamsInputTemplateFormat = "pdb"
-)
+func (r PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateChain) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateChain
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateChain) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
-type PredictionStructureAndBindingEstimateCostParamsInputTemplateSourceUnion struct {
-	OfPredictionStructureAndBindingEstimateCostsInputTemplateSourceURLSource    *PredictionStructureAndBindingEstimateCostParamsInputTemplateSourceURLSource    `json:",omitzero,inline"`
-	OfPredictionStructureAndBindingEstimateCostsInputTemplateSourceBase64Source *PredictionStructureAndBindingEstimateCostParamsInputTemplateSourceBase64Source `json:",omitzero,inline"`
+type PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureUnion struct {
+	OfPredictionStructureAndBindingEstimateCostsInputTemplateTemplateStructureURLSource                     *PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureURLSource                     `json:",omitzero,inline"`
+	OfPredictionStructureAndBindingEstimateCostsInputTemplateTemplateStructureTemplateStructureBase64Source *PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureTemplateStructureBase64Source `json:",omitzero,inline"`
 	paramUnion
 }
 
-func (u PredictionStructureAndBindingEstimateCostParamsInputTemplateSourceUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfPredictionStructureAndBindingEstimateCostsInputTemplateSourceURLSource, u.OfPredictionStructureAndBindingEstimateCostsInputTemplateSourceBase64Source)
+func (u PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfPredictionStructureAndBindingEstimateCostsInputTemplateTemplateStructureURLSource, u.OfPredictionStructureAndBindingEstimateCostsInputTemplateTemplateStructureTemplateStructureBase64Source)
 }
-func (u *PredictionStructureAndBindingEstimateCostParamsInputTemplateSourceUnion) UnmarshalJSON(data []byte) error {
+func (u *PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
 }
 
 // The properties Type, URL are required.
-type PredictionStructureAndBindingEstimateCostParamsInputTemplateSourceURLSource struct {
+type PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureURLSource struct {
 	URL string `json:"url" api:"required" format:"uri"`
 	// This field can be elided, and will marshal its zero value as "url".
 	Type constant.URL `json:"type" default:"url"`
 	paramObj
 }
 
-func (r PredictionStructureAndBindingEstimateCostParamsInputTemplateSourceURLSource) MarshalJSON() (data []byte, err error) {
-	type shadow PredictionStructureAndBindingEstimateCostParamsInputTemplateSourceURLSource
+func (r PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureURLSource) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureURLSource
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *PredictionStructureAndBindingEstimateCostParamsInputTemplateSourceURLSource) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureURLSource) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties Data, MediaType, Type are required.
-type PredictionStructureAndBindingEstimateCostParamsInputTemplateSourceBase64Source struct {
-	// Base64-encoded file contents
+type PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureTemplateStructureBase64Source struct {
+	// Base64-encoded template structure file contents
 	Data string `json:"data" api:"required"`
-	// MIME type (e.g., text/csv)
-	MediaType string `json:"media_type" api:"required"`
+	// Template structure MIME type
+	//
+	// Any of "chemical/x-cif", "chemical/x-pdb".
+	MediaType PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureTemplateStructureBase64SourceMediaType `json:"media_type,omitzero" api:"required"`
 	// This field can be elided, and will marshal its zero value as "base64".
 	Type constant.Base64 `json:"type" default:"base64"`
 	paramObj
 }
 
-func (r PredictionStructureAndBindingEstimateCostParamsInputTemplateSourceBase64Source) MarshalJSON() (data []byte, err error) {
-	type shadow PredictionStructureAndBindingEstimateCostParamsInputTemplateSourceBase64Source
+func (r PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureTemplateStructureBase64Source) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureTemplateStructureBase64Source
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *PredictionStructureAndBindingEstimateCostParamsInputTemplateSourceBase64Source) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureTemplateStructureBase64Source) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type PredictionStructureAndBindingEstimateCostParamsInputTemplateChainIDUnion struct {
-	OfString      param.Opt[string] `json:",omitzero,inline"`
-	OfStringArray []string          `json:",omitzero,inline"`
-	paramUnion
-}
+// Template structure MIME type
+type PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureTemplateStructureBase64SourceMediaType string
 
-func (u PredictionStructureAndBindingEstimateCostParamsInputTemplateChainIDUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
-}
-func (u *PredictionStructureAndBindingEstimateCostParamsInputTemplateChainIDUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateIDUnion struct {
-	OfString      param.Opt[string] `json:",omitzero,inline"`
-	OfStringArray []string          `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateIDUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
-}
-func (u *PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateIDUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
+const (
+	PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureTemplateStructureBase64SourceMediaTypeChemicalXCif PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureTemplateStructureBase64SourceMediaType = "chemical/x-cif"
+	PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureTemplateStructureBase64SourceMediaTypeChemicalXPdb PredictionStructureAndBindingEstimateCostParamsInputTemplateTemplateStructureTemplateStructureBase64SourceMediaType = "chemical/x-pdb"
+)
 
 type PredictionStructureAndBindingStartParams struct {
 	Input PredictionStructureAndBindingStartParamsInput `json:"input,omitzero" api:"required"`
@@ -4636,9 +4467,8 @@ type PredictionStructureAndBindingStartParamsInput struct {
 	Constraints  []PredictionStructureAndBindingStartParamsInputConstraintUnion `json:"constraints,omitzero"`
 	ModelOptions PredictionStructureAndBindingStartParamsInputModelOptions      `json:"model_options,omitzero"`
 	// Template structure files to guide protein-chain prediction. Supports up to 4 CIF
-	// or PDB templates from HTTPS URLs or base64 uploads. Use chain_id and template_id
-	// to map request chains to template chains when the IDs differ or when providing
-	// multi-chain templates.
+	// or PDB templates from HTTPS URLs or base64 uploads. Use template_chains to map
+	// request chains to template-file chains.
 	Templates []PredictionStructureAndBindingStartParamsInputTemplate `json:"templates,omitzero"`
 	paramObj
 }
@@ -5397,27 +5227,18 @@ func (r *PredictionStructureAndBindingStartParamsInputModelOptions) UnmarshalJSO
 // Template structure used as an inference-time guide for Boltz-2.1 protein-chain
 // geometry. Provide a CIF or PDB file from an HTTPS URL or base64 upload.
 //
-// The properties Format, Source are required.
+// The properties TemplateChains, TemplateStructure are required.
 type PredictionStructureAndBindingStartParamsInputTemplate struct {
-	// Template structure format. Base64 uploads must use media_type chemical/x-cif for
-	// CIF or chemical/x-pdb for PDB.
-	//
-	// Any of "cif", "pdb".
-	Format PredictionStructureAndBindingStartParamsInputTemplateFormat `json:"format,omitzero" api:"required"`
-	// How to provide a file to the API
-	Source PredictionStructureAndBindingStartParamsInputTemplateSourceUnion `json:"source,omitzero" api:"required"`
+	// Request-to-template chain mappings. Each input_chain_id and template_chain_id
+	// must be unique within this template.
+	TemplateChains []PredictionStructureAndBindingStartParamsInputTemplateTemplateChain `json:"template_chains,omitzero" api:"required"`
+	// How to provide a template structure file. URLs must point to a CIF or PDB file;
+	// base64 uploads must use chemical/x-cif or chemical/x-pdb.
+	TemplateStructure PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureUnion `json:"template_structure,omitzero" api:"required"`
 	// Force the template alignment within threshold.
 	Force param.Opt[bool] `json:"force,omitzero"`
 	// Distance threshold in angstroms used when force is true.
 	Threshold param.Opt[float64] `json:"threshold,omitzero"`
-	// One chain ID, or an ordered list of chain IDs for multi-chain templates. For
-	// chain_id, values refer to input chains; for template_id, values refer to chains
-	// in the template file.
-	ChainID PredictionStructureAndBindingStartParamsInputTemplateChainIDUnion `json:"chain_id,omitzero"`
-	// One chain ID, or an ordered list of chain IDs for multi-chain templates. For
-	// chain_id, values refer to input chains; for template_id, values refer to chains
-	// in the template file.
-	TemplateID PredictionStructureAndBindingStartParamsInputTemplateTemplateIDUnion `json:"template_id,omitzero"`
 	paramObj
 }
 
@@ -5429,94 +5250,83 @@ func (r *PredictionStructureAndBindingStartParamsInputTemplate) UnmarshalJSON(da
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Template structure format. Base64 uploads must use media_type chemical/x-cif for
-// CIF or chemical/x-pdb for PDB.
-type PredictionStructureAndBindingStartParamsInputTemplateFormat string
+// Mapping from one request chain to the corresponding chain in the template
+// structure file.
+//
+// The properties InputChainID, TemplateChainID are required.
+type PredictionStructureAndBindingStartParamsInputTemplateTemplateChain struct {
+	// Chain ID in this prediction request
+	InputChainID string `json:"input_chain_id" api:"required"`
+	// Corresponding chain ID in the template structure file
+	TemplateChainID string `json:"template_chain_id" api:"required"`
+	paramObj
+}
 
-const (
-	PredictionStructureAndBindingStartParamsInputTemplateFormatCif PredictionStructureAndBindingStartParamsInputTemplateFormat = "cif"
-	PredictionStructureAndBindingStartParamsInputTemplateFormatPdb PredictionStructureAndBindingStartParamsInputTemplateFormat = "pdb"
-)
+func (r PredictionStructureAndBindingStartParamsInputTemplateTemplateChain) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingStartParamsInputTemplateTemplateChain
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *PredictionStructureAndBindingStartParamsInputTemplateTemplateChain) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
-type PredictionStructureAndBindingStartParamsInputTemplateSourceUnion struct {
-	OfPredictionStructureAndBindingStartsInputTemplateSourceURLSource    *PredictionStructureAndBindingStartParamsInputTemplateSourceURLSource    `json:",omitzero,inline"`
-	OfPredictionStructureAndBindingStartsInputTemplateSourceBase64Source *PredictionStructureAndBindingStartParamsInputTemplateSourceBase64Source `json:",omitzero,inline"`
+type PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureUnion struct {
+	OfPredictionStructureAndBindingStartsInputTemplateTemplateStructureURLSource                     *PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureURLSource                     `json:",omitzero,inline"`
+	OfPredictionStructureAndBindingStartsInputTemplateTemplateStructureTemplateStructureBase64Source *PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureTemplateStructureBase64Source `json:",omitzero,inline"`
 	paramUnion
 }
 
-func (u PredictionStructureAndBindingStartParamsInputTemplateSourceUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfPredictionStructureAndBindingStartsInputTemplateSourceURLSource, u.OfPredictionStructureAndBindingStartsInputTemplateSourceBase64Source)
+func (u PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfPredictionStructureAndBindingStartsInputTemplateTemplateStructureURLSource, u.OfPredictionStructureAndBindingStartsInputTemplateTemplateStructureTemplateStructureBase64Source)
 }
-func (u *PredictionStructureAndBindingStartParamsInputTemplateSourceUnion) UnmarshalJSON(data []byte) error {
+func (u *PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
 }
 
 // The properties Type, URL are required.
-type PredictionStructureAndBindingStartParamsInputTemplateSourceURLSource struct {
+type PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureURLSource struct {
 	URL string `json:"url" api:"required" format:"uri"`
 	// This field can be elided, and will marshal its zero value as "url".
 	Type constant.URL `json:"type" default:"url"`
 	paramObj
 }
 
-func (r PredictionStructureAndBindingStartParamsInputTemplateSourceURLSource) MarshalJSON() (data []byte, err error) {
-	type shadow PredictionStructureAndBindingStartParamsInputTemplateSourceURLSource
+func (r PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureURLSource) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureURLSource
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *PredictionStructureAndBindingStartParamsInputTemplateSourceURLSource) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureURLSource) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties Data, MediaType, Type are required.
-type PredictionStructureAndBindingStartParamsInputTemplateSourceBase64Source struct {
-	// Base64-encoded file contents
+type PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureTemplateStructureBase64Source struct {
+	// Base64-encoded template structure file contents
 	Data string `json:"data" api:"required"`
-	// MIME type (e.g., text/csv)
-	MediaType string `json:"media_type" api:"required"`
+	// Template structure MIME type
+	//
+	// Any of "chemical/x-cif", "chemical/x-pdb".
+	MediaType PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureTemplateStructureBase64SourceMediaType `json:"media_type,omitzero" api:"required"`
 	// This field can be elided, and will marshal its zero value as "base64".
 	Type constant.Base64 `json:"type" default:"base64"`
 	paramObj
 }
 
-func (r PredictionStructureAndBindingStartParamsInputTemplateSourceBase64Source) MarshalJSON() (data []byte, err error) {
-	type shadow PredictionStructureAndBindingStartParamsInputTemplateSourceBase64Source
+func (r PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureTemplateStructureBase64Source) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureTemplateStructureBase64Source
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *PredictionStructureAndBindingStartParamsInputTemplateSourceBase64Source) UnmarshalJSON(data []byte) error {
+func (r *PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureTemplateStructureBase64Source) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type PredictionStructureAndBindingStartParamsInputTemplateChainIDUnion struct {
-	OfString      param.Opt[string] `json:",omitzero,inline"`
-	OfStringArray []string          `json:",omitzero,inline"`
-	paramUnion
-}
+// Template structure MIME type
+type PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureTemplateStructureBase64SourceMediaType string
 
-func (u PredictionStructureAndBindingStartParamsInputTemplateChainIDUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
-}
-func (u *PredictionStructureAndBindingStartParamsInputTemplateChainIDUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type PredictionStructureAndBindingStartParamsInputTemplateTemplateIDUnion struct {
-	OfString      param.Opt[string] `json:",omitzero,inline"`
-	OfStringArray []string          `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u PredictionStructureAndBindingStartParamsInputTemplateTemplateIDUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
-}
-func (u *PredictionStructureAndBindingStartParamsInputTemplateTemplateIDUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
+const (
+	PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureTemplateStructureBase64SourceMediaTypeChemicalXCif PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureTemplateStructureBase64SourceMediaType = "chemical/x-cif"
+	PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureTemplateStructureBase64SourceMediaTypeChemicalXPdb PredictionStructureAndBindingStartParamsInputTemplateTemplateStructureTemplateStructureBase64SourceMediaType = "chemical/x-pdb"
+)
