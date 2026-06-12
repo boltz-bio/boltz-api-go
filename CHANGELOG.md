@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.24.0 (2026-06-12)
+
+Full Changelog: [v0.23.0...v0.24.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.23.0...v0.24.0)
+
+### Features
+
+* **predictions:** expose predicted ligand SDF URL in compute_api + platform ([66d98d7](https://github.com/boltz-bio/boltz-api-go/commit/66d98d7e2cefeeaf128e692e8ac51da07feaab16))
+
 ## 0.23.0 (2026-06-09)
 
 Full Changelog: [v0.22.0...v0.23.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.22.0...v0.23.0)
