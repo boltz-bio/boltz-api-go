@@ -1778,14 +1778,16 @@ func (r *SmallMoleculeLibraryScreenListResultsResponse) UnmarshalJSON(data []byt
 }
 
 type SmallMoleculeLibraryScreenListResultsResponseArtifacts struct {
-	Archive   SmallMoleculeLibraryScreenListResultsResponseArtifactsArchive   `json:"archive" api:"required"`
-	Structure SmallMoleculeLibraryScreenListResultsResponseArtifactsStructure `json:"structure" api:"required"`
+	Archive         SmallMoleculeLibraryScreenListResultsResponseArtifactsArchive         `json:"archive" api:"required"`
+	Structure       SmallMoleculeLibraryScreenListResultsResponseArtifactsStructure       `json:"structure" api:"required"`
+	LigandStructure SmallMoleculeLibraryScreenListResultsResponseArtifactsLigandStructure `json:"ligand_structure"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Archive     respjson.Field
-		Structure   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		Archive         respjson.Field
+		Structure       respjson.Field
+		LigandStructure respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -1836,6 +1838,28 @@ func (r SmallMoleculeLibraryScreenListResultsResponseArtifactsStructure) RawJSON
 	return r.JSON.raw
 }
 func (r *SmallMoleculeLibraryScreenListResultsResponseArtifactsStructure) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SmallMoleculeLibraryScreenListResultsResponseArtifactsLigandStructure struct {
+	// URL to download the file
+	URL string `json:"url" api:"required" format:"uri"`
+	// When the presigned URL expires
+	URLExpiresAt time.Time `json:"url_expires_at" api:"required" format:"date-time"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		URL          respjson.Field
+		URLExpiresAt respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenListResultsResponseArtifactsLigandStructure) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenListResultsResponseArtifactsLigandStructure) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
