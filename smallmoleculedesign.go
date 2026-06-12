@@ -1707,14 +1707,16 @@ func (r *SmallMoleculeDesignListResultsResponse) UnmarshalJSON(data []byte) erro
 }
 
 type SmallMoleculeDesignListResultsResponseArtifacts struct {
-	Archive   SmallMoleculeDesignListResultsResponseArtifactsArchive   `json:"archive" api:"required"`
-	Structure SmallMoleculeDesignListResultsResponseArtifactsStructure `json:"structure" api:"required"`
+	Archive         SmallMoleculeDesignListResultsResponseArtifactsArchive         `json:"archive" api:"required"`
+	Structure       SmallMoleculeDesignListResultsResponseArtifactsStructure       `json:"structure" api:"required"`
+	LigandStructure SmallMoleculeDesignListResultsResponseArtifactsLigandStructure `json:"ligand_structure"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Archive     respjson.Field
-		Structure   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		Archive         respjson.Field
+		Structure       respjson.Field
+		LigandStructure respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -1761,6 +1763,28 @@ type SmallMoleculeDesignListResultsResponseArtifactsStructure struct {
 // Returns the unmodified JSON received from the API
 func (r SmallMoleculeDesignListResultsResponseArtifactsStructure) RawJSON() string { return r.JSON.raw }
 func (r *SmallMoleculeDesignListResultsResponseArtifactsStructure) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SmallMoleculeDesignListResultsResponseArtifactsLigandStructure struct {
+	// URL to download the file
+	URL string `json:"url" api:"required" format:"uri"`
+	// When the presigned URL expires
+	URLExpiresAt time.Time `json:"url_expires_at" api:"required" format:"date-time"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		URL          respjson.Field
+		URLExpiresAt respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeDesignListResultsResponseArtifactsLigandStructure) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeDesignListResultsResponseArtifactsLigandStructure) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

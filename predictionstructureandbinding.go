@@ -1430,14 +1430,16 @@ func (r *PredictionStructureAndBindingGetResponseOutput) UnmarshalJSON(data []by
 }
 
 type PredictionStructureAndBindingGetResponseOutputAllSampleResult struct {
-	Metrics   PredictionStructureAndBindingGetResponseOutputAllSampleResultMetrics   `json:"metrics" api:"required"`
-	Structure PredictionStructureAndBindingGetResponseOutputAllSampleResultStructure `json:"structure" api:"required"`
+	Metrics         PredictionStructureAndBindingGetResponseOutputAllSampleResultMetrics         `json:"metrics" api:"required"`
+	Structure       PredictionStructureAndBindingGetResponseOutputAllSampleResultStructure       `json:"structure" api:"required"`
+	LigandStructure PredictionStructureAndBindingGetResponseOutputAllSampleResultLigandStructure `json:"ligand_structure"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Metrics     respjson.Field
-		Structure   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		Metrics         respjson.Field
+		Structure       respjson.Field
+		LigandStructure respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -1514,15 +1516,39 @@ func (r *PredictionStructureAndBindingGetResponseOutputAllSampleResultStructure)
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type PredictionStructureAndBindingGetResponseOutputBestSample struct {
-	Metrics   PredictionStructureAndBindingGetResponseOutputBestSampleMetrics   `json:"metrics" api:"required"`
-	Structure PredictionStructureAndBindingGetResponseOutputBestSampleStructure `json:"structure" api:"required"`
+type PredictionStructureAndBindingGetResponseOutputAllSampleResultLigandStructure struct {
+	// URL to download the file
+	URL string `json:"url" api:"required" format:"uri"`
+	// When the presigned URL expires
+	URLExpiresAt time.Time `json:"url_expires_at" api:"required" format:"date-time"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Metrics     respjson.Field
-		Structure   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		URL          respjson.Field
+		URLExpiresAt respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r PredictionStructureAndBindingGetResponseOutputAllSampleResultLigandStructure) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *PredictionStructureAndBindingGetResponseOutputAllSampleResultLigandStructure) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type PredictionStructureAndBindingGetResponseOutputBestSample struct {
+	Metrics         PredictionStructureAndBindingGetResponseOutputBestSampleMetrics         `json:"metrics" api:"required"`
+	Structure       PredictionStructureAndBindingGetResponseOutputBestSampleStructure       `json:"structure" api:"required"`
+	LigandStructure PredictionStructureAndBindingGetResponseOutputBestSampleLigandStructure `json:"ligand_structure"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Metrics         respjson.Field
+		Structure       respjson.Field
+		LigandStructure respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -1594,6 +1620,28 @@ func (r PredictionStructureAndBindingGetResponseOutputBestSampleStructure) RawJS
 	return r.JSON.raw
 }
 func (r *PredictionStructureAndBindingGetResponseOutputBestSampleStructure) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type PredictionStructureAndBindingGetResponseOutputBestSampleLigandStructure struct {
+	// URL to download the file
+	URL string `json:"url" api:"required" format:"uri"`
+	// When the presigned URL expires
+	URLExpiresAt time.Time `json:"url_expires_at" api:"required" format:"date-time"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		URL          respjson.Field
+		URLExpiresAt respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r PredictionStructureAndBindingGetResponseOutputBestSampleLigandStructure) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *PredictionStructureAndBindingGetResponseOutputBestSampleLigandStructure) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -3203,14 +3251,16 @@ func (r *PredictionStructureAndBindingStartResponseOutput) UnmarshalJSON(data []
 }
 
 type PredictionStructureAndBindingStartResponseOutputAllSampleResult struct {
-	Metrics   PredictionStructureAndBindingStartResponseOutputAllSampleResultMetrics   `json:"metrics" api:"required"`
-	Structure PredictionStructureAndBindingStartResponseOutputAllSampleResultStructure `json:"structure" api:"required"`
+	Metrics         PredictionStructureAndBindingStartResponseOutputAllSampleResultMetrics         `json:"metrics" api:"required"`
+	Structure       PredictionStructureAndBindingStartResponseOutputAllSampleResultStructure       `json:"structure" api:"required"`
+	LigandStructure PredictionStructureAndBindingStartResponseOutputAllSampleResultLigandStructure `json:"ligand_structure"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Metrics     respjson.Field
-		Structure   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		Metrics         respjson.Field
+		Structure       respjson.Field
+		LigandStructure respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -3287,15 +3337,39 @@ func (r *PredictionStructureAndBindingStartResponseOutputAllSampleResultStructur
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type PredictionStructureAndBindingStartResponseOutputBestSample struct {
-	Metrics   PredictionStructureAndBindingStartResponseOutputBestSampleMetrics   `json:"metrics" api:"required"`
-	Structure PredictionStructureAndBindingStartResponseOutputBestSampleStructure `json:"structure" api:"required"`
+type PredictionStructureAndBindingStartResponseOutputAllSampleResultLigandStructure struct {
+	// URL to download the file
+	URL string `json:"url" api:"required" format:"uri"`
+	// When the presigned URL expires
+	URLExpiresAt time.Time `json:"url_expires_at" api:"required" format:"date-time"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Metrics     respjson.Field
-		Structure   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		URL          respjson.Field
+		URLExpiresAt respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r PredictionStructureAndBindingStartResponseOutputAllSampleResultLigandStructure) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *PredictionStructureAndBindingStartResponseOutputAllSampleResultLigandStructure) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type PredictionStructureAndBindingStartResponseOutputBestSample struct {
+	Metrics         PredictionStructureAndBindingStartResponseOutputBestSampleMetrics         `json:"metrics" api:"required"`
+	Structure       PredictionStructureAndBindingStartResponseOutputBestSampleStructure       `json:"structure" api:"required"`
+	LigandStructure PredictionStructureAndBindingStartResponseOutputBestSampleLigandStructure `json:"ligand_structure"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Metrics         respjson.Field
+		Structure       respjson.Field
+		LigandStructure respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -3369,6 +3443,28 @@ func (r PredictionStructureAndBindingStartResponseOutputBestSampleStructure) Raw
 	return r.JSON.raw
 }
 func (r *PredictionStructureAndBindingStartResponseOutputBestSampleStructure) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type PredictionStructureAndBindingStartResponseOutputBestSampleLigandStructure struct {
+	// URL to download the file
+	URL string `json:"url" api:"required" format:"uri"`
+	// When the presigned URL expires
+	URLExpiresAt time.Time `json:"url_expires_at" api:"required" format:"date-time"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		URL          respjson.Field
+		URLExpiresAt respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r PredictionStructureAndBindingStartResponseOutputBestSampleLigandStructure) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *PredictionStructureAndBindingStartResponseOutputBestSampleLigandStructure) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
