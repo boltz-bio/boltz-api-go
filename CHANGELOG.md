@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.26.0 (2026-06-15)
+
+Full Changelog: [v0.25.1...v0.26.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.25.1...v0.26.0)
+
+### Features
+
+* **compute-api:** add ADME estimate-cost endpoint ([847726f](https://github.com/boltz-bio/boltz-api-go/commit/847726f63531c7a117b24859287e4aadb481818a))
+
 ## 0.25.1 (2026-06-15)
 
 Full Changelog: [v0.25.0...v0.25.1](https://github.com/boltz-bio/boltz-api-go/compare/v0.25.0...v0.25.1)
