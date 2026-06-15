@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.24.1 (2026-06-15)
+
+Full Changelog: [v0.24.0...v0.24.1](https://github.com/boltz-bio/boltz-api-go/compare/v0.24.0...v0.24.1)
+
+### Bug Fixes
+
+* **boltz2:** route to H100 based on token count, not polymer residues ([0937b34](https://github.com/boltz-bio/boltz-api-go/commit/0937b345bf688bb2064dc5b9c2359e4d917fea3f))
+* **compute-api:** raise Boltz2 sampling steps minimum ([cc2a83a](https://github.com/boltz-bio/boltz-api-go/commit/cc2a83a9f4e15a67d00166da509d504f19d0c984))
+
 ## 0.24.0 (2026-06-12)
 
 Full Changelog: [v0.23.0...v0.24.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.23.0...v0.24.0)
