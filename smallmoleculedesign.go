@@ -96,8 +96,8 @@ func (r *SmallMoleculeDesignService) DeleteData(ctx context.Context, id string, 
 }
 
 // Estimate the billed cost of a small molecule design run without creating any
-// resource or consuming GPU. Includes the SynFlowNet generation charges implied by
-// the scheduler iteration cap plus Boltz2 scoring for each requested molecule.
+// resource or consuming GPU. Includes generation charges implied by the scheduler
+// iteration cap plus structure-scoring charges for each requested molecule.
 func (r *SmallMoleculeDesignService) EstimateCost(ctx context.Context, body SmallMoleculeDesignEstimateCostParams, opts ...option.RequestOption) (res *SmallMoleculeDesignEstimateCostResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "compute/v1/small-molecule/design/estimate-cost"
