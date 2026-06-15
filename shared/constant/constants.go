@@ -18,16 +18,15 @@ func ValueOf[T Constant[T]]() T {
 	return t.Default()
 }
 
+type String1_0 string                    // Always "1.0"
 type AdmeV1 string                       // Always "adme-v1"
 type All string                          // Always "all"
 type APIKey string                       // Always "api_key"
 type Base64 string                       // Always "base64"
 type BoltzCurated string                 // Always "boltz_curated"
 type Boltz2_1 string                     // Always "boltz-2.1"
-type BoltzProteinDesign string           // Always "boltz-protein-design"
-type BoltzProteinScreen string           // Always "boltz-protein-screen"
-type BoltzSmDesign string                // Always "boltz-sm-design"
-type BoltzSmScreen string                // Always "boltz-sm-screen"
+type Boltzmol string                     // Always "boltzmol"
+type Boltzprot string                    // Always "boltzprot"
 type Ccd string                          // Always "ccd"
 type ChemicalXCif string                 // Always "chemical/x-cif"
 type Contact string                      // Always "contact"
@@ -67,16 +66,15 @@ type URL string                          // Always "url"
 type User string                         // Always "user"
 type Workspace string                    // Always "workspace"
 
+func (c String1_0) Default() String1_0                       { return "1.0" }
 func (c AdmeV1) Default() AdmeV1                             { return "adme-v1" }
 func (c All) Default() All                                   { return "all" }
 func (c APIKey) Default() APIKey                             { return "api_key" }
 func (c Base64) Default() Base64                             { return "base64" }
 func (c BoltzCurated) Default() BoltzCurated                 { return "boltz_curated" }
 func (c Boltz2_1) Default() Boltz2_1                         { return "boltz-2.1" }
-func (c BoltzProteinDesign) Default() BoltzProteinDesign     { return "boltz-protein-design" }
-func (c BoltzProteinScreen) Default() BoltzProteinScreen     { return "boltz-protein-screen" }
-func (c BoltzSmDesign) Default() BoltzSmDesign               { return "boltz-sm-design" }
-func (c BoltzSmScreen) Default() BoltzSmScreen               { return "boltz-sm-screen" }
+func (c Boltzmol) Default() Boltzmol                         { return "boltzmol" }
+func (c Boltzprot) Default() Boltzprot                       { return "boltzprot" }
 func (c Ccd) Default() Ccd                                   { return "ccd" }
 func (c ChemicalXCif) Default() ChemicalXCif                 { return "chemical/x-cif" }
 func (c Contact) Default() Contact                           { return "contact" }
@@ -120,16 +118,15 @@ func (c URL) Default() URL                                     { return "url" }
 func (c User) Default() User                                   { return "user" }
 func (c Workspace) Default() Workspace                         { return "workspace" }
 
+func (c String1_0) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c AdmeV1) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c All) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c APIKey) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Base64) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c BoltzCurated) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c Boltz2_1) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
-func (c BoltzProteinDesign) MarshalJSON() ([]byte, error)           { return marshalString(c) }
-func (c BoltzProteinScreen) MarshalJSON() ([]byte, error)           { return marshalString(c) }
-func (c BoltzSmDesign) MarshalJSON() ([]byte, error)                { return marshalString(c) }
-func (c BoltzSmScreen) MarshalJSON() ([]byte, error)                { return marshalString(c) }
+func (c Boltzmol) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c Boltzprot) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c Ccd) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c ChemicalXCif) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c Contact) MarshalJSON() ([]byte, error)                      { return marshalString(c) }

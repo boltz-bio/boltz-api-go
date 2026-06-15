@@ -21,11 +21,11 @@ type Client struct {
 	// Run prediction models on molecular inputs. Each application is available as its
 	// own endpoint with application-specific inputs and outputs.
 	Predictions PredictionService
-	// Small Molecule Engine — design novel small molecules and screen compound
+	// Small Molecule Pipeline — design novel small molecules and screen compound
 	// libraries against protein targets. Includes de novo generation and virtual
 	// screening.
 	SmallMolecule SmallMoleculeService
-	// Protein Engine — design novel protein binders and screen protein libraries
+	// Protein Pipeline — design novel protein binders and screen protein libraries
 	// against targets. Includes de novo protein design and library screening.
 	Protein ProteinService
 	// Manage workspaces and API keys. Requires an admin API key. Admin keys have full

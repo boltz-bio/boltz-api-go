@@ -18,7 +18,7 @@ import (
 // the [NewAdminService] method instead.
 type AdminService struct {
 	Options []option.RequestOption
-	// Workspaces provide isolated environments for organizing predictions and engine
+	// Workspaces provide isolated environments for organizing predictions and pipeline
 	// runs across teams, projects, or customers. Each workspace has independent data
 	// retention settings and can be associated with workspace API keys.
 	Workspaces AdminWorkspaceService

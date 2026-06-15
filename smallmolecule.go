@@ -6,7 +6,7 @@ import (
 	"github.com/boltz-bio/boltz-api-go/option"
 )
 
-// Small Molecule Engine — design novel small molecules and screen compound
+// Small Molecule Pipeline — design novel small molecules and screen compound
 // libraries against protein targets. Includes de novo generation and virtual
 // screening.
 //

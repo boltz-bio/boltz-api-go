@@ -152,7 +152,7 @@ func (r *ProteinDesignService) Stop(ctx context.Context, id string, opts ...opti
 	return res, err
 }
 
-// A protein design engine run that generates novel protein binders
+// A protein design pipeline run that generates novel protein binders
 type ProteinDesignGetResponse struct {
 	// Unique ProteinDesignRun identifier
 	ID          string    `json:"id" api:"required"`
@@ -161,17 +161,25 @@ type ProteinDesignGetResponse struct {
 	// When the input, output, and result data was permanently deleted. Null if data
 	// has not been deleted.
 	DataDeletedAt time.Time `json:"data_deleted_at" api:"required" format:"date-time"`
-	// Engine used for protein design
-	Engine constant.BoltzProteinDesign `json:"engine" default:"boltz-protein-design"`
-	// Engine version used for protein design
-	EngineVersion string                        `json:"engine_version" api:"required"`
+	// Deprecated. Use pipeline instead.
+	//
+	// Deprecated: Use pipeline instead.
+	Engine constant.Boltzprot `json:"engine" default:"boltzprot"`
+	// Deprecated. Use pipeline_version instead.
+	//
+	// Deprecated: Use pipeline_version instead.
+	EngineVersion constant.String1_0            `json:"engine_version" default:"1.0"`
 	Error         ProteinDesignGetResponseError `json:"error" api:"required"`
 	// Pipeline input (null if data deleted)
 	Input ProteinDesignGetResponseInput `json:"input" api:"required"`
 	// Whether this resource was created with a live API key.
-	Livemode  bool                             `json:"livemode" api:"required"`
-	Progress  ProteinDesignGetResponseProgress `json:"progress" api:"required"`
-	StartedAt time.Time                        `json:"started_at" api:"required" format:"date-time"`
+	Livemode bool `json:"livemode" api:"required"`
+	// Pipeline used for protein design
+	Pipeline constant.Boltzprot `json:"pipeline" default:"boltzprot"`
+	// Pipeline version used for protein design
+	PipelineVersion constant.String1_0               `json:"pipeline_version" default:"1.0"`
+	Progress        ProteinDesignGetResponseProgress `json:"progress" api:"required"`
+	StartedAt       time.Time                        `json:"started_at" api:"required" format:"date-time"`
 	// Any of "pending", "running", "succeeded", "failed", "stopped".
 	Status    ProteinDesignGetResponseStatus `json:"status" api:"required"`
 	StoppedAt time.Time                      `json:"stopped_at" api:"required" format:"date-time"`
@@ -181,23 +189,25 @@ type ProteinDesignGetResponse struct {
 	IdempotencyKey string `json:"idempotency_key"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID             respjson.Field
-		CompletedAt    respjson.Field
-		CreatedAt      respjson.Field
-		DataDeletedAt  respjson.Field
-		Engine         respjson.Field
-		EngineVersion  respjson.Field
-		Error          respjson.Field
-		Input          respjson.Field
-		Livemode       respjson.Field
-		Progress       respjson.Field
-		StartedAt      respjson.Field
-		Status         respjson.Field
-		StoppedAt      respjson.Field
-		WorkspaceID    respjson.Field
-		IdempotencyKey respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
+		ID              respjson.Field
+		CompletedAt     respjson.Field
+		CreatedAt       respjson.Field
+		DataDeletedAt   respjson.Field
+		Engine          respjson.Field
+		EngineVersion   respjson.Field
+		Error           respjson.Field
+		Input           respjson.Field
+		Livemode        respjson.Field
+		Pipeline        respjson.Field
+		PipelineVersion respjson.Field
+		Progress        respjson.Field
+		StartedAt       respjson.Field
+		Status          respjson.Field
+		StoppedAt       respjson.Field
+		WorkspaceID     respjson.Field
+		IdempotencyKey  respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -353,12 +363,13 @@ func (r *ProteinDesignGetResponseInputBinderSpecificationUnionRules) UnmarshalJS
 // Binder specification starting from an existing 3D structure. Upload a CIF/PDB
 // file and select which chains to include, which residues to keep, and which
 // regions to redesign. Only chains included in chain_selection are part of the
-// engine run.
+// pipeline run.
 type ProteinDesignGetResponseInputBinderSpecificationStructureTemplateBinderSpecResponse struct {
 	// Chains selected from the uploaded binder structure, keyed by chain ID. Only
-	// chains listed here are included in the engine run — any chains omitted from this
-	// mapping are ignored. Each value defines which residues to keep (crop_residues).
-	// Omit design_motifs to include the chain as fixed scaffold context.
+	// chains listed here are included in the pipeline run — any chains omitted from
+	// this mapping are ignored. Each value defines which residues to keep
+	// (crop_residues). Omit design_motifs to include the chain as fixed scaffold
+	// context.
 	ChainSelection map[string]ProteinDesignGetResponseInputBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion `json:"chain_selection" api:"required"`
 	// Any of "peptide", "antibody", "nanobody", "custom_protein".
 	Modality  ProteinDesignGetResponseInputBinderSpecificationStructureTemplateBinderSpecResponseModality  `json:"modality" api:"required"`
@@ -1605,7 +1616,7 @@ func (r *ProteinDesignGetResponseInputTargetUnion) UnmarshalJSON(data []byte) er
 // included in chain_selection are used.
 type ProteinDesignGetResponseInputTargetStructureTemplateTargetResponse struct {
 	// Chains selected from the uploaded structure, keyed by chain ID. Only chains
-	// listed here are included in the engine run — any chains omitted from this
+	// listed here are included in the pipeline run — any chains omitted from this
 	// mapping are ignored. Each value defines which residues to keep, which are
 	// epitope residues, which are non-binding residues, and which are flexible.
 	ChainSelection map[string]ProteinDesignGetResponseInputTargetStructureTemplateTargetResponseChainSelectionUnion `json:"chain_selection" api:"required"`
@@ -1683,7 +1694,7 @@ func (r *ProteinDesignGetResponseInputTargetStructureTemplateTargetResponseChain
 type ProteinDesignGetResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpec struct {
 	ChainType constant.Polymer `json:"chain_type" default:"polymer"`
 	// 0-indexed residue indices to retain from this chain, or 'all' to keep all
-	// residues. Residues not listed are excluded from the engine run.
+	// residues. Residues not listed are excluded from the pipeline run.
 	CropResidues ProteinDesignGetResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpecCropResiduesUnion `json:"crop_residues" api:"required"`
 	// 0-indexed residue indices where binder contact is desired (the epitope). All
 	// indices must be present in crop_residues and must not overlap
@@ -2725,7 +2736,7 @@ const (
 	ProteinDesignGetResponseStatusStopped   ProteinDesignGetResponseStatus = "stopped"
 )
 
-// Summary of a protein design engine run (excludes input)
+// Summary of a protein design pipeline run (excludes input)
 type ProteinDesignListResponse struct {
 	// Unique ProteinDesignRunSummary identifier
 	ID          string    `json:"id" api:"required"`
@@ -2734,15 +2745,23 @@ type ProteinDesignListResponse struct {
 	// When the input, output, and result data was permanently deleted. Null if data
 	// has not been deleted.
 	DataDeletedAt time.Time `json:"data_deleted_at" api:"required" format:"date-time"`
-	// Engine used for protein design
-	Engine constant.BoltzProteinDesign `json:"engine" default:"boltz-protein-design"`
-	// Engine version used for protein design
-	EngineVersion string                         `json:"engine_version" api:"required"`
+	// Deprecated. Use pipeline instead.
+	//
+	// Deprecated: Use pipeline instead.
+	Engine constant.Boltzprot `json:"engine" default:"boltzprot"`
+	// Deprecated. Use pipeline_version instead.
+	//
+	// Deprecated: Use pipeline_version instead.
+	EngineVersion constant.String1_0             `json:"engine_version" default:"1.0"`
 	Error         ProteinDesignListResponseError `json:"error" api:"required"`
 	// Whether this resource was created with a live API key.
-	Livemode  bool                              `json:"livemode" api:"required"`
-	Progress  ProteinDesignListResponseProgress `json:"progress" api:"required"`
-	StartedAt time.Time                         `json:"started_at" api:"required" format:"date-time"`
+	Livemode bool `json:"livemode" api:"required"`
+	// Pipeline used for protein design
+	Pipeline constant.Boltzprot `json:"pipeline" default:"boltzprot"`
+	// Pipeline version used for protein design
+	PipelineVersion constant.String1_0                `json:"pipeline_version" default:"1.0"`
+	Progress        ProteinDesignListResponseProgress `json:"progress" api:"required"`
+	StartedAt       time.Time                         `json:"started_at" api:"required" format:"date-time"`
 	// Any of "pending", "running", "succeeded", "failed", "stopped".
 	Status    ProteinDesignListResponseStatus `json:"status" api:"required"`
 	StoppedAt time.Time                       `json:"stopped_at" api:"required" format:"date-time"`
@@ -2752,22 +2771,24 @@ type ProteinDesignListResponse struct {
 	IdempotencyKey string `json:"idempotency_key"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID             respjson.Field
-		CompletedAt    respjson.Field
-		CreatedAt      respjson.Field
-		DataDeletedAt  respjson.Field
-		Engine         respjson.Field
-		EngineVersion  respjson.Field
-		Error          respjson.Field
-		Livemode       respjson.Field
-		Progress       respjson.Field
-		StartedAt      respjson.Field
-		Status         respjson.Field
-		StoppedAt      respjson.Field
-		WorkspaceID    respjson.Field
-		IdempotencyKey respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
+		ID              respjson.Field
+		CompletedAt     respjson.Field
+		CreatedAt       respjson.Field
+		DataDeletedAt   respjson.Field
+		Engine          respjson.Field
+		EngineVersion   respjson.Field
+		Error           respjson.Field
+		Livemode        respjson.Field
+		Pipeline        respjson.Field
+		PipelineVersion respjson.Field
+		Progress        respjson.Field
+		StartedAt       respjson.Field
+		Status          respjson.Field
+		StoppedAt       respjson.Field
+		WorkspaceID     respjson.Field
+		IdempotencyKey  respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -3383,7 +3404,7 @@ func (r *ProteinDesignListResultsResponseWarning) UnmarshalJSON(data []byte) err
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// A protein design engine run that generates novel protein binders
+// A protein design pipeline run that generates novel protein binders
 type ProteinDesignStartResponse struct {
 	// Unique ProteinDesignRun identifier
 	ID          string    `json:"id" api:"required"`
@@ -3392,17 +3413,25 @@ type ProteinDesignStartResponse struct {
 	// When the input, output, and result data was permanently deleted. Null if data
 	// has not been deleted.
 	DataDeletedAt time.Time `json:"data_deleted_at" api:"required" format:"date-time"`
-	// Engine used for protein design
-	Engine constant.BoltzProteinDesign `json:"engine" default:"boltz-protein-design"`
-	// Engine version used for protein design
-	EngineVersion string                          `json:"engine_version" api:"required"`
+	// Deprecated. Use pipeline instead.
+	//
+	// Deprecated: Use pipeline instead.
+	Engine constant.Boltzprot `json:"engine" default:"boltzprot"`
+	// Deprecated. Use pipeline_version instead.
+	//
+	// Deprecated: Use pipeline_version instead.
+	EngineVersion constant.String1_0              `json:"engine_version" default:"1.0"`
 	Error         ProteinDesignStartResponseError `json:"error" api:"required"`
 	// Pipeline input (null if data deleted)
 	Input ProteinDesignStartResponseInput `json:"input" api:"required"`
 	// Whether this resource was created with a live API key.
-	Livemode  bool                               `json:"livemode" api:"required"`
-	Progress  ProteinDesignStartResponseProgress `json:"progress" api:"required"`
-	StartedAt time.Time                          `json:"started_at" api:"required" format:"date-time"`
+	Livemode bool `json:"livemode" api:"required"`
+	// Pipeline used for protein design
+	Pipeline constant.Boltzprot `json:"pipeline" default:"boltzprot"`
+	// Pipeline version used for protein design
+	PipelineVersion constant.String1_0                 `json:"pipeline_version" default:"1.0"`
+	Progress        ProteinDesignStartResponseProgress `json:"progress" api:"required"`
+	StartedAt       time.Time                          `json:"started_at" api:"required" format:"date-time"`
 	// Any of "pending", "running", "succeeded", "failed", "stopped".
 	Status    ProteinDesignStartResponseStatus `json:"status" api:"required"`
 	StoppedAt time.Time                        `json:"stopped_at" api:"required" format:"date-time"`
@@ -3412,23 +3441,25 @@ type ProteinDesignStartResponse struct {
 	IdempotencyKey string `json:"idempotency_key"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID             respjson.Field
-		CompletedAt    respjson.Field
-		CreatedAt      respjson.Field
-		DataDeletedAt  respjson.Field
-		Engine         respjson.Field
-		EngineVersion  respjson.Field
-		Error          respjson.Field
-		Input          respjson.Field
-		Livemode       respjson.Field
-		Progress       respjson.Field
-		StartedAt      respjson.Field
-		Status         respjson.Field
-		StoppedAt      respjson.Field
-		WorkspaceID    respjson.Field
-		IdempotencyKey respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
+		ID              respjson.Field
+		CompletedAt     respjson.Field
+		CreatedAt       respjson.Field
+		DataDeletedAt   respjson.Field
+		Engine          respjson.Field
+		EngineVersion   respjson.Field
+		Error           respjson.Field
+		Input           respjson.Field
+		Livemode        respjson.Field
+		Pipeline        respjson.Field
+		PipelineVersion respjson.Field
+		Progress        respjson.Field
+		StartedAt       respjson.Field
+		Status          respjson.Field
+		StoppedAt       respjson.Field
+		WorkspaceID     respjson.Field
+		IdempotencyKey  respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -3584,12 +3615,13 @@ func (r *ProteinDesignStartResponseInputBinderSpecificationUnionRules) Unmarshal
 // Binder specification starting from an existing 3D structure. Upload a CIF/PDB
 // file and select which chains to include, which residues to keep, and which
 // regions to redesign. Only chains included in chain_selection are part of the
-// engine run.
+// pipeline run.
 type ProteinDesignStartResponseInputBinderSpecificationStructureTemplateBinderSpecResponse struct {
 	// Chains selected from the uploaded binder structure, keyed by chain ID. Only
-	// chains listed here are included in the engine run — any chains omitted from this
-	// mapping are ignored. Each value defines which residues to keep (crop_residues).
-	// Omit design_motifs to include the chain as fixed scaffold context.
+	// chains listed here are included in the pipeline run — any chains omitted from
+	// this mapping are ignored. Each value defines which residues to keep
+	// (crop_residues). Omit design_motifs to include the chain as fixed scaffold
+	// context.
 	ChainSelection map[string]ProteinDesignStartResponseInputBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion `json:"chain_selection" api:"required"`
 	// Any of "peptide", "antibody", "nanobody", "custom_protein".
 	Modality  ProteinDesignStartResponseInputBinderSpecificationStructureTemplateBinderSpecResponseModality  `json:"modality" api:"required"`
@@ -4836,7 +4868,7 @@ func (r *ProteinDesignStartResponseInputTargetUnion) UnmarshalJSON(data []byte) 
 // included in chain_selection are used.
 type ProteinDesignStartResponseInputTargetStructureTemplateTargetResponse struct {
 	// Chains selected from the uploaded structure, keyed by chain ID. Only chains
-	// listed here are included in the engine run — any chains omitted from this
+	// listed here are included in the pipeline run — any chains omitted from this
 	// mapping are ignored. Each value defines which residues to keep, which are
 	// epitope residues, which are non-binding residues, and which are flexible.
 	ChainSelection map[string]ProteinDesignStartResponseInputTargetStructureTemplateTargetResponseChainSelectionUnion `json:"chain_selection" api:"required"`
@@ -4914,7 +4946,7 @@ func (r *ProteinDesignStartResponseInputTargetStructureTemplateTargetResponseCha
 type ProteinDesignStartResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpec struct {
 	ChainType constant.Polymer `json:"chain_type" default:"polymer"`
 	// 0-indexed residue indices to retain from this chain, or 'all' to keep all
-	// residues. Residues not listed are excluded from the engine run.
+	// residues. Residues not listed are excluded from the pipeline run.
 	CropResidues ProteinDesignStartResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpecCropResiduesUnion `json:"crop_residues" api:"required"`
 	// 0-indexed residue indices where binder contact is desired (the epitope). All
 	// indices must be present in crop_residues and must not overlap
@@ -5956,7 +5988,7 @@ const (
 	ProteinDesignStartResponseStatusStopped   ProteinDesignStartResponseStatus = "stopped"
 )
 
-// A protein design engine run that generates novel protein binders
+// A protein design pipeline run that generates novel protein binders
 type ProteinDesignStopResponse struct {
 	// Unique ProteinDesignRun identifier
 	ID          string    `json:"id" api:"required"`
@@ -5965,17 +5997,25 @@ type ProteinDesignStopResponse struct {
 	// When the input, output, and result data was permanently deleted. Null if data
 	// has not been deleted.
 	DataDeletedAt time.Time `json:"data_deleted_at" api:"required" format:"date-time"`
-	// Engine used for protein design
-	Engine constant.BoltzProteinDesign `json:"engine" default:"boltz-protein-design"`
-	// Engine version used for protein design
-	EngineVersion string                         `json:"engine_version" api:"required"`
+	// Deprecated. Use pipeline instead.
+	//
+	// Deprecated: Use pipeline instead.
+	Engine constant.Boltzprot `json:"engine" default:"boltzprot"`
+	// Deprecated. Use pipeline_version instead.
+	//
+	// Deprecated: Use pipeline_version instead.
+	EngineVersion constant.String1_0             `json:"engine_version" default:"1.0"`
 	Error         ProteinDesignStopResponseError `json:"error" api:"required"`
 	// Pipeline input (null if data deleted)
 	Input ProteinDesignStopResponseInput `json:"input" api:"required"`
 	// Whether this resource was created with a live API key.
-	Livemode  bool                              `json:"livemode" api:"required"`
-	Progress  ProteinDesignStopResponseProgress `json:"progress" api:"required"`
-	StartedAt time.Time                         `json:"started_at" api:"required" format:"date-time"`
+	Livemode bool `json:"livemode" api:"required"`
+	// Pipeline used for protein design
+	Pipeline constant.Boltzprot `json:"pipeline" default:"boltzprot"`
+	// Pipeline version used for protein design
+	PipelineVersion constant.String1_0                `json:"pipeline_version" default:"1.0"`
+	Progress        ProteinDesignStopResponseProgress `json:"progress" api:"required"`
+	StartedAt       time.Time                         `json:"started_at" api:"required" format:"date-time"`
 	// Any of "pending", "running", "succeeded", "failed", "stopped".
 	Status    ProteinDesignStopResponseStatus `json:"status" api:"required"`
 	StoppedAt time.Time                       `json:"stopped_at" api:"required" format:"date-time"`
@@ -5985,23 +6025,25 @@ type ProteinDesignStopResponse struct {
 	IdempotencyKey string `json:"idempotency_key"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID             respjson.Field
-		CompletedAt    respjson.Field
-		CreatedAt      respjson.Field
-		DataDeletedAt  respjson.Field
-		Engine         respjson.Field
-		EngineVersion  respjson.Field
-		Error          respjson.Field
-		Input          respjson.Field
-		Livemode       respjson.Field
-		Progress       respjson.Field
-		StartedAt      respjson.Field
-		Status         respjson.Field
-		StoppedAt      respjson.Field
-		WorkspaceID    respjson.Field
-		IdempotencyKey respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
+		ID              respjson.Field
+		CompletedAt     respjson.Field
+		CreatedAt       respjson.Field
+		DataDeletedAt   respjson.Field
+		Engine          respjson.Field
+		EngineVersion   respjson.Field
+		Error           respjson.Field
+		Input           respjson.Field
+		Livemode        respjson.Field
+		Pipeline        respjson.Field
+		PipelineVersion respjson.Field
+		Progress        respjson.Field
+		StartedAt       respjson.Field
+		Status          respjson.Field
+		StoppedAt       respjson.Field
+		WorkspaceID     respjson.Field
+		IdempotencyKey  respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -6157,12 +6199,13 @@ func (r *ProteinDesignStopResponseInputBinderSpecificationUnionRules) UnmarshalJ
 // Binder specification starting from an existing 3D structure. Upload a CIF/PDB
 // file and select which chains to include, which residues to keep, and which
 // regions to redesign. Only chains included in chain_selection are part of the
-// engine run.
+// pipeline run.
 type ProteinDesignStopResponseInputBinderSpecificationStructureTemplateBinderSpecResponse struct {
 	// Chains selected from the uploaded binder structure, keyed by chain ID. Only
-	// chains listed here are included in the engine run — any chains omitted from this
-	// mapping are ignored. Each value defines which residues to keep (crop_residues).
-	// Omit design_motifs to include the chain as fixed scaffold context.
+	// chains listed here are included in the pipeline run — any chains omitted from
+	// this mapping are ignored. Each value defines which residues to keep
+	// (crop_residues). Omit design_motifs to include the chain as fixed scaffold
+	// context.
 	ChainSelection map[string]ProteinDesignStopResponseInputBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion `json:"chain_selection" api:"required"`
 	// Any of "peptide", "antibody", "nanobody", "custom_protein".
 	Modality  ProteinDesignStopResponseInputBinderSpecificationStructureTemplateBinderSpecResponseModality  `json:"modality" api:"required"`
@@ -7409,7 +7452,7 @@ func (r *ProteinDesignStopResponseInputTargetUnion) UnmarshalJSON(data []byte) e
 // included in chain_selection are used.
 type ProteinDesignStopResponseInputTargetStructureTemplateTargetResponse struct {
 	// Chains selected from the uploaded structure, keyed by chain ID. Only chains
-	// listed here are included in the engine run — any chains omitted from this
+	// listed here are included in the pipeline run — any chains omitted from this
 	// mapping are ignored. Each value defines which residues to keep, which are
 	// epitope residues, which are non-binding residues, and which are flexible.
 	ChainSelection map[string]ProteinDesignStopResponseInputTargetStructureTemplateTargetResponseChainSelectionUnion `json:"chain_selection" api:"required"`
@@ -7487,7 +7530,7 @@ func (r *ProteinDesignStopResponseInputTargetStructureTemplateTargetResponseChai
 type ProteinDesignStopResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpec struct {
 	ChainType constant.Polymer `json:"chain_type" default:"polymer"`
 	// 0-indexed residue indices to retain from this chain, or 'all' to keep all
-	// residues. Residues not listed are excluded from the engine run.
+	// residues. Residues not listed are excluded from the pipeline run.
 	CropResidues ProteinDesignStopResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpecCropResiduesUnion `json:"crop_residues" api:"required"`
 	// 0-indexed residue indices where binder contact is desired (the epitope). All
 	// indices must be present in crop_residues and must not overlap
@@ -8611,14 +8654,15 @@ func (u *ProteinDesignEstimateCostParamsBinderSpecificationUnion) UnmarshalJSON(
 // Binder specification starting from an existing 3D structure. Upload a CIF/PDB
 // file and select which chains to include, which residues to keep, and which
 // regions to redesign. Only chains included in chain_selection are part of the
-// engine run.
+// pipeline run.
 //
 // The properties ChainSelection, Modality, Structure, Type are required.
 type ProteinDesignEstimateCostParamsBinderSpecificationStructureTemplateBinderSpec struct {
 	// Chains selected from the uploaded binder structure, keyed by chain ID. Only
-	// chains listed here are included in the engine run — any chains omitted from this
-	// mapping are ignored. Each value defines which residues to keep (crop_residues).
-	// Omit design_motifs to include the chain as fixed scaffold context.
+	// chains listed here are included in the pipeline run — any chains omitted from
+	// this mapping are ignored. Each value defines which residues to keep
+	// (crop_residues). Omit design_motifs to include the chain as fixed scaffold
+	// context.
 	ChainSelection map[string]ProteinDesignEstimateCostParamsBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion `json:"chain_selection,omitzero" api:"required"`
 	// Any of "peptide", "antibody", "nanobody", "custom_protein".
 	Modality ProteinDesignEstimateCostParamsBinderSpecificationStructureTemplateBinderSpecModality `json:"modality,omitzero" api:"required"`
@@ -9465,7 +9509,7 @@ func (u *ProteinDesignEstimateCostParamsTargetUnion) UnmarshalJSON(data []byte) 
 // The properties ChainSelection, Structure, Type are required.
 type ProteinDesignEstimateCostParamsTargetStructureTemplateTarget struct {
 	// Chains selected from the uploaded structure, keyed by chain ID. Only chains
-	// listed here are included in the engine run — any chains omitted from this
+	// listed here are included in the pipeline run — any chains omitted from this
 	// mapping are ignored. Each value defines which residues to keep, which are
 	// epitope residues, which are non-binding residues, and which are flexible.
 	ChainSelection map[string]ProteinDesignEstimateCostParamsTargetStructureTemplateTargetChainSelectionUnion `json:"chain_selection,omitzero" api:"required"`
@@ -9508,7 +9552,7 @@ func (u *ProteinDesignEstimateCostParamsTargetStructureTemplateTargetChainSelect
 // The properties ChainType, CropResidues are required.
 type ProteinDesignEstimateCostParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpec struct {
 	// 0-indexed residue indices to retain from this chain, or 'all' to keep all
-	// residues. Residues not listed are excluded from the engine run.
+	// residues. Residues not listed are excluded from the pipeline run.
 	CropResidues ProteinDesignEstimateCostParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpecCropResiduesUnion `json:"crop_residues,omitzero" api:"required"`
 	// 0-indexed residue indices where binder contact is desired (the epitope). All
 	// indices must be present in crop_residues and must not overlap
@@ -10268,14 +10312,15 @@ func (u *ProteinDesignStartParamsBinderSpecificationUnion) UnmarshalJSON(data []
 // Binder specification starting from an existing 3D structure. Upload a CIF/PDB
 // file and select which chains to include, which residues to keep, and which
 // regions to redesign. Only chains included in chain_selection are part of the
-// engine run.
+// pipeline run.
 //
 // The properties ChainSelection, Modality, Structure, Type are required.
 type ProteinDesignStartParamsBinderSpecificationStructureTemplateBinderSpec struct {
 	// Chains selected from the uploaded binder structure, keyed by chain ID. Only
-	// chains listed here are included in the engine run — any chains omitted from this
-	// mapping are ignored. Each value defines which residues to keep (crop_residues).
-	// Omit design_motifs to include the chain as fixed scaffold context.
+	// chains listed here are included in the pipeline run — any chains omitted from
+	// this mapping are ignored. Each value defines which residues to keep
+	// (crop_residues). Omit design_motifs to include the chain as fixed scaffold
+	// context.
 	ChainSelection map[string]ProteinDesignStartParamsBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion `json:"chain_selection,omitzero" api:"required"`
 	// Any of "peptide", "antibody", "nanobody", "custom_protein".
 	Modality ProteinDesignStartParamsBinderSpecificationStructureTemplateBinderSpecModality `json:"modality,omitzero" api:"required"`
@@ -11122,7 +11167,7 @@ func (u *ProteinDesignStartParamsTargetUnion) UnmarshalJSON(data []byte) error {
 // The properties ChainSelection, Structure, Type are required.
 type ProteinDesignStartParamsTargetStructureTemplateTarget struct {
 	// Chains selected from the uploaded structure, keyed by chain ID. Only chains
-	// listed here are included in the engine run — any chains omitted from this
+	// listed here are included in the pipeline run — any chains omitted from this
 	// mapping are ignored. Each value defines which residues to keep, which are
 	// epitope residues, which are non-binding residues, and which are flexible.
 	ChainSelection map[string]ProteinDesignStartParamsTargetStructureTemplateTargetChainSelectionUnion `json:"chain_selection,omitzero" api:"required"`
@@ -11165,7 +11210,7 @@ func (u *ProteinDesignStartParamsTargetStructureTemplateTargetChainSelectionUnio
 // The properties ChainType, CropResidues are required.
 type ProteinDesignStartParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpec struct {
 	// 0-indexed residue indices to retain from this chain, or 'all' to keep all
-	// residues. Residues not listed are excluded from the engine run.
+	// residues. Residues not listed are excluded from the pipeline run.
 	CropResidues ProteinDesignStartParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpecCropResiduesUnion `json:"crop_residues,omitzero" api:"required"`
 	// 0-indexed residue indices where binder contact is desired (the epitope). All
 	// indices must be present in crop_residues and must not overlap
