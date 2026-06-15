@@ -93,6 +93,39 @@ func TestPredictionAdmeDeleteData(t *testing.T) {
 	}
 }
 
+func TestPredictionAdmeEstimateCostWithOptionalParams(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := boltzapi.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Predictions.Adme.EstimateCost(context.TODO(), boltzapi.PredictionAdmeEstimateCostParams{
+		Input: boltzapi.PredictionAdmeEstimateCostParamsInput{
+			Molecules: []boltzapi.PredictionAdmeEstimateCostParamsInputMolecule{{
+				Smiles: "x",
+				ID:     boltzapi.String("x"),
+			}},
+		},
+		Model:          "adme-v1",
+		IdempotencyKey: boltzapi.String("idempotency_key"),
+		WorkspaceID:    boltzapi.String("workspace_id"),
+	})
+	if err != nil {
+		var apierr *boltzapi.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
 func TestPredictionAdmeStartWithOptionalParams(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
