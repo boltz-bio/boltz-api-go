@@ -150,7 +150,7 @@ func (r *ProteinLibraryScreenService) Stop(ctx context.Context, id string, opts 
 	return res, err
 }
 
-// A protein library screening engine run
+// A protein library screening pipeline run
 type ProteinLibraryScreenGetResponse struct {
 	// Unique ProteinLibraryScreen identifier
 	ID          string    `json:"id" api:"required"`
@@ -159,17 +159,25 @@ type ProteinLibraryScreenGetResponse struct {
 	// When the input, output, and result data was permanently deleted. Null if data
 	// has not been deleted.
 	DataDeletedAt time.Time `json:"data_deleted_at" api:"required" format:"date-time"`
-	// Engine used for protein library screen
-	Engine constant.BoltzProteinScreen `json:"engine" default:"boltz-protein-screen"`
-	// Engine version used for protein library screen
-	EngineVersion string                               `json:"engine_version" api:"required"`
+	// Deprecated. Use pipeline instead.
+	//
+	// Deprecated: Use pipeline instead.
+	Engine constant.Boltzprot `json:"engine" default:"boltzprot"`
+	// Deprecated. Use pipeline_version instead.
+	//
+	// Deprecated: Use pipeline_version instead.
+	EngineVersion constant.String1_0                   `json:"engine_version" default:"1.0"`
 	Error         ProteinLibraryScreenGetResponseError `json:"error" api:"required"`
 	// Pipeline input (null if data deleted)
 	Input ProteinLibraryScreenGetResponseInput `json:"input" api:"required"`
 	// Whether this resource was created with a live API key.
-	Livemode  bool                                    `json:"livemode" api:"required"`
-	Progress  ProteinLibraryScreenGetResponseProgress `json:"progress" api:"required"`
-	StartedAt time.Time                               `json:"started_at" api:"required" format:"date-time"`
+	Livemode bool `json:"livemode" api:"required"`
+	// Pipeline used for protein library screen
+	Pipeline constant.Boltzprot `json:"pipeline" default:"boltzprot"`
+	// Pipeline version used for protein library screen
+	PipelineVersion constant.String1_0                      `json:"pipeline_version" default:"1.0"`
+	Progress        ProteinLibraryScreenGetResponseProgress `json:"progress" api:"required"`
+	StartedAt       time.Time                               `json:"started_at" api:"required" format:"date-time"`
 	// Any of "pending", "running", "succeeded", "failed", "stopped".
 	Status    ProteinLibraryScreenGetResponseStatus `json:"status" api:"required"`
 	StoppedAt time.Time                             `json:"stopped_at" api:"required" format:"date-time"`
@@ -179,23 +187,25 @@ type ProteinLibraryScreenGetResponse struct {
 	IdempotencyKey string `json:"idempotency_key"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID             respjson.Field
-		CompletedAt    respjson.Field
-		CreatedAt      respjson.Field
-		DataDeletedAt  respjson.Field
-		Engine         respjson.Field
-		EngineVersion  respjson.Field
-		Error          respjson.Field
-		Input          respjson.Field
-		Livemode       respjson.Field
-		Progress       respjson.Field
-		StartedAt      respjson.Field
-		Status         respjson.Field
-		StoppedAt      respjson.Field
-		WorkspaceID    respjson.Field
-		IdempotencyKey respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
+		ID              respjson.Field
+		CompletedAt     respjson.Field
+		CreatedAt       respjson.Field
+		DataDeletedAt   respjson.Field
+		Engine          respjson.Field
+		EngineVersion   respjson.Field
+		Error           respjson.Field
+		Input           respjson.Field
+		Livemode        respjson.Field
+		Pipeline        respjson.Field
+		PipelineVersion respjson.Field
+		Progress        respjson.Field
+		StartedAt       respjson.Field
+		Status          respjson.Field
+		StoppedAt       respjson.Field
+		WorkspaceID     respjson.Field
+		IdempotencyKey  respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -335,7 +345,7 @@ func (r *ProteinLibraryScreenGetResponseInputTargetUnion) UnmarshalJSON(data []b
 // included in chain_selection are used.
 type ProteinLibraryScreenGetResponseInputTargetStructureTemplateTargetResponse struct {
 	// Chains selected from the uploaded structure, keyed by chain ID. Only chains
-	// listed here are included in the engine run — any chains omitted from this
+	// listed here are included in the pipeline run — any chains omitted from this
 	// mapping are ignored. Each value defines which residues to keep, which are
 	// epitope residues, which are non-binding residues, and which are flexible.
 	ChainSelection map[string]ProteinLibraryScreenGetResponseInputTargetStructureTemplateTargetResponseChainSelectionUnion `json:"chain_selection" api:"required"`
@@ -413,7 +423,7 @@ func (r *ProteinLibraryScreenGetResponseInputTargetStructureTemplateTargetRespon
 type ProteinLibraryScreenGetResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpec struct {
 	ChainType constant.Polymer `json:"chain_type" default:"polymer"`
 	// 0-indexed residue indices to retain from this chain, or 'all' to keep all
-	// residues. Residues not listed are excluded from the engine run.
+	// residues. Residues not listed are excluded from the pipeline run.
 	CropResidues ProteinLibraryScreenGetResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpecCropResiduesUnion `json:"crop_residues" api:"required"`
 	// 0-indexed residue indices where binder contact is desired (the epitope). All
 	// indices must be present in crop_residues and must not overlap
@@ -1458,7 +1468,7 @@ const (
 	ProteinLibraryScreenGetResponseStatusStopped   ProteinLibraryScreenGetResponseStatus = "stopped"
 )
 
-// Summary of a protein library screening engine run (excludes input)
+// Summary of a protein library screening pipeline run (excludes input)
 type ProteinLibraryScreenListResponse struct {
 	// Unique ProteinLibraryScreenSummary identifier
 	ID          string    `json:"id" api:"required"`
@@ -1467,15 +1477,23 @@ type ProteinLibraryScreenListResponse struct {
 	// When the input, output, and result data was permanently deleted. Null if data
 	// has not been deleted.
 	DataDeletedAt time.Time `json:"data_deleted_at" api:"required" format:"date-time"`
-	// Engine used for protein library screen
-	Engine constant.BoltzProteinScreen `json:"engine" default:"boltz-protein-screen"`
-	// Engine version used for protein library screen
-	EngineVersion string                                `json:"engine_version" api:"required"`
+	// Deprecated. Use pipeline instead.
+	//
+	// Deprecated: Use pipeline instead.
+	Engine constant.Boltzprot `json:"engine" default:"boltzprot"`
+	// Deprecated. Use pipeline_version instead.
+	//
+	// Deprecated: Use pipeline_version instead.
+	EngineVersion constant.String1_0                    `json:"engine_version" default:"1.0"`
 	Error         ProteinLibraryScreenListResponseError `json:"error" api:"required"`
 	// Whether this resource was created with a live API key.
-	Livemode  bool                                     `json:"livemode" api:"required"`
-	Progress  ProteinLibraryScreenListResponseProgress `json:"progress" api:"required"`
-	StartedAt time.Time                                `json:"started_at" api:"required" format:"date-time"`
+	Livemode bool `json:"livemode" api:"required"`
+	// Pipeline used for protein library screen
+	Pipeline constant.Boltzprot `json:"pipeline" default:"boltzprot"`
+	// Pipeline version used for protein library screen
+	PipelineVersion constant.String1_0                       `json:"pipeline_version" default:"1.0"`
+	Progress        ProteinLibraryScreenListResponseProgress `json:"progress" api:"required"`
+	StartedAt       time.Time                                `json:"started_at" api:"required" format:"date-time"`
 	// Any of "pending", "running", "succeeded", "failed", "stopped".
 	Status    ProteinLibraryScreenListResponseStatus `json:"status" api:"required"`
 	StoppedAt time.Time                              `json:"stopped_at" api:"required" format:"date-time"`
@@ -1485,22 +1503,24 @@ type ProteinLibraryScreenListResponse struct {
 	IdempotencyKey string `json:"idempotency_key"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID             respjson.Field
-		CompletedAt    respjson.Field
-		CreatedAt      respjson.Field
-		DataDeletedAt  respjson.Field
-		Engine         respjson.Field
-		EngineVersion  respjson.Field
-		Error          respjson.Field
-		Livemode       respjson.Field
-		Progress       respjson.Field
-		StartedAt      respjson.Field
-		Status         respjson.Field
-		StoppedAt      respjson.Field
-		WorkspaceID    respjson.Field
-		IdempotencyKey respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
+		ID              respjson.Field
+		CompletedAt     respjson.Field
+		CreatedAt       respjson.Field
+		DataDeletedAt   respjson.Field
+		Engine          respjson.Field
+		EngineVersion   respjson.Field
+		Error           respjson.Field
+		Livemode        respjson.Field
+		Pipeline        respjson.Field
+		PipelineVersion respjson.Field
+		Progress        respjson.Field
+		StartedAt       respjson.Field
+		Status          respjson.Field
+		StoppedAt       respjson.Field
+		WorkspaceID     respjson.Field
+		IdempotencyKey  respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -2131,7 +2151,7 @@ func (r *ProteinLibraryScreenListResultsResponseWarning) UnmarshalJSON(data []by
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// A protein library screening engine run
+// A protein library screening pipeline run
 type ProteinLibraryScreenStartResponse struct {
 	// Unique ProteinLibraryScreen identifier
 	ID          string    `json:"id" api:"required"`
@@ -2140,17 +2160,25 @@ type ProteinLibraryScreenStartResponse struct {
 	// When the input, output, and result data was permanently deleted. Null if data
 	// has not been deleted.
 	DataDeletedAt time.Time `json:"data_deleted_at" api:"required" format:"date-time"`
-	// Engine used for protein library screen
-	Engine constant.BoltzProteinScreen `json:"engine" default:"boltz-protein-screen"`
-	// Engine version used for protein library screen
-	EngineVersion string                                 `json:"engine_version" api:"required"`
+	// Deprecated. Use pipeline instead.
+	//
+	// Deprecated: Use pipeline instead.
+	Engine constant.Boltzprot `json:"engine" default:"boltzprot"`
+	// Deprecated. Use pipeline_version instead.
+	//
+	// Deprecated: Use pipeline_version instead.
+	EngineVersion constant.String1_0                     `json:"engine_version" default:"1.0"`
 	Error         ProteinLibraryScreenStartResponseError `json:"error" api:"required"`
 	// Pipeline input (null if data deleted)
 	Input ProteinLibraryScreenStartResponseInput `json:"input" api:"required"`
 	// Whether this resource was created with a live API key.
-	Livemode  bool                                      `json:"livemode" api:"required"`
-	Progress  ProteinLibraryScreenStartResponseProgress `json:"progress" api:"required"`
-	StartedAt time.Time                                 `json:"started_at" api:"required" format:"date-time"`
+	Livemode bool `json:"livemode" api:"required"`
+	// Pipeline used for protein library screen
+	Pipeline constant.Boltzprot `json:"pipeline" default:"boltzprot"`
+	// Pipeline version used for protein library screen
+	PipelineVersion constant.String1_0                        `json:"pipeline_version" default:"1.0"`
+	Progress        ProteinLibraryScreenStartResponseProgress `json:"progress" api:"required"`
+	StartedAt       time.Time                                 `json:"started_at" api:"required" format:"date-time"`
 	// Any of "pending", "running", "succeeded", "failed", "stopped".
 	Status    ProteinLibraryScreenStartResponseStatus `json:"status" api:"required"`
 	StoppedAt time.Time                               `json:"stopped_at" api:"required" format:"date-time"`
@@ -2160,23 +2188,25 @@ type ProteinLibraryScreenStartResponse struct {
 	IdempotencyKey string `json:"idempotency_key"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID             respjson.Field
-		CompletedAt    respjson.Field
-		CreatedAt      respjson.Field
-		DataDeletedAt  respjson.Field
-		Engine         respjson.Field
-		EngineVersion  respjson.Field
-		Error          respjson.Field
-		Input          respjson.Field
-		Livemode       respjson.Field
-		Progress       respjson.Field
-		StartedAt      respjson.Field
-		Status         respjson.Field
-		StoppedAt      respjson.Field
-		WorkspaceID    respjson.Field
-		IdempotencyKey respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
+		ID              respjson.Field
+		CompletedAt     respjson.Field
+		CreatedAt       respjson.Field
+		DataDeletedAt   respjson.Field
+		Engine          respjson.Field
+		EngineVersion   respjson.Field
+		Error           respjson.Field
+		Input           respjson.Field
+		Livemode        respjson.Field
+		Pipeline        respjson.Field
+		PipelineVersion respjson.Field
+		Progress        respjson.Field
+		StartedAt       respjson.Field
+		Status          respjson.Field
+		StoppedAt       respjson.Field
+		WorkspaceID     respjson.Field
+		IdempotencyKey  respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -2316,7 +2346,7 @@ func (r *ProteinLibraryScreenStartResponseInputTargetUnion) UnmarshalJSON(data [
 // included in chain_selection are used.
 type ProteinLibraryScreenStartResponseInputTargetStructureTemplateTargetResponse struct {
 	// Chains selected from the uploaded structure, keyed by chain ID. Only chains
-	// listed here are included in the engine run — any chains omitted from this
+	// listed here are included in the pipeline run — any chains omitted from this
 	// mapping are ignored. Each value defines which residues to keep, which are
 	// epitope residues, which are non-binding residues, and which are flexible.
 	ChainSelection map[string]ProteinLibraryScreenStartResponseInputTargetStructureTemplateTargetResponseChainSelectionUnion `json:"chain_selection" api:"required"`
@@ -2394,7 +2424,7 @@ func (r *ProteinLibraryScreenStartResponseInputTargetStructureTemplateTargetResp
 type ProteinLibraryScreenStartResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpec struct {
 	ChainType constant.Polymer `json:"chain_type" default:"polymer"`
 	// 0-indexed residue indices to retain from this chain, or 'all' to keep all
-	// residues. Residues not listed are excluded from the engine run.
+	// residues. Residues not listed are excluded from the pipeline run.
 	CropResidues ProteinLibraryScreenStartResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpecCropResiduesUnion `json:"crop_residues" api:"required"`
 	// 0-indexed residue indices where binder contact is desired (the epitope). All
 	// indices must be present in crop_residues and must not overlap
@@ -3439,7 +3469,7 @@ const (
 	ProteinLibraryScreenStartResponseStatusStopped   ProteinLibraryScreenStartResponseStatus = "stopped"
 )
 
-// A protein library screening engine run
+// A protein library screening pipeline run
 type ProteinLibraryScreenStopResponse struct {
 	// Unique ProteinLibraryScreen identifier
 	ID          string    `json:"id" api:"required"`
@@ -3448,17 +3478,25 @@ type ProteinLibraryScreenStopResponse struct {
 	// When the input, output, and result data was permanently deleted. Null if data
 	// has not been deleted.
 	DataDeletedAt time.Time `json:"data_deleted_at" api:"required" format:"date-time"`
-	// Engine used for protein library screen
-	Engine constant.BoltzProteinScreen `json:"engine" default:"boltz-protein-screen"`
-	// Engine version used for protein library screen
-	EngineVersion string                                `json:"engine_version" api:"required"`
+	// Deprecated. Use pipeline instead.
+	//
+	// Deprecated: Use pipeline instead.
+	Engine constant.Boltzprot `json:"engine" default:"boltzprot"`
+	// Deprecated. Use pipeline_version instead.
+	//
+	// Deprecated: Use pipeline_version instead.
+	EngineVersion constant.String1_0                    `json:"engine_version" default:"1.0"`
 	Error         ProteinLibraryScreenStopResponseError `json:"error" api:"required"`
 	// Pipeline input (null if data deleted)
 	Input ProteinLibraryScreenStopResponseInput `json:"input" api:"required"`
 	// Whether this resource was created with a live API key.
-	Livemode  bool                                     `json:"livemode" api:"required"`
-	Progress  ProteinLibraryScreenStopResponseProgress `json:"progress" api:"required"`
-	StartedAt time.Time                                `json:"started_at" api:"required" format:"date-time"`
+	Livemode bool `json:"livemode" api:"required"`
+	// Pipeline used for protein library screen
+	Pipeline constant.Boltzprot `json:"pipeline" default:"boltzprot"`
+	// Pipeline version used for protein library screen
+	PipelineVersion constant.String1_0                       `json:"pipeline_version" default:"1.0"`
+	Progress        ProteinLibraryScreenStopResponseProgress `json:"progress" api:"required"`
+	StartedAt       time.Time                                `json:"started_at" api:"required" format:"date-time"`
 	// Any of "pending", "running", "succeeded", "failed", "stopped".
 	Status    ProteinLibraryScreenStopResponseStatus `json:"status" api:"required"`
 	StoppedAt time.Time                              `json:"stopped_at" api:"required" format:"date-time"`
@@ -3468,23 +3506,25 @@ type ProteinLibraryScreenStopResponse struct {
 	IdempotencyKey string `json:"idempotency_key"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID             respjson.Field
-		CompletedAt    respjson.Field
-		CreatedAt      respjson.Field
-		DataDeletedAt  respjson.Field
-		Engine         respjson.Field
-		EngineVersion  respjson.Field
-		Error          respjson.Field
-		Input          respjson.Field
-		Livemode       respjson.Field
-		Progress       respjson.Field
-		StartedAt      respjson.Field
-		Status         respjson.Field
-		StoppedAt      respjson.Field
-		WorkspaceID    respjson.Field
-		IdempotencyKey respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
+		ID              respjson.Field
+		CompletedAt     respjson.Field
+		CreatedAt       respjson.Field
+		DataDeletedAt   respjson.Field
+		Engine          respjson.Field
+		EngineVersion   respjson.Field
+		Error           respjson.Field
+		Input           respjson.Field
+		Livemode        respjson.Field
+		Pipeline        respjson.Field
+		PipelineVersion respjson.Field
+		Progress        respjson.Field
+		StartedAt       respjson.Field
+		Status          respjson.Field
+		StoppedAt       respjson.Field
+		WorkspaceID     respjson.Field
+		IdempotencyKey  respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -3624,7 +3664,7 @@ func (r *ProteinLibraryScreenStopResponseInputTargetUnion) UnmarshalJSON(data []
 // included in chain_selection are used.
 type ProteinLibraryScreenStopResponseInputTargetStructureTemplateTargetResponse struct {
 	// Chains selected from the uploaded structure, keyed by chain ID. Only chains
-	// listed here are included in the engine run — any chains omitted from this
+	// listed here are included in the pipeline run — any chains omitted from this
 	// mapping are ignored. Each value defines which residues to keep, which are
 	// epitope residues, which are non-binding residues, and which are flexible.
 	ChainSelection map[string]ProteinLibraryScreenStopResponseInputTargetStructureTemplateTargetResponseChainSelectionUnion `json:"chain_selection" api:"required"`
@@ -3702,7 +3742,7 @@ func (r *ProteinLibraryScreenStopResponseInputTargetStructureTemplateTargetRespo
 type ProteinLibraryScreenStopResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpec struct {
 	ChainType constant.Polymer `json:"chain_type" default:"polymer"`
 	// 0-indexed residue indices to retain from this chain, or 'all' to keep all
-	// residues. Residues not listed are excluded from the engine run.
+	// residues. Residues not listed are excluded from the pipeline run.
 	CropResidues ProteinLibraryScreenStopResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpecCropResiduesUnion `json:"crop_residues" api:"required"`
 	// 0-indexed residue indices where binder contact is desired (the epitope). All
 	// indices must be present in crop_residues and must not overlap
@@ -5055,7 +5095,7 @@ func (u *ProteinLibraryScreenEstimateCostParamsTargetUnion) UnmarshalJSON(data [
 // The properties ChainSelection, Structure, Type are required.
 type ProteinLibraryScreenEstimateCostParamsTargetStructureTemplateTarget struct {
 	// Chains selected from the uploaded structure, keyed by chain ID. Only chains
-	// listed here are included in the engine run — any chains omitted from this
+	// listed here are included in the pipeline run — any chains omitted from this
 	// mapping are ignored. Each value defines which residues to keep, which are
 	// epitope residues, which are non-binding residues, and which are flexible.
 	ChainSelection map[string]ProteinLibraryScreenEstimateCostParamsTargetStructureTemplateTargetChainSelectionUnion `json:"chain_selection,omitzero" api:"required"`
@@ -5098,7 +5138,7 @@ func (u *ProteinLibraryScreenEstimateCostParamsTargetStructureTemplateTargetChai
 // The properties ChainType, CropResidues are required.
 type ProteinLibraryScreenEstimateCostParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpec struct {
 	// 0-indexed residue indices to retain from this chain, or 'all' to keep all
-	// residues. Residues not listed are excluded from the engine run.
+	// residues. Residues not listed are excluded from the pipeline run.
 	CropResidues ProteinLibraryScreenEstimateCostParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpecCropResiduesUnion `json:"crop_residues,omitzero" api:"required"`
 	// 0-indexed residue indices where binder contact is desired (the epitope). All
 	// indices must be present in crop_residues and must not overlap
@@ -6083,7 +6123,7 @@ func (u *ProteinLibraryScreenStartParamsTargetUnion) UnmarshalJSON(data []byte) 
 // The properties ChainSelection, Structure, Type are required.
 type ProteinLibraryScreenStartParamsTargetStructureTemplateTarget struct {
 	// Chains selected from the uploaded structure, keyed by chain ID. Only chains
-	// listed here are included in the engine run — any chains omitted from this
+	// listed here are included in the pipeline run — any chains omitted from this
 	// mapping are ignored. Each value defines which residues to keep, which are
 	// epitope residues, which are non-binding residues, and which are flexible.
 	ChainSelection map[string]ProteinLibraryScreenStartParamsTargetStructureTemplateTargetChainSelectionUnion `json:"chain_selection,omitzero" api:"required"`
@@ -6126,7 +6166,7 @@ func (u *ProteinLibraryScreenStartParamsTargetStructureTemplateTargetChainSelect
 // The properties ChainType, CropResidues are required.
 type ProteinLibraryScreenStartParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpec struct {
 	// 0-indexed residue indices to retain from this chain, or 'all' to keep all
-	// residues. Residues not listed are excluded from the engine run.
+	// residues. Residues not listed are excluded from the pipeline run.
 	CropResidues ProteinLibraryScreenStartParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpecCropResiduesUnion `json:"crop_residues,omitzero" api:"required"`
 	// 0-indexed residue indices where binder contact is desired (the epitope). All
 	// indices must be present in crop_residues and must not overlap

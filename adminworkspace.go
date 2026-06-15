@@ -21,7 +21,7 @@ import (
 	"github.com/boltz-bio/boltz-api-go/shared/constant"
 )
 
-// Workspaces provide isolated environments for organizing predictions and engine
+// Workspaces provide isolated environments for organizing predictions and pipeline
 // runs across teams, projects, or customers. Each workspace has independent data
 // retention settings and can be associated with workspace API keys.
 //
