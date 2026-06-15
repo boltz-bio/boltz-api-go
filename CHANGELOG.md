@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.25.0 (2026-06-15)
+
+Full Changelog: [v0.24.1...v0.25.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.24.1...v0.25.0)
+
+### Features
+
+* **compute-api:** rename public pipeline identifiers ([9629dfe](https://github.com/boltz-bio/boltz-api-go/commit/9629dfe72d1037deb8373d81cebd8848c18956b2))
+
 ## 0.24.1 (2026-06-15)
 
 Full Changelog: [v0.24.0...v0.24.1](https://github.com/boltz-bio/boltz-api-go/compare/v0.24.0...v0.24.1)
