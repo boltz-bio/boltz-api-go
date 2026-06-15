@@ -153,7 +153,7 @@ func (r *SmallMoleculeDesignService) Stop(ctx context.Context, id string, opts .
 	return res, err
 }
 
-// A small molecule design engine run that generates novel molecules
+// A small molecule design pipeline run that generates novel molecules
 type SmallMoleculeDesignGetResponse struct {
 	// Unique SmDesignRun identifier
 	ID          string    `json:"id" api:"required"`
@@ -162,17 +162,25 @@ type SmallMoleculeDesignGetResponse struct {
 	// When the input, output, and result data was permanently deleted. Null if data
 	// has not been deleted.
 	DataDeletedAt time.Time `json:"data_deleted_at" api:"required" format:"date-time"`
-	// Engine used for small molecule design
-	Engine constant.BoltzSmDesign `json:"engine" default:"boltz-sm-design"`
-	// Engine version used for small molecule design
-	EngineVersion string                              `json:"engine_version" api:"required"`
+	// Deprecated. Use pipeline instead.
+	//
+	// Deprecated: Use pipeline instead.
+	Engine constant.Boltzmol `json:"engine" default:"boltzmol"`
+	// Deprecated. Use pipeline_version instead.
+	//
+	// Deprecated: Use pipeline_version instead.
+	EngineVersion constant.String1_0                  `json:"engine_version" default:"1.0"`
 	Error         SmallMoleculeDesignGetResponseError `json:"error" api:"required"`
 	// Pipeline input (null if data deleted)
 	Input SmallMoleculeDesignGetResponseInput `json:"input" api:"required"`
 	// Whether this resource was created with a live API key.
-	Livemode  bool                                   `json:"livemode" api:"required"`
-	Progress  SmallMoleculeDesignGetResponseProgress `json:"progress" api:"required"`
-	StartedAt time.Time                              `json:"started_at" api:"required" format:"date-time"`
+	Livemode bool `json:"livemode" api:"required"`
+	// Pipeline used for small molecule design
+	Pipeline constant.Boltzmol `json:"pipeline" default:"boltzmol"`
+	// Pipeline version used for small molecule design
+	PipelineVersion constant.String1_0                     `json:"pipeline_version" default:"1.0"`
+	Progress        SmallMoleculeDesignGetResponseProgress `json:"progress" api:"required"`
+	StartedAt       time.Time                              `json:"started_at" api:"required" format:"date-time"`
 	// Any of "pending", "running", "succeeded", "failed", "stopped".
 	Status    SmallMoleculeDesignGetResponseStatus `json:"status" api:"required"`
 	StoppedAt time.Time                            `json:"stopped_at" api:"required" format:"date-time"`
@@ -182,23 +190,25 @@ type SmallMoleculeDesignGetResponse struct {
 	IdempotencyKey string `json:"idempotency_key"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID             respjson.Field
-		CompletedAt    respjson.Field
-		CreatedAt      respjson.Field
-		DataDeletedAt  respjson.Field
-		Engine         respjson.Field
-		EngineVersion  respjson.Field
-		Error          respjson.Field
-		Input          respjson.Field
-		Livemode       respjson.Field
-		Progress       respjson.Field
-		StartedAt      respjson.Field
-		Status         respjson.Field
-		StoppedAt      respjson.Field
-		WorkspaceID    respjson.Field
-		IdempotencyKey respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
+		ID              respjson.Field
+		CompletedAt     respjson.Field
+		CreatedAt       respjson.Field
+		DataDeletedAt   respjson.Field
+		Engine          respjson.Field
+		EngineVersion   respjson.Field
+		Error           respjson.Field
+		Input           respjson.Field
+		Livemode        respjson.Field
+		Pipeline        respjson.Field
+		PipelineVersion respjson.Field
+		Progress        respjson.Field
+		StartedAt       respjson.Field
+		Status          respjson.Field
+		StoppedAt       respjson.Field
+		WorkspaceID     respjson.Field
+		IdempotencyKey  respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -1476,7 +1486,7 @@ const (
 	SmallMoleculeDesignGetResponseStatusStopped   SmallMoleculeDesignGetResponseStatus = "stopped"
 )
 
-// Summary of a small molecule design engine run (excludes input)
+// Summary of a small molecule design pipeline run (excludes input)
 type SmallMoleculeDesignListResponse struct {
 	// Unique SmDesignRunSummary identifier
 	ID          string    `json:"id" api:"required"`
@@ -1485,15 +1495,23 @@ type SmallMoleculeDesignListResponse struct {
 	// When the input, output, and result data was permanently deleted. Null if data
 	// has not been deleted.
 	DataDeletedAt time.Time `json:"data_deleted_at" api:"required" format:"date-time"`
-	// Engine used for small molecule design
-	Engine constant.BoltzSmDesign `json:"engine" default:"boltz-sm-design"`
-	// Engine version used for small molecule design
-	EngineVersion string                               `json:"engine_version" api:"required"`
+	// Deprecated. Use pipeline instead.
+	//
+	// Deprecated: Use pipeline instead.
+	Engine constant.Boltzmol `json:"engine" default:"boltzmol"`
+	// Deprecated. Use pipeline_version instead.
+	//
+	// Deprecated: Use pipeline_version instead.
+	EngineVersion constant.String1_0                   `json:"engine_version" default:"1.0"`
 	Error         SmallMoleculeDesignListResponseError `json:"error" api:"required"`
 	// Whether this resource was created with a live API key.
-	Livemode  bool                                    `json:"livemode" api:"required"`
-	Progress  SmallMoleculeDesignListResponseProgress `json:"progress" api:"required"`
-	StartedAt time.Time                               `json:"started_at" api:"required" format:"date-time"`
+	Livemode bool `json:"livemode" api:"required"`
+	// Pipeline used for small molecule design
+	Pipeline constant.Boltzmol `json:"pipeline" default:"boltzmol"`
+	// Pipeline version used for small molecule design
+	PipelineVersion constant.String1_0                      `json:"pipeline_version" default:"1.0"`
+	Progress        SmallMoleculeDesignListResponseProgress `json:"progress" api:"required"`
+	StartedAt       time.Time                               `json:"started_at" api:"required" format:"date-time"`
 	// Any of "pending", "running", "succeeded", "failed", "stopped".
 	Status    SmallMoleculeDesignListResponseStatus `json:"status" api:"required"`
 	StoppedAt time.Time                             `json:"stopped_at" api:"required" format:"date-time"`
@@ -1503,22 +1521,24 @@ type SmallMoleculeDesignListResponse struct {
 	IdempotencyKey string `json:"idempotency_key"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID             respjson.Field
-		CompletedAt    respjson.Field
-		CreatedAt      respjson.Field
-		DataDeletedAt  respjson.Field
-		Engine         respjson.Field
-		EngineVersion  respjson.Field
-		Error          respjson.Field
-		Livemode       respjson.Field
-		Progress       respjson.Field
-		StartedAt      respjson.Field
-		Status         respjson.Field
-		StoppedAt      respjson.Field
-		WorkspaceID    respjson.Field
-		IdempotencyKey respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
+		ID              respjson.Field
+		CompletedAt     respjson.Field
+		CreatedAt       respjson.Field
+		DataDeletedAt   respjson.Field
+		Engine          respjson.Field
+		EngineVersion   respjson.Field
+		Error           respjson.Field
+		Livemode        respjson.Field
+		Pipeline        respjson.Field
+		PipelineVersion respjson.Field
+		Progress        respjson.Field
+		StartedAt       respjson.Field
+		Status          respjson.Field
+		StoppedAt       respjson.Field
+		WorkspaceID     respjson.Field
+		IdempotencyKey  respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -1884,7 +1904,7 @@ func (r *SmallMoleculeDesignListResultsResponseWarning) UnmarshalJSON(data []byt
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// A small molecule design engine run that generates novel molecules
+// A small molecule design pipeline run that generates novel molecules
 type SmallMoleculeDesignStartResponse struct {
 	// Unique SmDesignRun identifier
 	ID          string    `json:"id" api:"required"`
@@ -1893,17 +1913,25 @@ type SmallMoleculeDesignStartResponse struct {
 	// When the input, output, and result data was permanently deleted. Null if data
 	// has not been deleted.
 	DataDeletedAt time.Time `json:"data_deleted_at" api:"required" format:"date-time"`
-	// Engine used for small molecule design
-	Engine constant.BoltzSmDesign `json:"engine" default:"boltz-sm-design"`
-	// Engine version used for small molecule design
-	EngineVersion string                                `json:"engine_version" api:"required"`
+	// Deprecated. Use pipeline instead.
+	//
+	// Deprecated: Use pipeline instead.
+	Engine constant.Boltzmol `json:"engine" default:"boltzmol"`
+	// Deprecated. Use pipeline_version instead.
+	//
+	// Deprecated: Use pipeline_version instead.
+	EngineVersion constant.String1_0                    `json:"engine_version" default:"1.0"`
 	Error         SmallMoleculeDesignStartResponseError `json:"error" api:"required"`
 	// Pipeline input (null if data deleted)
 	Input SmallMoleculeDesignStartResponseInput `json:"input" api:"required"`
 	// Whether this resource was created with a live API key.
-	Livemode  bool                                     `json:"livemode" api:"required"`
-	Progress  SmallMoleculeDesignStartResponseProgress `json:"progress" api:"required"`
-	StartedAt time.Time                                `json:"started_at" api:"required" format:"date-time"`
+	Livemode bool `json:"livemode" api:"required"`
+	// Pipeline used for small molecule design
+	Pipeline constant.Boltzmol `json:"pipeline" default:"boltzmol"`
+	// Pipeline version used for small molecule design
+	PipelineVersion constant.String1_0                       `json:"pipeline_version" default:"1.0"`
+	Progress        SmallMoleculeDesignStartResponseProgress `json:"progress" api:"required"`
+	StartedAt       time.Time                                `json:"started_at" api:"required" format:"date-time"`
 	// Any of "pending", "running", "succeeded", "failed", "stopped".
 	Status    SmallMoleculeDesignStartResponseStatus `json:"status" api:"required"`
 	StoppedAt time.Time                              `json:"stopped_at" api:"required" format:"date-time"`
@@ -1913,23 +1941,25 @@ type SmallMoleculeDesignStartResponse struct {
 	IdempotencyKey string `json:"idempotency_key"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID             respjson.Field
-		CompletedAt    respjson.Field
-		CreatedAt      respjson.Field
-		DataDeletedAt  respjson.Field
-		Engine         respjson.Field
-		EngineVersion  respjson.Field
-		Error          respjson.Field
-		Input          respjson.Field
-		Livemode       respjson.Field
-		Progress       respjson.Field
-		StartedAt      respjson.Field
-		Status         respjson.Field
-		StoppedAt      respjson.Field
-		WorkspaceID    respjson.Field
-		IdempotencyKey respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
+		ID              respjson.Field
+		CompletedAt     respjson.Field
+		CreatedAt       respjson.Field
+		DataDeletedAt   respjson.Field
+		Engine          respjson.Field
+		EngineVersion   respjson.Field
+		Error           respjson.Field
+		Input           respjson.Field
+		Livemode        respjson.Field
+		Pipeline        respjson.Field
+		PipelineVersion respjson.Field
+		Progress        respjson.Field
+		StartedAt       respjson.Field
+		Status          respjson.Field
+		StoppedAt       respjson.Field
+		WorkspaceID     respjson.Field
+		IdempotencyKey  respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -3213,7 +3243,7 @@ const (
 	SmallMoleculeDesignStartResponseStatusStopped   SmallMoleculeDesignStartResponseStatus = "stopped"
 )
 
-// A small molecule design engine run that generates novel molecules
+// A small molecule design pipeline run that generates novel molecules
 type SmallMoleculeDesignStopResponse struct {
 	// Unique SmDesignRun identifier
 	ID          string    `json:"id" api:"required"`
@@ -3222,17 +3252,25 @@ type SmallMoleculeDesignStopResponse struct {
 	// When the input, output, and result data was permanently deleted. Null if data
 	// has not been deleted.
 	DataDeletedAt time.Time `json:"data_deleted_at" api:"required" format:"date-time"`
-	// Engine used for small molecule design
-	Engine constant.BoltzSmDesign `json:"engine" default:"boltz-sm-design"`
-	// Engine version used for small molecule design
-	EngineVersion string                               `json:"engine_version" api:"required"`
+	// Deprecated. Use pipeline instead.
+	//
+	// Deprecated: Use pipeline instead.
+	Engine constant.Boltzmol `json:"engine" default:"boltzmol"`
+	// Deprecated. Use pipeline_version instead.
+	//
+	// Deprecated: Use pipeline_version instead.
+	EngineVersion constant.String1_0                   `json:"engine_version" default:"1.0"`
 	Error         SmallMoleculeDesignStopResponseError `json:"error" api:"required"`
 	// Pipeline input (null if data deleted)
 	Input SmallMoleculeDesignStopResponseInput `json:"input" api:"required"`
 	// Whether this resource was created with a live API key.
-	Livemode  bool                                    `json:"livemode" api:"required"`
-	Progress  SmallMoleculeDesignStopResponseProgress `json:"progress" api:"required"`
-	StartedAt time.Time                               `json:"started_at" api:"required" format:"date-time"`
+	Livemode bool `json:"livemode" api:"required"`
+	// Pipeline used for small molecule design
+	Pipeline constant.Boltzmol `json:"pipeline" default:"boltzmol"`
+	// Pipeline version used for small molecule design
+	PipelineVersion constant.String1_0                      `json:"pipeline_version" default:"1.0"`
+	Progress        SmallMoleculeDesignStopResponseProgress `json:"progress" api:"required"`
+	StartedAt       time.Time                               `json:"started_at" api:"required" format:"date-time"`
 	// Any of "pending", "running", "succeeded", "failed", "stopped".
 	Status    SmallMoleculeDesignStopResponseStatus `json:"status" api:"required"`
 	StoppedAt time.Time                             `json:"stopped_at" api:"required" format:"date-time"`
@@ -3242,23 +3280,25 @@ type SmallMoleculeDesignStopResponse struct {
 	IdempotencyKey string `json:"idempotency_key"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID             respjson.Field
-		CompletedAt    respjson.Field
-		CreatedAt      respjson.Field
-		DataDeletedAt  respjson.Field
-		Engine         respjson.Field
-		EngineVersion  respjson.Field
-		Error          respjson.Field
-		Input          respjson.Field
-		Livemode       respjson.Field
-		Progress       respjson.Field
-		StartedAt      respjson.Field
-		Status         respjson.Field
-		StoppedAt      respjson.Field
-		WorkspaceID    respjson.Field
-		IdempotencyKey respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
+		ID              respjson.Field
+		CompletedAt     respjson.Field
+		CreatedAt       respjson.Field
+		DataDeletedAt   respjson.Field
+		Engine          respjson.Field
+		EngineVersion   respjson.Field
+		Error           respjson.Field
+		Input           respjson.Field
+		Livemode        respjson.Field
+		Pipeline        respjson.Field
+		PipelineVersion respjson.Field
+		Progress        respjson.Field
+		StartedAt       respjson.Field
+		Status          respjson.Field
+		StoppedAt       respjson.Field
+		WorkspaceID     respjson.Field
+		IdempotencyKey  respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
