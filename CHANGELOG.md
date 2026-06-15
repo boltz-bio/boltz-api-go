@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.25.1 (2026-06-15)
+
+Full Changelog: [v0.25.0...v0.25.1](https://github.com/boltz-bio/boltz-api-go/compare/v0.25.0...v0.25.1)
+
+### Bug Fixes
+
+* **compute-api:** remove public model codenames ([5d692a3](https://github.com/boltz-bio/boltz-api-go/commit/5d692a3270e10fc220abeacf58eda8824262f4db))
+* **sm-screen:** batch molecule filtering to avoid 60s Python timeout ([3345f47](https://github.com/boltz-bio/boltz-api-go/commit/3345f4777b60bdb61f18a4e9f17f64f8d1195cae))
+
 ## 0.25.0 (2026-06-15)
 
 Full Changelog: [v0.24.1...v0.25.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.24.1...v0.25.0)
