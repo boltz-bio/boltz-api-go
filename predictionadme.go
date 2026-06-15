@@ -93,6 +93,15 @@ func (r *PredictionAdmeService) DeleteData(ctx context.Context, id string, opts 
 	return res, err
 }
 
+// Estimate the cost of an ADME prediction without creating any resource or
+// consuming GPU.
+func (r *PredictionAdmeService) EstimateCost(ctx context.Context, body PredictionAdmeEstimateCostParams, opts ...option.RequestOption) (res *PredictionAdmeEstimateCostResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	path := "compute/v1/predictions/adme/estimate-cost"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
 // Submit a prediction job that returns Tier 1 ADME summary values for each
 // requested molecule.
 func (r *PredictionAdmeService) Start(ctx context.Context, body PredictionAdmeStartParams, opts ...option.RequestOption) (res *PredictionAdmeStartResponse, err error) {
@@ -597,6 +606,72 @@ func (r *PredictionAdmeDeleteDataResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Estimate response with monetary values encoded as decimal strings to preserve
+// precision.
+type PredictionAdmeEstimateCostResponse struct {
+	// Cost breakdown for the billed application.
+	Breakdown  PredictionAdmeEstimateCostResponseBreakdown `json:"breakdown" api:"required"`
+	Disclaimer string                                      `json:"disclaimer" api:"required"`
+	// Estimated total cost as a decimal string
+	EstimatedCostUsd string `json:"estimated_cost_usd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Breakdown        respjson.Field
+		Disclaimer       respjson.Field
+		EstimatedCostUsd respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r PredictionAdmeEstimateCostResponse) RawJSON() string { return r.JSON.raw }
+func (r *PredictionAdmeEstimateCostResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Cost breakdown for the billed application.
+type PredictionAdmeEstimateCostResponseBreakdown struct {
+	// Any of "structure_and_binding", "small_molecule_design",
+	// "small_molecule_library_screen", "protein_design", "protein_redesign",
+	// "protein_library_screen", "adme".
+	Application PredictionAdmeEstimateCostResponseBreakdownApplication `json:"application" api:"required"`
+	// Estimated cost per displayed unit as a decimal string, rounded up to 4 decimal
+	// places. This may include token-size multipliers or generation overhead;
+	// estimated_cost_usd is the authoritative total.
+	CostPerUnitUsd string `json:"cost_per_unit_usd" api:"required"`
+	// Number of units shown for the estimate. For structure-and-binding, this is the
+	// requested number of samples. For protein and small-molecule design/screen
+	// endpoints, this is the requested number of proteins or molecules.
+	NumUnits int64 `json:"num_units" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Application    respjson.Field
+		CostPerUnitUsd respjson.Field
+		NumUnits       respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r PredictionAdmeEstimateCostResponseBreakdown) RawJSON() string { return r.JSON.raw }
+func (r *PredictionAdmeEstimateCostResponseBreakdown) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type PredictionAdmeEstimateCostResponseBreakdownApplication string
+
+const (
+	PredictionAdmeEstimateCostResponseBreakdownApplicationStructureAndBinding        PredictionAdmeEstimateCostResponseBreakdownApplication = "structure_and_binding"
+	PredictionAdmeEstimateCostResponseBreakdownApplicationSmallMoleculeDesign        PredictionAdmeEstimateCostResponseBreakdownApplication = "small_molecule_design"
+	PredictionAdmeEstimateCostResponseBreakdownApplicationSmallMoleculeLibraryScreen PredictionAdmeEstimateCostResponseBreakdownApplication = "small_molecule_library_screen"
+	PredictionAdmeEstimateCostResponseBreakdownApplicationProteinDesign              PredictionAdmeEstimateCostResponseBreakdownApplication = "protein_design"
+	PredictionAdmeEstimateCostResponseBreakdownApplicationProteinRedesign            PredictionAdmeEstimateCostResponseBreakdownApplication = "protein_redesign"
+	PredictionAdmeEstimateCostResponseBreakdownApplicationProteinLibraryScreen       PredictionAdmeEstimateCostResponseBreakdownApplication = "protein_library_screen"
+	PredictionAdmeEstimateCostResponseBreakdownApplicationAdme                       PredictionAdmeEstimateCostResponseBreakdownApplication = "adme"
+)
+
 type PredictionAdmeStartResponse struct {
 	// Unique prediction identifier
 	ID          string    `json:"id" api:"required"`
@@ -1025,6 +1100,60 @@ func (r PredictionAdmeListParams) URLQuery() (v url.Values, err error) {
 		ArrayFormat:  apiquery.ArrayQueryFormatRepeat,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
+}
+
+type PredictionAdmeEstimateCostParams struct {
+	Input PredictionAdmeEstimateCostParamsInput `json:"input,omitzero" api:"required"`
+	// Client-provided key to prevent duplicate submissions on retries
+	IdempotencyKey param.Opt[string] `json:"idempotency_key,omitzero"`
+	// Target workspace ID (admin keys only; ignored for workspace keys)
+	WorkspaceID param.Opt[string] `json:"workspace_id,omitzero"`
+	// Model to use for prediction
+	//
+	// This field can be elided, and will marshal its zero value as "adme-v1".
+	Model constant.AdmeV1 `json:"model" default:"adme-v1"`
+	paramObj
+}
+
+func (r PredictionAdmeEstimateCostParams) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionAdmeEstimateCostParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *PredictionAdmeEstimateCostParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The property Molecules is required.
+type PredictionAdmeEstimateCostParamsInput struct {
+	// Molecules to score. Results are returned in the same order as this list.
+	Molecules []PredictionAdmeEstimateCostParamsInputMolecule `json:"molecules,omitzero" api:"required"`
+	paramObj
+}
+
+func (r PredictionAdmeEstimateCostParamsInput) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionAdmeEstimateCostParamsInput
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *PredictionAdmeEstimateCostParamsInput) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The property Smiles is required.
+type PredictionAdmeEstimateCostParamsInputMolecule struct {
+	// SMILES string of the molecule to predict ADME properties for.
+	Smiles string `json:"smiles" api:"required"`
+	// Optional client-provided identifier. Returned as `external_id` in the matching
+	// output item.
+	ID param.Opt[string] `json:"id,omitzero"`
+	paramObj
+}
+
+func (r PredictionAdmeEstimateCostParamsInputMolecule) MarshalJSON() (data []byte, err error) {
+	type shadow PredictionAdmeEstimateCostParamsInputMolecule
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *PredictionAdmeEstimateCostParamsInputMolecule) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type PredictionAdmeStartParams struct {
