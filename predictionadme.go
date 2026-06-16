@@ -194,7 +194,8 @@ func (r *PredictionAdmeGetResponseError) UnmarshalJSON(data []byte) error {
 
 // Prediction input (null if data deleted)
 type PredictionAdmeGetResponseInput struct {
-	// Molecules to score. Results are returned in the same order as this list.
+	// Molecules to score (1–128 per request). Results are returned in the same order
+	// as this list.
 	Molecules []PredictionAdmeGetResponseInputMolecule `json:"molecules" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -640,9 +641,9 @@ type PredictionAdmeEstimateCostResponseBreakdown struct {
 	// places. This may include token-size multipliers or generation overhead;
 	// estimated_cost_usd is the authoritative total.
 	CostPerUnitUsd string `json:"cost_per_unit_usd" api:"required"`
-	// Number of units shown for the estimate. For structure-and-binding, this is the
-	// requested number of samples. For protein and small-molecule design/screen
-	// endpoints, this is the requested number of proteins or molecules.
+	// Number of billable units in the estimate. The unit depends on the endpoint:
+	// samples for structure-and-binding, molecules for ADME, and requested proteins or
+	// molecules for design/screen endpoints.
 	NumUnits int64 `json:"num_units" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -755,7 +756,8 @@ func (r *PredictionAdmeStartResponseError) UnmarshalJSON(data []byte) error {
 
 // Prediction input (null if data deleted)
 type PredictionAdmeStartResponseInput struct {
-	// Molecules to score. Results are returned in the same order as this list.
+	// Molecules to score (1–128 per request). Results are returned in the same order
+	// as this list.
 	Molecules []PredictionAdmeStartResponseInputMolecule `json:"molecules" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1125,7 +1127,8 @@ func (r *PredictionAdmeEstimateCostParams) UnmarshalJSON(data []byte) error {
 
 // The property Molecules is required.
 type PredictionAdmeEstimateCostParamsInput struct {
-	// Molecules to score. Results are returned in the same order as this list.
+	// Molecules to score (1–128 per request). Results are returned in the same order
+	// as this list.
 	Molecules []PredictionAdmeEstimateCostParamsInputMolecule `json:"molecules,omitzero" api:"required"`
 	paramObj
 }
@@ -1179,7 +1182,8 @@ func (r *PredictionAdmeStartParams) UnmarshalJSON(data []byte) error {
 
 // The property Molecules is required.
 type PredictionAdmeStartParamsInput struct {
-	// Molecules to score. Results are returned in the same order as this list.
+	// Molecules to score (1–128 per request). Results are returned in the same order
+	// as this list.
 	Molecules []PredictionAdmeStartParamsInputMolecule `json:"molecules,omitzero" api:"required"`
 	paramObj
 }

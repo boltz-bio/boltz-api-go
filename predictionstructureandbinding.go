@@ -209,7 +209,7 @@ type PredictionStructureAndBindingGetResponseInput struct {
 	// currently support ligand_ccd only; ligand_smiles is unsupported.
 	Constraints  []PredictionStructureAndBindingGetResponseInputConstraintUnion `json:"constraints"`
 	ModelOptions PredictionStructureAndBindingGetResponseInputModelOptions      `json:"model_options"`
-	// Number of structure samples to generate
+	// Number of structure samples to generate (1–10)
 	NumSamples int64 `json:"num_samples"`
 	// Template structure files to guide protein-chain prediction. Supports up to 4 CIF
 	// or PDB templates from HTTPS URLs or base64 uploads. Use template_chains to map
@@ -1899,9 +1899,9 @@ type PredictionStructureAndBindingEstimateCostResponseBreakdown struct {
 	// places. This may include token-size multipliers or generation overhead;
 	// estimated_cost_usd is the authoritative total.
 	CostPerUnitUsd string `json:"cost_per_unit_usd" api:"required"`
-	// Number of units shown for the estimate. For structure-and-binding, this is the
-	// requested number of samples. For protein and small-molecule design/screen
-	// endpoints, this is the requested number of proteins or molecules.
+	// Number of billable units in the estimate. The unit depends on the endpoint:
+	// samples for structure-and-binding, molecules for ADME, and requested proteins or
+	// molecules for design/screen endpoints.
 	NumUnits int64 `json:"num_units" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -2027,7 +2027,7 @@ type PredictionStructureAndBindingStartResponseInput struct {
 	// currently support ligand_ccd only; ligand_smiles is unsupported.
 	Constraints  []PredictionStructureAndBindingStartResponseInputConstraintUnion `json:"constraints"`
 	ModelOptions PredictionStructureAndBindingStartResponseInputModelOptions      `json:"model_options"`
-	// Number of structure samples to generate
+	// Number of structure samples to generate (1–10)
 	NumSamples int64 `json:"num_samples"`
 	// Template structure files to guide protein-chain prediction. Supports up to 4 CIF
 	// or PDB templates from HTTPS URLs or base64 uploads. Use template_chains to map
@@ -3647,7 +3647,7 @@ type PredictionStructureAndBindingEstimateCostParamsInput struct {
 	// Entities (proteins, RNA, DNA, ligands) forming the complex to predict. Order
 	// determines chain assignment.
 	Entities []PredictionStructureAndBindingEstimateCostParamsInputEntityUnion `json:"entities,omitzero" api:"required"`
-	// Number of structure samples to generate
+	// Number of structure samples to generate (1–10)
 	NumSamples param.Opt[int64]                                                 `json:"num_samples,omitzero"`
 	Binding    PredictionStructureAndBindingEstimateCostParamsInputBindingUnion `json:"binding,omitzero"`
 	// Bond constraints between atoms. Atom-level ligand references currently support
@@ -4547,7 +4547,7 @@ type PredictionStructureAndBindingStartParamsInput struct {
 	// Entities (proteins, RNA, DNA, ligands) forming the complex to predict. Order
 	// determines chain assignment.
 	Entities []PredictionStructureAndBindingStartParamsInputEntityUnion `json:"entities,omitzero" api:"required"`
-	// Number of structure samples to generate
+	// Number of structure samples to generate (1–10)
 	NumSamples param.Opt[int64]                                          `json:"num_samples,omitzero"`
 	Binding    PredictionStructureAndBindingStartParamsInputBindingUnion `json:"binding,omitzero"`
 	// Bond constraints between atoms. Atom-level ligand references currently support
