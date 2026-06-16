@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.26.1 (2026-06-16)
+
+Full Changelog: [v0.26.0...v0.26.1](https://github.com/boltz-bio/boltz-api-go/compare/v0.26.0...v0.26.1)
+
+### Documentation
+
+* **api:** fix runnable predictions example + document request limits ([10f50d7](https://github.com/boltz-bio/boltz-api-go/commit/10f50d72af0a45c60b5dc74c2f3b547731b5fc06))
+* **api:** use ASCII hyphens in limit descriptions ([217be1b](https://github.com/boltz-bio/boltz-api-go/commit/217be1be8fecb14a79a51529be5c68b94daf54c2))
+
 ## 0.26.0 (2026-06-15)
 
 Full Changelog: [v0.25.1...v0.26.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.25.1...v0.26.0)
