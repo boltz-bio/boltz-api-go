@@ -194,7 +194,7 @@ func (r *PredictionAdmeGetResponseError) UnmarshalJSON(data []byte) error {
 
 // Prediction input (null if data deleted)
 type PredictionAdmeGetResponseInput struct {
-	// Molecules to score (1–128 per request). Results are returned in the same order
+	// Molecules to score (1-128 per request). Results are returned in the same order
 	// as this list.
 	Molecules []PredictionAdmeGetResponseInputMolecule `json:"molecules" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -756,7 +756,7 @@ func (r *PredictionAdmeStartResponseError) UnmarshalJSON(data []byte) error {
 
 // Prediction input (null if data deleted)
 type PredictionAdmeStartResponseInput struct {
-	// Molecules to score (1–128 per request). Results are returned in the same order
+	// Molecules to score (1-128 per request). Results are returned in the same order
 	// as this list.
 	Molecules []PredictionAdmeStartResponseInputMolecule `json:"molecules" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -1127,7 +1127,7 @@ func (r *PredictionAdmeEstimateCostParams) UnmarshalJSON(data []byte) error {
 
 // The property Molecules is required.
 type PredictionAdmeEstimateCostParamsInput struct {
-	// Molecules to score (1–128 per request). Results are returned in the same order
+	// Molecules to score (1-128 per request). Results are returned in the same order
 	// as this list.
 	Molecules []PredictionAdmeEstimateCostParamsInputMolecule `json:"molecules,omitzero" api:"required"`
 	paramObj
@@ -1182,7 +1182,7 @@ func (r *PredictionAdmeStartParams) UnmarshalJSON(data []byte) error {
 
 // The property Molecules is required.
 type PredictionAdmeStartParamsInput struct {
-	// Molecules to score (1–128 per request). Results are returned in the same order
+	// Molecules to score (1-128 per request). Results are returned in the same order
 	// as this list.
 	Molecules []PredictionAdmeStartParamsInputMolecule `json:"molecules,omitzero" api:"required"`
 	paramObj
