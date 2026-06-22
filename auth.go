@@ -66,6 +66,8 @@ type AuthMeResponseUnion struct {
 	SelectedOrganizationID string `json:"selected_organization_id"`
 	// This field is from variant [AuthMeResponseAuthMeAPIKeyResponse].
 	WorkspaceID string `json:"workspace_id"`
+	// This field is from variant [AuthMeResponseAuthMeAPIKeyResponse].
+	OrganizationName string `json:"organization_name"`
 	// This field is from variant [AuthMeResponseAuthMeUserResponse].
 	ActiveOrganizationID string `json:"active_organization_id"`
 	// This field is from variant [AuthMeResponseAuthMeUserResponse].
@@ -80,6 +82,7 @@ type AuthMeResponseUnion struct {
 		PrincipalType           respjson.Field
 		SelectedOrganizationID  respjson.Field
 		WorkspaceID             respjson.Field
+		OrganizationName        respjson.Field
 		ActiveOrganizationID    respjson.Field
 		OrganizationMemberships respjson.Field
 		UserID                  respjson.Field
@@ -114,6 +117,7 @@ type AuthMeResponseAuthMeAPIKeyResponse struct {
 	PrincipalType          constant.APIKey                        `json:"principal_type" default:"api_key"`
 	SelectedOrganizationID string                                 `json:"selected_organization_id" api:"required"`
 	WorkspaceID            string                                 `json:"workspace_id" api:"required"`
+	OrganizationName       string                                 `json:"organization_name"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		APIKeyID               respjson.Field
@@ -123,6 +127,7 @@ type AuthMeResponseAuthMeAPIKeyResponse struct {
 		PrincipalType          respjson.Field
 		SelectedOrganizationID respjson.Field
 		WorkspaceID            respjson.Field
+		OrganizationName       respjson.Field
 		ExtraFields            map[string]respjson.Field
 		raw                    string
 	} `json:"-"`
@@ -174,14 +179,16 @@ func (r *AuthMeResponseAuthMeUserResponse) UnmarshalJSON(data []byte) error {
 
 type AuthMeResponseAuthMeUserResponseOrganizationMembership struct {
 	// Any of "admin", "member".
-	ComputeRole    AuthMeResponseAuthMeUserResponseOrganizationMembershipComputeRole `json:"compute_role" api:"required"`
-	OrganizationID string                                                            `json:"organization_id" api:"required"`
+	ComputeRole      AuthMeResponseAuthMeUserResponseOrganizationMembershipComputeRole `json:"compute_role" api:"required"`
+	OrganizationID   string                                                            `json:"organization_id" api:"required"`
+	OrganizationName string                                                            `json:"organization_name"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ComputeRole    respjson.Field
-		OrganizationID respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
+		ComputeRole      respjson.Field
+		OrganizationID   respjson.Field
+		OrganizationName respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
 	} `json:"-"`
 }
 
