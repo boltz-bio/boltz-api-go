@@ -5464,6 +5464,11 @@ type SmallMoleculeDesignListResultsParams struct {
 	AfterID param.Opt[string] `query:"after_id,omitzero" json:"-"`
 	// Return results before this ID
 	BeforeID param.Opt[string] `query:"before_id,omitzero" json:"-"`
+	// Comma-separated list of result IDs to filter by (max 200). Only results whose ID
+	// matches one of these is returned; missing IDs are silently skipped. Composes
+	// with `limit`, `after_id`, and `before_id` — the filter is applied before
+	// pagination.
+	IDs param.Opt[string] `query:"ids,omitzero" json:"-"`
 	// Max results to return. Defaults to 100.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Workspace ID. Only used with admin API keys. Ignored (or validated) for

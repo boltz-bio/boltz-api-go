@@ -192,6 +192,7 @@ func TestSmallMoleculeDesignListResultsWithOptionalParams(t *testing.T) {
 		boltzapi.SmallMoleculeDesignListResultsParams{
 			AfterID:     boltzapi.String("after_id"),
 			BeforeID:    boltzapi.String("before_id"),
+			IDs:         boltzapi.String("ids"),
 			Limit:       boltzapi.Int(1),
 			WorkspaceID: boltzapi.String("workspace_id"),
 		},
