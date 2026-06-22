@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.27.0 (2026-06-22)
+
+Full Changelog: [v0.26.1...v0.27.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.26.1...v0.27.0)
+
+### Features
+
+* **compute-api:** include organization_name in /v1/auth/me ([0835ff9](https://github.com/boltz-bio/boltz-api-go/commit/0835ff95c7be67c355a9537420ea57e7463f3422))
+
 ## 0.26.1 (2026-06-16)
 
 Full Changelog: [v0.26.0...v0.26.1](https://github.com/boltz-bio/boltz-api-go/compare/v0.26.0...v0.26.1)
