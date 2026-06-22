@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.28.0 (2026-06-22)
+
+Full Changelog: [v0.27.0...v0.28.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.27.0...v0.28.0)
+
+### Features
+
+* **compute-api:** filter list-results by id ([096a48f](https://github.com/boltz-bio/boltz-api-go/commit/096a48fc05b893d8824c812dc23da2c15de18d17))
+
 ## 0.27.0 (2026-06-22)
 
 Full Changelog: [v0.26.1...v0.27.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.26.1...v0.27.0)
