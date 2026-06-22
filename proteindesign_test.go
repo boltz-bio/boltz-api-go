@@ -194,6 +194,7 @@ func TestProteinDesignListResultsWithOptionalParams(t *testing.T) {
 		boltzapi.ProteinDesignListResultsParams{
 			AfterID:     boltzapi.String("after_id"),
 			BeforeID:    boltzapi.String("before_id"),
+			IDs:         boltzapi.String("ids"),
 			Limit:       boltzapi.Int(1),
 			WorkspaceID: boltzapi.String("workspace_id"),
 		},
