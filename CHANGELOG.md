@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.30.0 (2026-06-24)
+
+Full Changelog: [v0.29.0...v0.30.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.29.0...v0.30.0)
+
+### Features
+
+* **compute-api:** add public screen resume endpoints ([6c4668a](https://github.com/boltz-bio/boltz-api-go/commit/6c4668a20475d758181bf54a2de69698ffaa145e))
+
 ## 0.29.0 (2026-06-24)
 
 Full Changelog: [v0.28.0...v0.29.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.28.0...v0.29.0)
