@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.29.0 (2026-06-24)
+
+Full Changelog: [v0.28.0...v0.29.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.28.0...v0.29.0)
+
+### Features
+
+* **compute-api:** expose design resume endpoints ([86baeb6](https://github.com/boltz-bio/boltz-api-go/commit/86baeb6e3f1b52ef372a391441ad6d20dc593db4))
+
 ## 0.28.0 (2026-06-22)
 
 Full Changelog: [v0.27.0...v0.28.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.27.0...v0.28.0)
