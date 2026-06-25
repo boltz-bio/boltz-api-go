@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.31.0 (2026-06-25)
+
+Full Changelog: [v0.30.0...v0.31.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.30.0...v0.31.0)
+
+### Features
+
+* **affinity:** raise ligand heavy atom cap to 100 ([565e0a4](https://github.com/boltz-bio/boltz-api-go/commit/565e0a4770b8702986da4cdab4af042eb9a78d8b))
+
 ## 0.30.0 (2026-06-24)
 
 Full Changelog: [v0.29.0...v0.30.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.29.0...v0.30.0)
