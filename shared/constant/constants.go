@@ -25,6 +25,7 @@ type APIKey string                       // Always "api_key"
 type Base64 string                       // Always "base64"
 type BoltzCurated string                 // Always "boltz_curated"
 type Boltz2_1 string                     // Always "boltz-2.1"
+type BoltzProteinRedesign string         // Always "boltz-protein-redesign"
 type Boltzmol string                     // Always "boltzmol"
 type Boltzprot string                    // Always "boltzprot"
 type Ccd string                          // Always "ccd"
@@ -64,6 +65,7 @@ type StructureTemplate string            // Always "structure_template"
 type Succeeded string                    // Always "succeeded"
 type URL string                          // Always "url"
 type User string                         // Always "user"
+type V2026_03_01 string                  // Always "v2026-03-01"
 type Workspace string                    // Always "workspace"
 
 func (c String1_0) Default() String1_0                       { return "1.0" }
@@ -73,6 +75,7 @@ func (c APIKey) Default() APIKey                             { return "api_key" 
 func (c Base64) Default() Base64                             { return "base64" }
 func (c BoltzCurated) Default() BoltzCurated                 { return "boltz_curated" }
 func (c Boltz2_1) Default() Boltz2_1                         { return "boltz-2.1" }
+func (c BoltzProteinRedesign) Default() BoltzProteinRedesign { return "boltz-protein-redesign" }
 func (c Boltzmol) Default() Boltzmol                         { return "boltzmol" }
 func (c Boltzprot) Default() Boltzprot                       { return "boltzprot" }
 func (c Ccd) Default() Ccd                                   { return "ccd" }
@@ -116,6 +119,7 @@ func (c StructureTemplate) Default() StructureTemplate         { return "structu
 func (c Succeeded) Default() Succeeded                         { return "succeeded" }
 func (c URL) Default() URL                                     { return "url" }
 func (c User) Default() User                                   { return "user" }
+func (c V2026_03_01) Default() V2026_03_01                     { return "v2026-03-01" }
 func (c Workspace) Default() Workspace                         { return "workspace" }
 
 func (c String1_0) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
@@ -125,6 +129,7 @@ func (c APIKey) MarshalJSON() ([]byte, error)                       { return mar
 func (c Base64) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c BoltzCurated) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c Boltz2_1) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c BoltzProteinRedesign) MarshalJSON() ([]byte, error)         { return marshalString(c) }
 func (c Boltzmol) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c Boltzprot) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c Ccd) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
@@ -164,6 +169,7 @@ func (c StructureTemplate) MarshalJSON() ([]byte, error)            { return mar
 func (c Succeeded) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c URL) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c User) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c V2026_03_01) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c Workspace) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 
 type constant[T any] interface {
