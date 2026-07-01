@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.32.1 (2026-07-01)
+
+Full Changelog: [v0.32.0...v0.32.1](https://github.com/boltz-bio/boltz-api-go/compare/v0.32.0...v0.32.1)
+
+### Documentation
+
+* **api:** remove em-dashes from public-facing compute API docs ([165a4a5](https://github.com/boltz-bio/boltz-api-go/commit/165a4a54dc753c3ea60dd85299a3a9524e4a4f6c))
+
 ## 0.32.0 (2026-06-26)
 
 Full Changelog: [v0.31.0...v0.32.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.31.0...v0.32.0)
