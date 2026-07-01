@@ -28,17 +28,6 @@ type Client struct {
 	// Protein Pipeline: design novel protein binders and screen protein libraries
 	// against targets. Includes de novo protein design and library screening.
 	Protein ProteinService
-	// Share read-only access to predictions and pipeline runs by issuing time-limited
-	// links that any visitor can open without an API key. A share link is scoped to a
-	// single workspace and bundles one or more predictions and pipeline runs. The link
-	// ID is itself the bearer credential; treat it as a secret. Create and delete
-	// require a workspace-scoped API key with read permission on every referenced
-	// resource; read endpoints are unauthenticated and gated by the link ID. Deleting
-	// a link revokes the bearer credential immediately; subsequent reads return 404.
-	// The underlying predictions and pipelines are not affected and remain accessible
-	// through their own authenticated endpoints; per-resource data retention runs on
-	// its own clock. The action is irreversible.
-	ShareLinks ShareLinkService
 	// Manage workspaces and API keys. Requires an admin API key. Admin keys have full
 	// access to all management and compute operations across all workspaces in the
 	// organization.
@@ -86,7 +75,6 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 	r.Predictions = NewPredictionService(opts...)
 	r.SmallMolecule = NewSmallMoleculeService(opts...)
 	r.Protein = NewProteinService(opts...)
-	r.ShareLinks = NewShareLinkService(opts...)
 	r.Admin = NewAdminService(opts...)
 	r.Cli = NewCliService(opts...)
 	r.Auth = NewAuthService(opts...)
