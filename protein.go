@@ -6,7 +6,7 @@ import (
 	"github.com/boltz-bio/boltz-api-go/option"
 )
 
-// Protein Pipeline — design novel protein binders and screen protein libraries
+// Protein Pipeline: design novel protein binders and screen protein libraries
 // against targets. Includes de novo protein design and library screening.
 //
 // ProteinService contains methods and other services that help with interacting
