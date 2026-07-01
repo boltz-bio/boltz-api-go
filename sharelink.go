@@ -25,10 +25,10 @@ import (
 // Share read-only access to predictions and pipeline runs by issuing time-limited
 // links that any visitor can open without an API key. A share link is scoped to a
 // single workspace and bundles one or more predictions and pipeline runs. The link
-// ID is itself the bearer credential — treat it as a secret. Create and delete
+// ID is itself the bearer credential; treat it as a secret. Create and delete
 // require a workspace-scoped API key with read permission on every referenced
 // resource; read endpoints are unauthenticated and gated by the link ID. Deleting
-// a link revokes the bearer credential immediately — subsequent reads return 404.
+// a link revokes the bearer credential immediately; subsequent reads return 404.
 // The underlying predictions and pipelines are not affected and remain accessible
 // through their own authenticated endpoints; per-resource data retention runs on
 // its own clock. The action is irreversible.
