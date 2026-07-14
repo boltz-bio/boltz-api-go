@@ -105,6 +105,15 @@ func (r *ProteinDesignService) EstimateCost(ctx context.Context, body ProteinDes
 	return res, err
 }
 
+// List binder-side protein design specifications from Boltz-managed curated
+// nanobody or antibody libraries.
+func (r *ProteinDesignService) ListCuratedSpecifications(ctx context.Context, query ProteinDesignListCuratedSpecificationsParams, opts ...option.RequestOption) (res *ProteinDesignListCuratedSpecificationsResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	path := "compute/v1/protein/design/curated-specifications"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, query, &res, opts...)
+	return res, err
+}
+
 // Retrieve paginated results from a protein design run
 func (r *ProteinDesignService) ListResults(ctx context.Context, id string, query ProteinDesignListResultsParams, opts ...option.RequestOption) (res *pagination.CursorPage[ProteinDesignListResultsResponse], err error) {
 	var raw *http.Response
@@ -255,8 +264,10 @@ func (r *ProteinDesignGetResponseError) UnmarshalJSON(data []byte) error {
 // Pipeline input (null if data deleted)
 type ProteinDesignGetResponseInput struct {
 	// Binder specification for protein design. Use no_template for sequence-defined
-	// binders, structure_template for uploaded binder structures, or boltz_curated for
-	// Boltz-managed nanobody and antibody defaults.
+	// binders, structure_template for uploaded binder structures, boltz_curated for
+	// Boltz-managed nanobody and antibody defaults, or
+	// uniformly_sampled_specifications to sample uniformly across multiple binder
+	// specifications.
 	BinderSpecification ProteinDesignGetResponseInputBinderSpecificationUnion `json:"binder_specification" api:"required"`
 	// Number of protein designs to generate. Must be between 10 and 1,000,000.
 	NumProteins int64 `json:"num_proteins" api:"required"`
@@ -288,7 +299,8 @@ func (r *ProteinDesignGetResponseInput) UnmarshalJSON(data []byte) error {
 // properties and values from
 // [ProteinDesignGetResponseInputBinderSpecificationStructureTemplateBinderSpecResponse],
 // [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponse],
-// [ProteinDesignGetResponseInputBinderSpecificationBoltzCuratedBinderSpecResponse].
+// [ProteinDesignGetResponseInputBinderSpecificationBoltzCuratedBinderSpecResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignGetResponseInputBinderSpecificationUnion struct {
@@ -314,16 +326,20 @@ type ProteinDesignGetResponseInputBinderSpecificationUnion struct {
 	// This field is from variant
 	// [ProteinDesignGetResponseInputBinderSpecificationBoltzCuratedBinderSpecResponse].
 	Binder ProteinDesignGetResponseInputBinderSpecificationBoltzCuratedBinderSpecResponseBinder `json:"binder"`
-	JSON   struct {
-		ChainSelection respjson.Field
-		Modality       respjson.Field
-		Structure      respjson.Field
-		Type           respjson.Field
-		Rules          respjson.Field
-		Entities       respjson.Field
-		Bonds          respjson.Field
-		Binder         respjson.Field
-		raw            string
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponse].
+	BinderSpecifications []ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion `json:"binder_specifications"`
+	JSON                 struct {
+		ChainSelection       respjson.Field
+		Modality             respjson.Field
+		Structure            respjson.Field
+		Type                 respjson.Field
+		Rules                respjson.Field
+		Entities             respjson.Field
+		Bonds                respjson.Field
+		Binder               respjson.Field
+		BinderSpecifications respjson.Field
+		raw                  string
 	} `json:"-"`
 }
 
@@ -338,6 +354,11 @@ func (u ProteinDesignGetResponseInputBinderSpecificationUnion) AsProteinDesignGe
 }
 
 func (u ProteinDesignGetResponseInputBinderSpecificationUnion) AsProteinDesignGetResponseInputBinderSpecificationBoltzCuratedBinderSpecResponse() (v ProteinDesignGetResponseInputBinderSpecificationBoltzCuratedBinderSpecResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUnion) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1542,6 +1563,1312 @@ func (r ProteinDesignGetResponseInputBinderSpecificationBoltzCuratedBinderSpecRe
 func (r *ProteinDesignGetResponseInputBinderSpecificationBoltzCuratedBinderSpecResponseRules) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// A collection of binder specifications sampled uniformly during protein design.
+// This lets one run explore multiple binder definitions while keeping each
+// generation request shape unchanged.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponse struct {
+	// Binder specifications to sample uniformly when generating designs. Each
+	// generation samples one specification from this list; over larger runs this gives
+	// roughly equal representation.
+	BinderSpecifications []ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion `json:"binder_specifications" api:"required"`
+	Type                 constant.UniformlySampledSpecifications                                                                      `json:"type" default:"uniformly_sampled_specifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		BinderSpecifications respjson.Field
+		Type                 respjson.Field
+		ExtraFields          map[string]respjson.Field
+		raw                  string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion
+// contains all possible properties and values from
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion struct {
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse].
+	ChainSelection map[string]ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion `json:"chain_selection"`
+	Modality       string                                                                                                                                                                 `json:"modality"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse].
+	Structure ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseStructure `json:"structure"`
+	Type      string                                                                                                                                            `json:"type"`
+	// This field is a union of
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseRules],
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseRules],
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseRules]
+	Rules ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnionRules `json:"rules"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse].
+	Entities []ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion `json:"entities"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse].
+	Bonds []ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse].
+	Binder ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinder `json:"binder"`
+	JSON   struct {
+		ChainSelection respjson.Field
+		Modality       respjson.Field
+		Structure      respjson.Field
+		Type           respjson.Field
+		Rules          respjson.Field
+		Entities       respjson.Field
+		Bonds          respjson.Field
+		Binder         respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnionRules
+// is an implicit subunion of
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion].
+// ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnionRules
+// provides convenient access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion].
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnionRules struct {
+	ExcludedAminoAcids     []string `json:"excluded_amino_acids"`
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	MaxHydrophobicFraction float64  `json:"max_hydrophobic_fraction"`
+	JSON                   struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnionRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Binder specification starting from an existing 3D structure. Upload a CIF/PDB
+// file and select which chains to include, which residues to keep, and which
+// regions to redesign. Only chains included in chain_selection are part of the
+// pipeline run.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse struct {
+	// Chains selected from the uploaded binder structure, keyed by chain ID. Only
+	// chains listed here are included in the pipeline run — any chains omitted from
+	// this mapping are ignored. Each value defines which residues to keep
+	// (crop_residues). Omit design_motifs to include the chain as fixed scaffold
+	// context.
+	ChainSelection map[string]ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion `json:"chain_selection" api:"required"`
+	// Any of "peptide", "antibody", "nanobody", "custom_protein".
+	Modality  ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality  `json:"modality" api:"required"`
+	Structure ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseStructure `json:"structure" api:"required"`
+	Type      constant.StructureTemplate                                                                                                                        `json:"type" default:"structure_template"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseRules `json:"rules"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainSelection respjson.Field
+		Modality       respjson.Field
+		Structure      respjson.Field
+		Type           respjson.Field
+		Rules          respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion
+// contains all possible properties and values from
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec],
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion struct {
+	ChainType string `json:"chain_type"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec].
+	CropResidues ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion `json:"crop_residues"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec].
+	DesignMotifs []ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion `json:"design_motifs"`
+	JSON         struct {
+		ChainType    respjson.Field
+		CropResidues respjson.Field
+		DesignMotifs respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Per-chain crop and design specification for a polymer chain in
+// structure_template mode.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec struct {
+	ChainType constant.Polymer `json:"chain_type" default:"polymer"`
+	// 0-indexed residue indices to retain from this chain, or 'all' to keep all
+	// residues. Residues not listed are removed before design.
+	CropResidues ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion `json:"crop_residues" api:"required"`
+	// Optional motifs (replacement or insertion) defining which regions to redesign on
+	// this chain. Omit this field to include the chain as fixed scaffold context.
+	DesignMotifs []ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion `json:"design_motifs"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainType    respjson.Field
+		CropResidues respjson.Field
+		DesignMotifs respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion
+// contains all possible properties and values from [[]int64], [constant.All].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfIntArray OfAll]
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion struct {
+	// This field will be present if the value is a [[]int64] instead of an object.
+	OfIntArray []int64 `json:",inline"`
+	// This field will be present if the value is a [constant.All] instead of an
+	// object.
+	OfAll constant.All `json:",inline"`
+	JSON  struct {
+		OfIntArray respjson.Field
+		OfAll      respjson.Field
+		raw        string
+	} `json:"-"`
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) AsIntArray() (v []int64) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) AsAll() (v constant.All) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion
+// contains all possible properties and values from
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif],
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion struct {
+	// This field is a union of
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange],
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange]
+	DesignLengthRange ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange `json:"design_length_range"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif].
+	EndIndex int64 `json:"end_index"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif].
+	StartIndex int64  `json:"start_index"`
+	Type       string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif].
+	AfterResidueIndex int64 `json:"after_residue_index"`
+	JSON              struct {
+		DesignLengthRange respjson.Field
+		EndIndex          respjson.Field
+		StartIndex        respjson.Field
+		Type              respjson.Field
+		AfterResidueIndex respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange
+// is an implicit subunion of
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion].
+// ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange
+// provides convenient access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion].
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange struct {
+	Max  int64 `json:"max"`
+	Min  int64 `json:"min"`
+	JSON struct {
+		Max respjson.Field
+		Min respjson.Field
+		raw string
+	} `json:"-"`
+}
+
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Replace a contiguous region of the sequence with a designed segment. Residues
+// from start_index to end_index (inclusive) are replaced with a new sequence of
+// the specified length.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif struct {
+	// Allowed sequence length range for designed regions
+	DesignLengthRange ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange `json:"design_length_range" api:"required"`
+	// 0-indexed end residue (inclusive)
+	EndIndex int64 `json:"end_index" api:"required"`
+	// 0-indexed start residue (inclusive)
+	StartIndex int64                `json:"start_index" api:"required"`
+	Type       constant.Replacement `json:"type" default:"replacement"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		DesignLengthRange respjson.Field
+		EndIndex          respjson.Field
+		StartIndex        respjson.Field
+		Type              respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Allowed sequence length range for designed regions
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange struct {
+	// Maximum sequence length in residues. Must be >= min.
+	Max int64 `json:"max" api:"required"`
+	// Minimum sequence length in residues
+	Min int64 `json:"min" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Insert a designed segment at a specific position in the sequence.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif struct {
+	// 0-indexed position after which to insert. Use -1 to insert before the first
+	// residue.
+	AfterResidueIndex int64 `json:"after_residue_index" api:"required"`
+	// Allowed sequence length range for designed regions
+	DesignLengthRange ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange `json:"design_length_range" api:"required"`
+	Type              constant.Insertion                                                                                                                                                                                                                `json:"type" default:"insertion"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AfterResidueIndex respjson.Field
+		DesignLengthRange respjson.Field
+		Type              respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Allowed sequence length range for designed regions
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange struct {
+	// Maximum sequence length in residues. Must be >= min.
+	Max int64 `json:"max" api:"required"`
+	// Minimum sequence length in residues
+	Min int64 `json:"min" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Per-chain specification for a ligand chain in structure_template mode. The full
+// ligand is always included.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec struct {
+	ChainType constant.Ligand `json:"chain_type" default:"ligand"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainType   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality string
+
+const (
+	ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModalityPeptide       ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality = "peptide"
+	ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModalityAntibody      ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality = "antibody"
+	ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModalityNanobody      ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality = "nanobody"
+	ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModalityCustomProtein ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality = "custom_protein"
+)
+
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseStructure struct {
+	// URL to download the file
+	URL string `json:"url" api:"required" format:"uri"`
+	// When the presigned URL expires
+	URLExpiresAt time.Time `json:"url_expires_at" api:"required" format:"date-time"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		URL          respjson.Field
+		URLExpiresAt respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseStructure) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseStructure) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Constraints applied during sequence design
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseRules struct {
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseRules) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Binder specification without a structural template. Define the binder from
+// sequence components (fixed and designed segments) without providing a starting
+// 3D structure.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse struct {
+	// Binder entities composing the design. At least one must be a designed_protein
+	// entity. Additional fixed entities (RNA, DNA, ligands) can be included as part of
+	// the complex.
+	Entities []ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion `json:"entities" api:"required"`
+	// Any of "peptide", "antibody", "nanobody", "custom_protein".
+	Modality ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality `json:"modality" api:"required"`
+	Type     constant.NoTemplate                                                                                                                       `json:"type" default:"no_template"`
+	// Covalent bond constraints between atoms in the binder complex. If defining bonds
+	// where an atom is part of a designed protein chain, assume residue indices count
+	// designed regions as the minimum length. Example: designed protein "1..3C1..2",
+	// "C" is residue 1 (0-indexed) of the designed protein.
+	Bonds []ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond `json:"bonds"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseRules `json:"rules"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Entities    respjson.Field
+		Modality    respjson.Field
+		Type        respjson.Field
+		Bonds       respjson.Field
+		Rules       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion
+// contains all possible properties and values from
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion struct {
+	ChainIDs []string `json:"chain_ids"`
+	Type     string   `json:"type"`
+	Value    string   `json:"value"`
+	Cyclic   bool     `json:"cyclic"`
+	// This field is a union of
+	// [[]ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification],
+	// [[]ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification],
+	// [[]ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification],
+	// [[]ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification]
+	Modifications ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications `json:"modifications"`
+	JSON          struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications
+// is an implicit subunion of
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion].
+// ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications
+// provides convenient access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion].
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid:
+// OfProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModifications
+// OfProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModifications
+// OfProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModifications
+// OfProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModifications]
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications struct {
+	// This field will be present if the value is a
+	// [[]ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification]
+	// instead of an object.
+	OfProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModifications []ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification `json:",inline"`
+	// This field will be present if the value is a
+	// [[]ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification]
+	// instead of an object.
+	OfProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModifications []ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification `json:",inline"`
+	// This field will be present if the value is a
+	// [[]ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification]
+	// instead of an object.
+	OfProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModifications []ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification `json:",inline"`
+	// This field will be present if the value is a
+	// [[]ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification]
+	// instead of an object.
+	OfProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModifications []ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification `json:",inline"`
+	JSON                                                                                                                                                                         struct {
+		OfProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModifications respjson.Field
+		OfProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModifications    respjson.Field
+		OfProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModifications        respjson.Field
+		OfProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModifications        respjson.Field
+		raw                                                                                                                                                                                 string
+	} `json:"-"`
+}
+
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Protein binder entity with designed and/or fixed segments.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string                 `json:"chain_ids" api:"required"`
+	Type     constant.DesignedProtein `json:"type" default:"designed_protein"`
+	// Binder sequence specification. Fixed amino acids are written as literal
+	// single-letter codes. Designed regions are written as a length (fixed) or a
+	// length range (min..max). Example: "MKTAYI5..10VKSHFSRQ" means fixed MKTAYI, then
+	// 5-10 designed residues, then fixed VKSHFSRQ. "20" means 20 fully designed
+	// residues. "ACDE8GHI" means fixed ACDE, then 8 designed residues, then fixed GHI.
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A fixed protein entity whose sequence is not redesigned.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string         `json:"chain_ids" api:"required"`
+	Type     constant.Protein `json:"type" default:"protein"`
+	// Amino acid sequence (one-letter codes)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string     `json:"chain_ids" api:"required"`
+	Type     constant.Rna `json:"type" default:"rna"`
+	// RNA nucleotide sequence (A, C, G, U, N)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string     `json:"chain_ids" api:"required"`
+	Type     constant.Dna `json:"type" default:"dna"`
+	// DNA nucleotide sequence (A, C, G, T, N)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string              `json:"chain_ids" api:"required"`
+	Type     constant.LigandSmiles `json:"type" default:"ligand_smiles"`
+	// SMILES string representing the ligand
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs    respjson.Field
+		Type        respjson.Field
+		Value       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string           `json:"chain_ids" api:"required"`
+	Type     constant.LigandCcd `json:"type" default:"ligand_ccd"`
+	// CCD code from RCSB PDB (e.g. 'ATP', 'ADP')
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs    respjson.Field
+		Type        respjson.Field
+		Value       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality string
+
+const (
+	ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModalityPeptide       ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality = "peptide"
+	ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModalityAntibody      ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality = "antibody"
+	ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModalityNanobody      ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality = "nanobody"
+	ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModalityCustomProtein ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality = "custom_protein"
+)
+
+// Bond between two atoms. Atom-level ligand references currently support
+// ligand_ccd entities only; ligand_smiles is unsupported.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond struct {
+	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+	// entities only; ligand_smiles is unsupported.
+	Atom1 ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union `json:"atom1" api:"required"`
+	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+	// entities only; ligand_smiles is unsupported.
+	Atom2 ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union
+// contains all possible properties and values from
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	Type     string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
+	ResidueIndex int64 `json:"residue_index"`
+	JSON         struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		Type         respjson.Field
+		ResidueIndex respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+// entities only; ligand_smiles is unsupported.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse struct {
+	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
+	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse struct {
+	// Standardized atom name (verifiable in CIF file on RCSB)
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// 0-based residue index
+	ResidueIndex int64                `json:"residue_index" api:"required"`
+	Type         constant.PolymerAtom `json:"type" default:"polymer_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union
+// contains all possible properties and values from
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	Type     string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
+	ResidueIndex int64 `json:"residue_index"`
+	JSON         struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		Type         respjson.Field
+		ResidueIndex respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+// entities only; ligand_smiles is unsupported.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse struct {
+	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
+	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse struct {
+	// Standardized atom name (verifiable in CIF file on RCSB)
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// 0-based residue index
+	ResidueIndex int64                `json:"residue_index" api:"required"`
+	Type         constant.PolymerAtom `json:"type" default:"polymer_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Constraints applied during sequence design
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseRules struct {
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseRules) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Boltz-managed curated binder specification. Choose a curated nanobody or
+// antibody family and Boltz will select from maintained template lists during
+// design. The curated lists are managed by Boltz and may be updated over time to
+// improve quality and coverage.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse struct {
+	// Boltz-managed curated binder family. Boltz maintains and may update the
+	// underlying template lists on behalf of customers.
+	//
+	// Any of "boltz_nanobody", "boltz_antibody".
+	Binder ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinder `json:"binder" api:"required"`
+	Type   constant.BoltzCurated                                                                                                                     `json:"type" default:"boltz_curated"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseRules `json:"rules"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Binder      respjson.Field
+		Type        respjson.Field
+		Rules       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Boltz-managed curated binder family. Boltz maintains and may update the
+// underlying template lists on behalf of customers.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinder string
+
+const (
+	ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinderBoltzNanobody ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinder = "boltz_nanobody"
+	ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinderBoltzAntibody ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinder = "boltz_antibody"
+)
+
+// Constraints applied during sequence design
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseRules struct {
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseRules) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Boltz-managed curated binder family. Boltz maintains and may update the
+// underlying template lists on behalf of customers.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBinder string
+
+const (
+	ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBinderBoltzNanobody ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBinder = "boltz_nanobody"
+	ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBinderBoltzAntibody ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBinder = "boltz_antibody"
+)
+
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModality string
+
+const (
+	ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModalityPeptide       ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModality = "peptide"
+	ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModalityAntibody      ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModality = "antibody"
+	ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModalityNanobody      ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModality = "nanobody"
+	ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModalityCustomProtein ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModality = "custom_protein"
+)
 
 // Boltz-managed curated binder family. Boltz maintains and may update the
 // underlying template lists on behalf of customers.
@@ -2954,6 +4281,2780 @@ const (
 	ProteinDesignEstimateCostResponseBreakdownApplicationAdme                       ProteinDesignEstimateCostResponseBreakdownApplication = "adme"
 )
 
+type ProteinDesignListCuratedSpecificationsResponse struct {
+	Data []ProteinDesignListCuratedSpecificationsResponseData `json:"data" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Data        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponse) RawJSON() string { return r.JSON.raw }
+func (r *ProteinDesignListCuratedSpecificationsResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseData struct {
+	// Binder specification for protein design. Use no_template for sequence-defined
+	// binders, structure_template for uploaded binder structures, boltz_curated for
+	// Boltz-managed nanobody and antibody defaults, or
+	// uniformly_sampled_specifications to sample uniformly across multiple binder
+	// specifications.
+	BinderSpecification ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUnion `json:"binder_specification" api:"required"`
+	// Human-readable name for this curated binder specification.
+	Name string `json:"name" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		BinderSpecification respjson.Field
+		Name                respjson.Field
+		ExtraFields         map[string]respjson.Field
+		raw                 string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseData) RawJSON() string { return r.JSON.raw }
+func (r *ProteinDesignListCuratedSpecificationsResponseData) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUnion
+// contains all possible properties and values from
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpec],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpec],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBoltzCuratedBinderSpec],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpec].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUnion struct {
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpec].
+	ChainSelection map[string]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion `json:"chain_selection"`
+	Modality       string                                                                                                                         `json:"modality"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpec].
+	Structure ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureUnion `json:"structure"`
+	Type      string                                                                                                         `json:"type"`
+	// This field is a union of
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecRules],
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecRules],
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBoltzCuratedBinderSpecRules]
+	Rules ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUnionRules `json:"rules"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpec].
+	Entities []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnion `json:"entities"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpec].
+	Bonds []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBoltzCuratedBinderSpec].
+	Binder ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBoltzCuratedBinderSpecBinder `json:"binder"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpec].
+	BinderSpecifications []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnion `json:"binder_specifications"`
+	JSON                 struct {
+		ChainSelection       respjson.Field
+		Modality             respjson.Field
+		Structure            respjson.Field
+		Type                 respjson.Field
+		Rules                respjson.Field
+		Entities             respjson.Field
+		Bonds                respjson.Field
+		Binder               respjson.Field
+		BinderSpecifications respjson.Field
+		raw                  string
+	} `json:"-"`
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpec() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpec) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpec() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpec) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBoltzCuratedBinderSpec() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBoltzCuratedBinderSpec) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpec() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpec) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUnionRules
+// is an implicit subunion of
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUnion].
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUnionRules
+// provides convenient access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUnion].
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUnionRules struct {
+	ExcludedAminoAcids     []string `json:"excluded_amino_acids"`
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	MaxHydrophobicFraction float64  `json:"max_hydrophobic_fraction"`
+	JSON                   struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUnionRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Binder specification starting from an existing 3D structure. Upload a CIF/PDB
+// file and select which chains to include, which residues to keep, and which
+// regions to redesign. Only chains included in chain_selection are part of the
+// pipeline run.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpec struct {
+	// Chains selected from the uploaded binder structure, keyed by chain ID. Only
+	// chains listed here are included in the pipeline run — any chains omitted from
+	// this mapping are ignored. Each value defines which residues to keep
+	// (crop_residues). Omit design_motifs to include the chain as fixed scaffold
+	// context.
+	ChainSelection map[string]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion `json:"chain_selection" api:"required"`
+	// Any of "peptide", "antibody", "nanobody", "custom_protein".
+	Modality ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecModality `json:"modality" api:"required"`
+	// How to provide a CIF structure file. URLs are auto-detected; base64 uploads must
+	// use chemical/x-cif media type.
+	Structure ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureUnion `json:"structure" api:"required"`
+	Type      constant.StructureTemplate                                                                                     `json:"type" default:"structure_template"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecRules `json:"rules"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainSelection respjson.Field
+		Modality       respjson.Field
+		Structure      respjson.Field
+		Type           respjson.Field
+		Rules          respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpec) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion
+// contains all possible properties and values from
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion struct {
+	ChainType string `json:"chain_type"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec].
+	CropResidues ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion `json:"crop_residues"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec].
+	DesignMotifs []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion `json:"design_motifs"`
+	JSON         struct {
+		ChainType    respjson.Field
+		CropResidues respjson.Field
+		DesignMotifs respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Per-chain crop and design specification for a polymer chain in
+// structure_template mode.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec struct {
+	ChainType constant.Polymer `json:"chain_type" default:"polymer"`
+	// 0-indexed residue indices to retain from this chain, or 'all' to keep all
+	// residues. Residues not listed are removed before design.
+	CropResidues ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion `json:"crop_residues" api:"required"`
+	// Optional motifs (replacement or insertion) defining which regions to redesign on
+	// this chain. Omit this field to include the chain as fixed scaffold context.
+	DesignMotifs []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion `json:"design_motifs"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainType    respjson.Field
+		CropResidues respjson.Field
+		DesignMotifs respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion
+// contains all possible properties and values from [[]int64], [constant.All].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfIntArray OfAll]
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion struct {
+	// This field will be present if the value is a [[]int64] instead of an object.
+	OfIntArray []int64 `json:",inline"`
+	// This field will be present if the value is a [constant.All] instead of an
+	// object.
+	OfAll constant.All `json:",inline"`
+	JSON  struct {
+		OfIntArray respjson.Field
+		OfAll      respjson.Field
+		raw        string
+	} `json:"-"`
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) AsIntArray() (v []int64) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) AsAll() (v constant.All) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion
+// contains all possible properties and values from
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion struct {
+	// This field is a union of
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange],
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange]
+	DesignLengthRange ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange `json:"design_length_range"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif].
+	EndIndex int64 `json:"end_index"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif].
+	StartIndex int64  `json:"start_index"`
+	Type       string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif].
+	AfterResidueIndex int64 `json:"after_residue_index"`
+	JSON              struct {
+		DesignLengthRange respjson.Field
+		EndIndex          respjson.Field
+		StartIndex        respjson.Field
+		Type              respjson.Field
+		AfterResidueIndex respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange
+// is an implicit subunion of
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion].
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange
+// provides convenient access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion].
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange struct {
+	Max  int64 `json:"max"`
+	Min  int64 `json:"min"`
+	JSON struct {
+		Max respjson.Field
+		Min respjson.Field
+		raw string
+	} `json:"-"`
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Replace a contiguous region of the sequence with a designed segment. Residues
+// from start_index to end_index (inclusive) are replaced with a new sequence of
+// the specified length.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif struct {
+	// Allowed sequence length range for designed regions
+	DesignLengthRange ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange `json:"design_length_range" api:"required"`
+	// 0-indexed end residue (inclusive)
+	EndIndex int64 `json:"end_index" api:"required"`
+	// 0-indexed start residue (inclusive)
+	StartIndex int64                `json:"start_index" api:"required"`
+	Type       constant.Replacement `json:"type" default:"replacement"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		DesignLengthRange respjson.Field
+		EndIndex          respjson.Field
+		StartIndex        respjson.Field
+		Type              respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Allowed sequence length range for designed regions
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange struct {
+	// Maximum sequence length in residues. Must be >= min.
+	Max int64 `json:"max" api:"required"`
+	// Minimum sequence length in residues
+	Min int64 `json:"min" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Insert a designed segment at a specific position in the sequence.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif struct {
+	// 0-indexed position after which to insert. Use -1 to insert before the first
+	// residue.
+	AfterResidueIndex int64 `json:"after_residue_index" api:"required"`
+	// Allowed sequence length range for designed regions
+	DesignLengthRange ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange `json:"design_length_range" api:"required"`
+	Type              constant.Insertion                                                                                                                                                                        `json:"type" default:"insertion"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AfterResidueIndex respjson.Field
+		DesignLengthRange respjson.Field
+		Type              respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Allowed sequence length range for designed regions
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange struct {
+	// Maximum sequence length in residues. Must be >= min.
+	Max int64 `json:"max" api:"required"`
+	// Minimum sequence length in residues
+	Min int64 `json:"min" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Per-chain specification for a ligand chain in structure_template mode. The full
+// ligand is always included.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec struct {
+	ChainType constant.Ligand `json:"chain_type" default:"ligand"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainType   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecModality string
+
+const (
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecModalityPeptide       ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecModality = "peptide"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecModalityAntibody      ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecModality = "antibody"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecModalityNanobody      ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecModality = "nanobody"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecModalityCustomProtein ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecModality = "custom_protein"
+)
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureUnion
+// contains all possible properties and values from
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureURLSource],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureUnion struct {
+	Type string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureURLSource].
+	URL string `json:"url"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source].
+	Data string `json:"data"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source].
+	MediaType constant.ChemicalXCif `json:"media_type"`
+	JSON      struct {
+		Type      respjson.Field
+		URL       respjson.Field
+		Data      respjson.Field
+		MediaType respjson.Field
+		raw       string
+	} `json:"-"`
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureURLSource() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureURLSource) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureURLSource struct {
+	Type constant.URL `json:"type" default:"url"`
+	URL  string       `json:"url" api:"required" format:"uri"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		URL         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureURLSource) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureURLSource) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source struct {
+	// Base64-encoded CIF file contents
+	Data string `json:"data" api:"required"`
+	// Must be chemical/x-cif for CIF files
+	MediaType constant.ChemicalXCif `json:"media_type" default:"chemical/x-cif"`
+	Type      constant.Base64       `json:"type" default:"base64"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Data        respjson.Field
+		MediaType   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Constraints applied during sequence design
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecRules struct {
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecRules) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationStructureTemplateBinderSpecRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Binder specification without a structural template. Define the binder from
+// sequence components (fixed and designed segments) without providing a starting
+// 3D structure.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpec struct {
+	// Binder entities composing the design. At least one must be a designed_protein
+	// entity. Additional fixed entities (RNA, DNA, ligands) can be included as part of
+	// the complex.
+	Entities []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnion `json:"entities" api:"required"`
+	// Any of "peptide", "antibody", "nanobody", "custom_protein".
+	Modality ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecModality `json:"modality" api:"required"`
+	Type     constant.NoTemplate                                                                               `json:"type" default:"no_template"`
+	// Covalent bond constraints between atoms in the binder complex. If defining bonds
+	// where an atom is part of a designed protein chain, assume residue indices count
+	// designed regions as the minimum length. Example: designed protein "1..3C1..2",
+	// "C" is residue 1 (0-indexed) of the designed protein.
+	Bonds []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBond `json:"bonds"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecRules `json:"rules"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Entities    respjson.Field
+		Modality    respjson.Field
+		Type        respjson.Field
+		Bonds       respjson.Field
+		Rules       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpec) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnion
+// contains all possible properties and values from
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnion struct {
+	ChainIDs []string `json:"chain_ids"`
+	Type     string   `json:"type"`
+	Value    string   `json:"value"`
+	Cyclic   bool     `json:"cyclic"`
+	// This field is a union of
+	// [[]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification],
+	// [[]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification],
+	// [[]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification],
+	// [[]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification]
+	Modifications ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnionModifications `json:"modifications"`
+	JSON          struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnionModifications
+// is an implicit subunion of
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnion].
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnionModifications
+// provides convenient access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnion].
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid:
+// OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModifications
+// OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModifications
+// OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModifications
+// OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModifications]
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnionModifications struct {
+	// This field will be present if the value is a
+	// [[]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification]
+	// instead of an object.
+	OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModifications []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification `json:",inline"`
+	// This field will be present if the value is a
+	// [[]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification]
+	// instead of an object.
+	OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModifications []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification `json:",inline"`
+	// This field will be present if the value is a
+	// [[]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification]
+	// instead of an object.
+	OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModifications []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification `json:",inline"`
+	// This field will be present if the value is a
+	// [[]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification]
+	// instead of an object.
+	OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModifications []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification `json:",inline"`
+	JSON                                                                                                                         struct {
+		OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModifications respjson.Field
+		OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModifications    respjson.Field
+		OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModifications        respjson.Field
+		OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModifications        respjson.Field
+		raw                                                                                                                                 string
+	} `json:"-"`
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnionModifications) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Protein binder entity with designed and/or fixed segments.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string                 `json:"chain_ids" api:"required"`
+	Type     constant.DesignedProtein `json:"type" default:"designed_protein"`
+	// Binder sequence specification. Fixed amino acids are written as literal
+	// single-letter codes. Designed regions are written as a length (fixed) or a
+	// length range (min..max). Example: "MKTAYI5..10VKSHFSRQ" means fixed MKTAYI, then
+	// 5-10 designed residues, then fixed VKSHFSRQ. "20" means 20 fully designed
+	// residues. "ACDE8GHI" means fixed ACDE, then 8 designed residues, then fixed GHI.
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A fixed protein entity whose sequence is not redesigned.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string         `json:"chain_ids" api:"required"`
+	Type     constant.Protein `json:"type" default:"protein"`
+	// Amino acid sequence (one-letter codes)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string     `json:"chain_ids" api:"required"`
+	Type     constant.Rna `json:"type" default:"rna"`
+	// RNA nucleotide sequence (A, C, G, U, N)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string     `json:"chain_ids" api:"required"`
+	Type     constant.Dna `json:"type" default:"dna"`
+	// DNA nucleotide sequence (A, C, G, T, N)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string              `json:"chain_ids" api:"required"`
+	Type     constant.LigandSmiles `json:"type" default:"ligand_smiles"`
+	// SMILES string representing the ligand
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs    respjson.Field
+		Type        respjson.Field
+		Value       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string           `json:"chain_ids" api:"required"`
+	Type     constant.LigandCcd `json:"type" default:"ligand_ccd"`
+	// CCD code from RCSB PDB (e.g. 'ATP', 'ADP')
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs    respjson.Field
+		Type        respjson.Field
+		Value       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecModality string
+
+const (
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecModalityPeptide       ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecModality = "peptide"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecModalityAntibody      ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecModality = "antibody"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecModalityNanobody      ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecModality = "nanobody"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecModalityCustomProtein ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecModality = "custom_protein"
+)
+
+// Bond between two atoms. Atom-level ligand references currently support
+// ligand_ccd entities only; ligand_smiles is unsupported.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBond struct {
+	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+	// entities only; ligand_smiles is unsupported.
+	Atom1 ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1Union `json:"atom1" api:"required"`
+	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+	// entities only; ligand_smiles is unsupported.
+	Atom2 ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1Union
+// contains all possible properties and values from
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	Type     string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom].
+	ResidueIndex int64 `json:"residue_index"`
+	JSON         struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		Type         respjson.Field
+		ResidueIndex respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+// entities only; ligand_smiles is unsupported.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom struct {
+	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
+	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom struct {
+	// Standardized atom name (verifiable in CIF file on RCSB)
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// 0-based residue index
+	ResidueIndex int64                `json:"residue_index" api:"required"`
+	Type         constant.PolymerAtom `json:"type" default:"polymer_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union
+// contains all possible properties and values from
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	Type     string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom].
+	ResidueIndex int64 `json:"residue_index"`
+	JSON         struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		Type         respjson.Field
+		ResidueIndex respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+// entities only; ligand_smiles is unsupported.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom struct {
+	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
+	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom struct {
+	// Standardized atom name (verifiable in CIF file on RCSB)
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// 0-based residue index
+	ResidueIndex int64                `json:"residue_index" api:"required"`
+	Type         constant.PolymerAtom `json:"type" default:"polymer_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Constraints applied during sequence design
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecRules struct {
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecRules) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Boltz-managed curated binder specification. Choose a curated nanobody or
+// antibody family and Boltz will select from maintained template lists during
+// design. The curated lists are managed by Boltz and may be updated over time to
+// improve quality and coverage.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBoltzCuratedBinderSpec struct {
+	// Boltz-managed curated binder family. Boltz maintains and may update the
+	// underlying template lists on behalf of customers.
+	//
+	// Any of "boltz_nanobody", "boltz_antibody".
+	Binder ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBoltzCuratedBinderSpecBinder `json:"binder" api:"required"`
+	Type   constant.BoltzCurated                                                                             `json:"type" default:"boltz_curated"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBoltzCuratedBinderSpecRules `json:"rules"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Binder      respjson.Field
+		Type        respjson.Field
+		Rules       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBoltzCuratedBinderSpec) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBoltzCuratedBinderSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Boltz-managed curated binder family. Boltz maintains and may update the
+// underlying template lists on behalf of customers.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBoltzCuratedBinderSpecBinder string
+
+const (
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBoltzCuratedBinderSpecBinderBoltzNanobody ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBoltzCuratedBinderSpecBinder = "boltz_nanobody"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBoltzCuratedBinderSpecBinderBoltzAntibody ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBoltzCuratedBinderSpecBinder = "boltz_antibody"
+)
+
+// Constraints applied during sequence design
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBoltzCuratedBinderSpecRules struct {
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBoltzCuratedBinderSpecRules) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBoltzCuratedBinderSpecRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A collection of binder specifications sampled uniformly during protein design.
+// This lets one run explore multiple binder definitions while keeping each
+// generation request shape unchanged.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpec struct {
+	// Binder specifications to sample uniformly when generating designs. Each
+	// generation samples one specification from this list; over larger runs this gives
+	// roughly equal representation.
+	BinderSpecifications []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnion `json:"binder_specifications" api:"required"`
+	Type                 constant.UniformlySampledSpecifications                                                                                   `json:"type" default:"uniformly_sampled_specifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		BinderSpecifications respjson.Field
+		Type                 respjson.Field
+		ExtraFields          map[string]respjson.Field
+		raw                  string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpec) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnion
+// contains all possible properties and values from
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpec].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnion struct {
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec].
+	ChainSelection map[string]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion `json:"chain_selection"`
+	Modality       string                                                                                                                                                                      `json:"modality"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec].
+	Structure ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureUnion `json:"structure"`
+	Type      string                                                                                                                                                      `json:"type"`
+	// This field is a union of
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecRules],
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecRules],
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecRules]
+	Rules ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnionRules `json:"rules"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec].
+	Entities []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion `json:"entities"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec].
+	Bonds []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpec].
+	Binder ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecBinder `json:"binder"`
+	JSON   struct {
+		ChainSelection respjson.Field
+		Modality       respjson.Field
+		Structure      respjson.Field
+		Type           respjson.Field
+		Rules          respjson.Field
+		Entities       respjson.Field
+		Bonds          respjson.Field
+		Binder         respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpec() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpec) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnionRules
+// is an implicit subunion of
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnion].
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnionRules
+// provides convenient access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnion].
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnionRules struct {
+	ExcludedAminoAcids     []string `json:"excluded_amino_acids"`
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	MaxHydrophobicFraction float64  `json:"max_hydrophobic_fraction"`
+	JSON                   struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnionRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Binder specification starting from an existing 3D structure. Upload a CIF/PDB
+// file and select which chains to include, which residues to keep, and which
+// regions to redesign. Only chains included in chain_selection are part of the
+// pipeline run.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec struct {
+	// Chains selected from the uploaded binder structure, keyed by chain ID. Only
+	// chains listed here are included in the pipeline run — any chains omitted from
+	// this mapping are ignored. Each value defines which residues to keep
+	// (crop_residues). Omit design_motifs to include the chain as fixed scaffold
+	// context.
+	ChainSelection map[string]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion `json:"chain_selection" api:"required"`
+	// Any of "peptide", "antibody", "nanobody", "custom_protein".
+	Modality ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModality `json:"modality" api:"required"`
+	// How to provide a CIF structure file. URLs are auto-detected; base64 uploads must
+	// use chemical/x-cif media type.
+	Structure ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureUnion `json:"structure" api:"required"`
+	Type      constant.StructureTemplate                                                                                                                                  `json:"type" default:"structure_template"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecRules `json:"rules"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainSelection respjson.Field
+		Modality       respjson.Field
+		Structure      respjson.Field
+		Type           respjson.Field
+		Rules          respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion
+// contains all possible properties and values from
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion struct {
+	ChainType string `json:"chain_type"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec].
+	CropResidues ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion `json:"crop_residues"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec].
+	DesignMotifs []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion `json:"design_motifs"`
+	JSON         struct {
+		ChainType    respjson.Field
+		CropResidues respjson.Field
+		DesignMotifs respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Per-chain crop and design specification for a polymer chain in
+// structure_template mode.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec struct {
+	ChainType constant.Polymer `json:"chain_type" default:"polymer"`
+	// 0-indexed residue indices to retain from this chain, or 'all' to keep all
+	// residues. Residues not listed are removed before design.
+	CropResidues ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion `json:"crop_residues" api:"required"`
+	// Optional motifs (replacement or insertion) defining which regions to redesign on
+	// this chain. Omit this field to include the chain as fixed scaffold context.
+	DesignMotifs []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion `json:"design_motifs"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainType    respjson.Field
+		CropResidues respjson.Field
+		DesignMotifs respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion
+// contains all possible properties and values from [[]int64], [constant.All].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfIntArray OfAll]
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion struct {
+	// This field will be present if the value is a [[]int64] instead of an object.
+	OfIntArray []int64 `json:",inline"`
+	// This field will be present if the value is a [constant.All] instead of an
+	// object.
+	OfAll constant.All `json:",inline"`
+	JSON  struct {
+		OfIntArray respjson.Field
+		OfAll      respjson.Field
+		raw        string
+	} `json:"-"`
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) AsIntArray() (v []int64) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) AsAll() (v constant.All) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion
+// contains all possible properties and values from
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion struct {
+	// This field is a union of
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange],
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange]
+	DesignLengthRange ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange `json:"design_length_range"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif].
+	EndIndex int64 `json:"end_index"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif].
+	StartIndex int64  `json:"start_index"`
+	Type       string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif].
+	AfterResidueIndex int64 `json:"after_residue_index"`
+	JSON              struct {
+		DesignLengthRange respjson.Field
+		EndIndex          respjson.Field
+		StartIndex        respjson.Field
+		Type              respjson.Field
+		AfterResidueIndex respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange
+// is an implicit subunion of
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion].
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange
+// provides convenient access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion].
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange struct {
+	Max  int64 `json:"max"`
+	Min  int64 `json:"min"`
+	JSON struct {
+		Max respjson.Field
+		Min respjson.Field
+		raw string
+	} `json:"-"`
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Replace a contiguous region of the sequence with a designed segment. Residues
+// from start_index to end_index (inclusive) are replaced with a new sequence of
+// the specified length.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif struct {
+	// Allowed sequence length range for designed regions
+	DesignLengthRange ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange `json:"design_length_range" api:"required"`
+	// 0-indexed end residue (inclusive)
+	EndIndex int64 `json:"end_index" api:"required"`
+	// 0-indexed start residue (inclusive)
+	StartIndex int64                `json:"start_index" api:"required"`
+	Type       constant.Replacement `json:"type" default:"replacement"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		DesignLengthRange respjson.Field
+		EndIndex          respjson.Field
+		StartIndex        respjson.Field
+		Type              respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Allowed sequence length range for designed regions
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange struct {
+	// Maximum sequence length in residues. Must be >= min.
+	Max int64 `json:"max" api:"required"`
+	// Minimum sequence length in residues
+	Min int64 `json:"min" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Insert a designed segment at a specific position in the sequence.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif struct {
+	// 0-indexed position after which to insert. Use -1 to insert before the first
+	// residue.
+	AfterResidueIndex int64 `json:"after_residue_index" api:"required"`
+	// Allowed sequence length range for designed regions
+	DesignLengthRange ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange `json:"design_length_range" api:"required"`
+	Type              constant.Insertion                                                                                                                                                                                                                     `json:"type" default:"insertion"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AfterResidueIndex respjson.Field
+		DesignLengthRange respjson.Field
+		Type              respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Allowed sequence length range for designed regions
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange struct {
+	// Maximum sequence length in residues. Must be >= min.
+	Max int64 `json:"max" api:"required"`
+	// Minimum sequence length in residues
+	Min int64 `json:"min" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Per-chain specification for a ligand chain in structure_template mode. The full
+// ligand is always included.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec struct {
+	ChainType constant.Ligand `json:"chain_type" default:"ligand"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainType   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModality string
+
+const (
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModalityPeptide       ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModality = "peptide"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModalityAntibody      ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModality = "antibody"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModalityNanobody      ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModality = "nanobody"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModalityCustomProtein ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModality = "custom_protein"
+)
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureUnion
+// contains all possible properties and values from
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureURLSource],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureUnion struct {
+	Type string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureURLSource].
+	URL string `json:"url"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source].
+	Data string `json:"data"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source].
+	MediaType constant.ChemicalXCif `json:"media_type"`
+	JSON      struct {
+		Type      respjson.Field
+		URL       respjson.Field
+		Data      respjson.Field
+		MediaType respjson.Field
+		raw       string
+	} `json:"-"`
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureURLSource() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureURLSource) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureURLSource struct {
+	Type constant.URL `json:"type" default:"url"`
+	URL  string       `json:"url" api:"required" format:"uri"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		URL         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureURLSource) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureURLSource) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source struct {
+	// Base64-encoded CIF file contents
+	Data string `json:"data" api:"required"`
+	// Must be chemical/x-cif for CIF files
+	MediaType constant.ChemicalXCif `json:"media_type" default:"chemical/x-cif"`
+	Type      constant.Base64       `json:"type" default:"base64"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Data        respjson.Field
+		MediaType   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Constraints applied during sequence design
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecRules struct {
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecRules) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Binder specification without a structural template. Define the binder from
+// sequence components (fixed and designed segments) without providing a starting
+// 3D structure.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec struct {
+	// Binder entities composing the design. At least one must be a designed_protein
+	// entity. Additional fixed entities (RNA, DNA, ligands) can be included as part of
+	// the complex.
+	Entities []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion `json:"entities" api:"required"`
+	// Any of "peptide", "antibody", "nanobody", "custom_protein".
+	Modality ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality `json:"modality" api:"required"`
+	Type     constant.NoTemplate                                                                                                                            `json:"type" default:"no_template"`
+	// Covalent bond constraints between atoms in the binder complex. If defining bonds
+	// where an atom is part of a designed protein chain, assume residue indices count
+	// designed regions as the minimum length. Example: designed protein "1..3C1..2",
+	// "C" is residue 1 (0-indexed) of the designed protein.
+	Bonds []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBond `json:"bonds"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecRules `json:"rules"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Entities    respjson.Field
+		Modality    respjson.Field
+		Type        respjson.Field
+		Bonds       respjson.Field
+		Rules       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion
+// contains all possible properties and values from
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion struct {
+	ChainIDs []string `json:"chain_ids"`
+	Type     string   `json:"type"`
+	Value    string   `json:"value"`
+	Cyclic   bool     `json:"cyclic"`
+	// This field is a union of
+	// [[]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification],
+	// [[]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification],
+	// [[]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification],
+	// [[]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification]
+	Modifications ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnionModifications `json:"modifications"`
+	JSON          struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnionModifications
+// is an implicit subunion of
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion].
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnionModifications
+// provides convenient access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion].
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid:
+// OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModifications
+// OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModifications
+// OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModifications
+// OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModifications]
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnionModifications struct {
+	// This field will be present if the value is a
+	// [[]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification]
+	// instead of an object.
+	OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModifications []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification `json:",inline"`
+	// This field will be present if the value is a
+	// [[]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification]
+	// instead of an object.
+	OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModifications []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification `json:",inline"`
+	// This field will be present if the value is a
+	// [[]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification]
+	// instead of an object.
+	OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModifications []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification `json:",inline"`
+	// This field will be present if the value is a
+	// [[]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification]
+	// instead of an object.
+	OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModifications []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification `json:",inline"`
+	JSON                                                                                                                                                                      struct {
+		OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModifications respjson.Field
+		OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModifications    respjson.Field
+		OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModifications        respjson.Field
+		OfProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModifications        respjson.Field
+		raw                                                                                                                                                                              string
+	} `json:"-"`
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnionModifications) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Protein binder entity with designed and/or fixed segments.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string                 `json:"chain_ids" api:"required"`
+	Type     constant.DesignedProtein `json:"type" default:"designed_protein"`
+	// Binder sequence specification. Fixed amino acids are written as literal
+	// single-letter codes. Designed regions are written as a length (fixed) or a
+	// length range (min..max). Example: "MKTAYI5..10VKSHFSRQ" means fixed MKTAYI, then
+	// 5-10 designed residues, then fixed VKSHFSRQ. "20" means 20 fully designed
+	// residues. "ACDE8GHI" means fixed ACDE, then 8 designed residues, then fixed GHI.
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A fixed protein entity whose sequence is not redesigned.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string         `json:"chain_ids" api:"required"`
+	Type     constant.Protein `json:"type" default:"protein"`
+	// Amino acid sequence (one-letter codes)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string     `json:"chain_ids" api:"required"`
+	Type     constant.Rna `json:"type" default:"rna"`
+	// RNA nucleotide sequence (A, C, G, U, N)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string     `json:"chain_ids" api:"required"`
+	Type     constant.Dna `json:"type" default:"dna"`
+	// DNA nucleotide sequence (A, C, G, T, N)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string              `json:"chain_ids" api:"required"`
+	Type     constant.LigandSmiles `json:"type" default:"ligand_smiles"`
+	// SMILES string representing the ligand
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs    respjson.Field
+		Type        respjson.Field
+		Value       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string           `json:"chain_ids" api:"required"`
+	Type     constant.LigandCcd `json:"type" default:"ligand_ccd"`
+	// CCD code from RCSB PDB (e.g. 'ATP', 'ADP')
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs    respjson.Field
+		Type        respjson.Field
+		Value       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality string
+
+const (
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModalityPeptide       ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality = "peptide"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModalityAntibody      ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality = "antibody"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModalityNanobody      ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality = "nanobody"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModalityCustomProtein ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality = "custom_protein"
+)
+
+// Bond between two atoms. Atom-level ligand references currently support
+// ligand_ccd entities only; ligand_smiles is unsupported.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBond struct {
+	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+	// entities only; ligand_smiles is unsupported.
+	Atom1 ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union `json:"atom1" api:"required"`
+	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+	// entities only; ligand_smiles is unsupported.
+	Atom2 ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union
+// contains all possible properties and values from
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	Type     string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom].
+	ResidueIndex int64 `json:"residue_index"`
+	JSON         struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		Type         respjson.Field
+		ResidueIndex respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+// entities only; ligand_smiles is unsupported.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom struct {
+	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
+	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom struct {
+	// Standardized atom name (verifiable in CIF file on RCSB)
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// 0-based residue index
+	ResidueIndex int64                `json:"residue_index" api:"required"`
+	Type         constant.PolymerAtom `json:"type" default:"polymer_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union
+// contains all possible properties and values from
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	Type     string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom].
+	ResidueIndex int64 `json:"residue_index"`
+	JSON         struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		Type         respjson.Field
+		ResidueIndex respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+// entities only; ligand_smiles is unsupported.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom struct {
+	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
+	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom struct {
+	// Standardized atom name (verifiable in CIF file on RCSB)
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// 0-based residue index
+	ResidueIndex int64                `json:"residue_index" api:"required"`
+	Type         constant.PolymerAtom `json:"type" default:"polymer_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Constraints applied during sequence design
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecRules struct {
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecRules) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Boltz-managed curated binder specification. Choose a curated nanobody or
+// antibody family and Boltz will select from maintained template lists during
+// design. The curated lists are managed by Boltz and may be updated over time to
+// improve quality and coverage.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpec struct {
+	// Boltz-managed curated binder family. Boltz maintains and may update the
+	// underlying template lists on behalf of customers.
+	//
+	// Any of "boltz_nanobody", "boltz_antibody".
+	Binder ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecBinder `json:"binder" api:"required"`
+	Type   constant.BoltzCurated                                                                                                                          `json:"type" default:"boltz_curated"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecRules `json:"rules"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Binder      respjson.Field
+		Type        respjson.Field
+		Rules       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpec) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Boltz-managed curated binder family. Boltz maintains and may update the
+// underlying template lists on behalf of customers.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecBinder string
+
+const (
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecBinderBoltzNanobody ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecBinder = "boltz_nanobody"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecBinderBoltzAntibody ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecBinder = "boltz_antibody"
+)
+
+// Constraints applied during sequence design
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecRules struct {
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecRules) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Boltz-managed curated binder family. Boltz maintains and may update the
+// underlying template lists on behalf of customers.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBinder string
+
+const (
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBinderBoltzNanobody ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBinder = "boltz_nanobody"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBinderBoltzAntibody ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBinder = "boltz_antibody"
+)
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationModality string
+
+const (
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationModalityPeptide       ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationModality = "peptide"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationModalityAntibody      ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationModality = "antibody"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationModalityNanobody      ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationModality = "nanobody"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationModalityCustomProtein ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationModality = "custom_protein"
+)
+
+// Boltz-managed curated binder family. Boltz maintains and may update the
+// underlying template lists on behalf of customers.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBinder string
+
+const (
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBinderBoltzNanobody ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBinder = "boltz_nanobody"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBinderBoltzAntibody ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationBinder = "boltz_antibody"
+)
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationModality string
+
+const (
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationModalityPeptide       ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationModality = "peptide"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationModalityAntibody      ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationModality = "antibody"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationModalityNanobody      ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationModality = "nanobody"
+	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationModalityCustomProtein ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationModality = "custom_protein"
+)
+
 // A single generated protein design
 type ProteinDesignListResultsResponse struct {
 	// Unique result ID
@@ -3507,8 +7608,10 @@ func (r *ProteinDesignResumeResponseError) UnmarshalJSON(data []byte) error {
 // Pipeline input (null if data deleted)
 type ProteinDesignResumeResponseInput struct {
 	// Binder specification for protein design. Use no_template for sequence-defined
-	// binders, structure_template for uploaded binder structures, or boltz_curated for
-	// Boltz-managed nanobody and antibody defaults.
+	// binders, structure_template for uploaded binder structures, boltz_curated for
+	// Boltz-managed nanobody and antibody defaults, or
+	// uniformly_sampled_specifications to sample uniformly across multiple binder
+	// specifications.
 	BinderSpecification ProteinDesignResumeResponseInputBinderSpecificationUnion `json:"binder_specification" api:"required"`
 	// Number of protein designs to generate. Must be between 10 and 1,000,000.
 	NumProteins int64 `json:"num_proteins" api:"required"`
@@ -3540,7 +7643,8 @@ func (r *ProteinDesignResumeResponseInput) UnmarshalJSON(data []byte) error {
 // properties and values from
 // [ProteinDesignResumeResponseInputBinderSpecificationStructureTemplateBinderSpecResponse],
 // [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponse],
-// [ProteinDesignResumeResponseInputBinderSpecificationBoltzCuratedBinderSpecResponse].
+// [ProteinDesignResumeResponseInputBinderSpecificationBoltzCuratedBinderSpecResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignResumeResponseInputBinderSpecificationUnion struct {
@@ -3566,16 +7670,20 @@ type ProteinDesignResumeResponseInputBinderSpecificationUnion struct {
 	// This field is from variant
 	// [ProteinDesignResumeResponseInputBinderSpecificationBoltzCuratedBinderSpecResponse].
 	Binder ProteinDesignResumeResponseInputBinderSpecificationBoltzCuratedBinderSpecResponseBinder `json:"binder"`
-	JSON   struct {
-		ChainSelection respjson.Field
-		Modality       respjson.Field
-		Structure      respjson.Field
-		Type           respjson.Field
-		Rules          respjson.Field
-		Entities       respjson.Field
-		Bonds          respjson.Field
-		Binder         respjson.Field
-		raw            string
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponse].
+	BinderSpecifications []ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion `json:"binder_specifications"`
+	JSON                 struct {
+		ChainSelection       respjson.Field
+		Modality             respjson.Field
+		Structure            respjson.Field
+		Type                 respjson.Field
+		Rules                respjson.Field
+		Entities             respjson.Field
+		Bonds                respjson.Field
+		Binder               respjson.Field
+		BinderSpecifications respjson.Field
+		raw                  string
 	} `json:"-"`
 }
 
@@ -3590,6 +7698,11 @@ func (u ProteinDesignResumeResponseInputBinderSpecificationUnion) AsProteinDesig
 }
 
 func (u ProteinDesignResumeResponseInputBinderSpecificationUnion) AsProteinDesignResumeResponseInputBinderSpecificationBoltzCuratedBinderSpecResponse() (v ProteinDesignResumeResponseInputBinderSpecificationBoltzCuratedBinderSpecResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUnion) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -4794,6 +8907,1312 @@ func (r ProteinDesignResumeResponseInputBinderSpecificationBoltzCuratedBinderSpe
 func (r *ProteinDesignResumeResponseInputBinderSpecificationBoltzCuratedBinderSpecResponseRules) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// A collection of binder specifications sampled uniformly during protein design.
+// This lets one run explore multiple binder definitions while keeping each
+// generation request shape unchanged.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponse struct {
+	// Binder specifications to sample uniformly when generating designs. Each
+	// generation samples one specification from this list; over larger runs this gives
+	// roughly equal representation.
+	BinderSpecifications []ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion `json:"binder_specifications" api:"required"`
+	Type                 constant.UniformlySampledSpecifications                                                                         `json:"type" default:"uniformly_sampled_specifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		BinderSpecifications respjson.Field
+		Type                 respjson.Field
+		ExtraFields          map[string]respjson.Field
+		raw                  string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion
+// contains all possible properties and values from
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion struct {
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse].
+	ChainSelection map[string]ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion `json:"chain_selection"`
+	Modality       string                                                                                                                                                                    `json:"modality"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse].
+	Structure ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseStructure `json:"structure"`
+	Type      string                                                                                                                                               `json:"type"`
+	// This field is a union of
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseRules],
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseRules],
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseRules]
+	Rules ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnionRules `json:"rules"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse].
+	Entities []ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion `json:"entities"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse].
+	Bonds []ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse].
+	Binder ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinder `json:"binder"`
+	JSON   struct {
+		ChainSelection respjson.Field
+		Modality       respjson.Field
+		Structure      respjson.Field
+		Type           respjson.Field
+		Rules          respjson.Field
+		Entities       respjson.Field
+		Bonds          respjson.Field
+		Binder         respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnionRules
+// is an implicit subunion of
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion].
+// ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnionRules
+// provides convenient access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion].
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnionRules struct {
+	ExcludedAminoAcids     []string `json:"excluded_amino_acids"`
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	MaxHydrophobicFraction float64  `json:"max_hydrophobic_fraction"`
+	JSON                   struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnionRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Binder specification starting from an existing 3D structure. Upload a CIF/PDB
+// file and select which chains to include, which residues to keep, and which
+// regions to redesign. Only chains included in chain_selection are part of the
+// pipeline run.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse struct {
+	// Chains selected from the uploaded binder structure, keyed by chain ID. Only
+	// chains listed here are included in the pipeline run — any chains omitted from
+	// this mapping are ignored. Each value defines which residues to keep
+	// (crop_residues). Omit design_motifs to include the chain as fixed scaffold
+	// context.
+	ChainSelection map[string]ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion `json:"chain_selection" api:"required"`
+	// Any of "peptide", "antibody", "nanobody", "custom_protein".
+	Modality  ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality  `json:"modality" api:"required"`
+	Structure ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseStructure `json:"structure" api:"required"`
+	Type      constant.StructureTemplate                                                                                                                           `json:"type" default:"structure_template"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseRules `json:"rules"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainSelection respjson.Field
+		Modality       respjson.Field
+		Structure      respjson.Field
+		Type           respjson.Field
+		Rules          respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion
+// contains all possible properties and values from
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec],
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion struct {
+	ChainType string `json:"chain_type"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec].
+	CropResidues ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion `json:"crop_residues"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec].
+	DesignMotifs []ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion `json:"design_motifs"`
+	JSON         struct {
+		ChainType    respjson.Field
+		CropResidues respjson.Field
+		DesignMotifs respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Per-chain crop and design specification for a polymer chain in
+// structure_template mode.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec struct {
+	ChainType constant.Polymer `json:"chain_type" default:"polymer"`
+	// 0-indexed residue indices to retain from this chain, or 'all' to keep all
+	// residues. Residues not listed are removed before design.
+	CropResidues ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion `json:"crop_residues" api:"required"`
+	// Optional motifs (replacement or insertion) defining which regions to redesign on
+	// this chain. Omit this field to include the chain as fixed scaffold context.
+	DesignMotifs []ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion `json:"design_motifs"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainType    respjson.Field
+		CropResidues respjson.Field
+		DesignMotifs respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion
+// contains all possible properties and values from [[]int64], [constant.All].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfIntArray OfAll]
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion struct {
+	// This field will be present if the value is a [[]int64] instead of an object.
+	OfIntArray []int64 `json:",inline"`
+	// This field will be present if the value is a [constant.All] instead of an
+	// object.
+	OfAll constant.All `json:",inline"`
+	JSON  struct {
+		OfIntArray respjson.Field
+		OfAll      respjson.Field
+		raw        string
+	} `json:"-"`
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) AsIntArray() (v []int64) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) AsAll() (v constant.All) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion
+// contains all possible properties and values from
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif],
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion struct {
+	// This field is a union of
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange],
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange]
+	DesignLengthRange ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange `json:"design_length_range"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif].
+	EndIndex int64 `json:"end_index"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif].
+	StartIndex int64  `json:"start_index"`
+	Type       string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif].
+	AfterResidueIndex int64 `json:"after_residue_index"`
+	JSON              struct {
+		DesignLengthRange respjson.Field
+		EndIndex          respjson.Field
+		StartIndex        respjson.Field
+		Type              respjson.Field
+		AfterResidueIndex respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange
+// is an implicit subunion of
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion].
+// ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange
+// provides convenient access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion].
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange struct {
+	Max  int64 `json:"max"`
+	Min  int64 `json:"min"`
+	JSON struct {
+		Max respjson.Field
+		Min respjson.Field
+		raw string
+	} `json:"-"`
+}
+
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Replace a contiguous region of the sequence with a designed segment. Residues
+// from start_index to end_index (inclusive) are replaced with a new sequence of
+// the specified length.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif struct {
+	// Allowed sequence length range for designed regions
+	DesignLengthRange ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange `json:"design_length_range" api:"required"`
+	// 0-indexed end residue (inclusive)
+	EndIndex int64 `json:"end_index" api:"required"`
+	// 0-indexed start residue (inclusive)
+	StartIndex int64                `json:"start_index" api:"required"`
+	Type       constant.Replacement `json:"type" default:"replacement"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		DesignLengthRange respjson.Field
+		EndIndex          respjson.Field
+		StartIndex        respjson.Field
+		Type              respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Allowed sequence length range for designed regions
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange struct {
+	// Maximum sequence length in residues. Must be >= min.
+	Max int64 `json:"max" api:"required"`
+	// Minimum sequence length in residues
+	Min int64 `json:"min" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Insert a designed segment at a specific position in the sequence.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif struct {
+	// 0-indexed position after which to insert. Use -1 to insert before the first
+	// residue.
+	AfterResidueIndex int64 `json:"after_residue_index" api:"required"`
+	// Allowed sequence length range for designed regions
+	DesignLengthRange ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange `json:"design_length_range" api:"required"`
+	Type              constant.Insertion                                                                                                                                                                                                                   `json:"type" default:"insertion"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AfterResidueIndex respjson.Field
+		DesignLengthRange respjson.Field
+		Type              respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Allowed sequence length range for designed regions
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange struct {
+	// Maximum sequence length in residues. Must be >= min.
+	Max int64 `json:"max" api:"required"`
+	// Minimum sequence length in residues
+	Min int64 `json:"min" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Per-chain specification for a ligand chain in structure_template mode. The full
+// ligand is always included.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec struct {
+	ChainType constant.Ligand `json:"chain_type" default:"ligand"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainType   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality string
+
+const (
+	ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModalityPeptide       ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality = "peptide"
+	ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModalityAntibody      ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality = "antibody"
+	ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModalityNanobody      ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality = "nanobody"
+	ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModalityCustomProtein ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality = "custom_protein"
+)
+
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseStructure struct {
+	// URL to download the file
+	URL string `json:"url" api:"required" format:"uri"`
+	// When the presigned URL expires
+	URLExpiresAt time.Time `json:"url_expires_at" api:"required" format:"date-time"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		URL          respjson.Field
+		URLExpiresAt respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseStructure) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseStructure) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Constraints applied during sequence design
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseRules struct {
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseRules) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Binder specification without a structural template. Define the binder from
+// sequence components (fixed and designed segments) without providing a starting
+// 3D structure.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse struct {
+	// Binder entities composing the design. At least one must be a designed_protein
+	// entity. Additional fixed entities (RNA, DNA, ligands) can be included as part of
+	// the complex.
+	Entities []ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion `json:"entities" api:"required"`
+	// Any of "peptide", "antibody", "nanobody", "custom_protein".
+	Modality ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality `json:"modality" api:"required"`
+	Type     constant.NoTemplate                                                                                                                          `json:"type" default:"no_template"`
+	// Covalent bond constraints between atoms in the binder complex. If defining bonds
+	// where an atom is part of a designed protein chain, assume residue indices count
+	// designed regions as the minimum length. Example: designed protein "1..3C1..2",
+	// "C" is residue 1 (0-indexed) of the designed protein.
+	Bonds []ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond `json:"bonds"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseRules `json:"rules"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Entities    respjson.Field
+		Modality    respjson.Field
+		Type        respjson.Field
+		Bonds       respjson.Field
+		Rules       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion
+// contains all possible properties and values from
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion struct {
+	ChainIDs []string `json:"chain_ids"`
+	Type     string   `json:"type"`
+	Value    string   `json:"value"`
+	Cyclic   bool     `json:"cyclic"`
+	// This field is a union of
+	// [[]ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification],
+	// [[]ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification],
+	// [[]ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification],
+	// [[]ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification]
+	Modifications ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications `json:"modifications"`
+	JSON          struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications
+// is an implicit subunion of
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion].
+// ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications
+// provides convenient access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion].
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid:
+// OfProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModifications
+// OfProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModifications
+// OfProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModifications
+// OfProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModifications]
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications struct {
+	// This field will be present if the value is a
+	// [[]ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification]
+	// instead of an object.
+	OfProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModifications []ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification `json:",inline"`
+	// This field will be present if the value is a
+	// [[]ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification]
+	// instead of an object.
+	OfProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModifications []ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification `json:",inline"`
+	// This field will be present if the value is a
+	// [[]ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification]
+	// instead of an object.
+	OfProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModifications []ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification `json:",inline"`
+	// This field will be present if the value is a
+	// [[]ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification]
+	// instead of an object.
+	OfProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModifications []ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification `json:",inline"`
+	JSON                                                                                                                                                                            struct {
+		OfProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModifications respjson.Field
+		OfProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModifications    respjson.Field
+		OfProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModifications        respjson.Field
+		OfProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModifications        respjson.Field
+		raw                                                                                                                                                                                    string
+	} `json:"-"`
+}
+
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Protein binder entity with designed and/or fixed segments.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string                 `json:"chain_ids" api:"required"`
+	Type     constant.DesignedProtein `json:"type" default:"designed_protein"`
+	// Binder sequence specification. Fixed amino acids are written as literal
+	// single-letter codes. Designed regions are written as a length (fixed) or a
+	// length range (min..max). Example: "MKTAYI5..10VKSHFSRQ" means fixed MKTAYI, then
+	// 5-10 designed residues, then fixed VKSHFSRQ. "20" means 20 fully designed
+	// residues. "ACDE8GHI" means fixed ACDE, then 8 designed residues, then fixed GHI.
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A fixed protein entity whose sequence is not redesigned.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string         `json:"chain_ids" api:"required"`
+	Type     constant.Protein `json:"type" default:"protein"`
+	// Amino acid sequence (one-letter codes)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string     `json:"chain_ids" api:"required"`
+	Type     constant.Rna `json:"type" default:"rna"`
+	// RNA nucleotide sequence (A, C, G, U, N)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string     `json:"chain_ids" api:"required"`
+	Type     constant.Dna `json:"type" default:"dna"`
+	// DNA nucleotide sequence (A, C, G, T, N)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string              `json:"chain_ids" api:"required"`
+	Type     constant.LigandSmiles `json:"type" default:"ligand_smiles"`
+	// SMILES string representing the ligand
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs    respjson.Field
+		Type        respjson.Field
+		Value       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string           `json:"chain_ids" api:"required"`
+	Type     constant.LigandCcd `json:"type" default:"ligand_ccd"`
+	// CCD code from RCSB PDB (e.g. 'ATP', 'ADP')
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs    respjson.Field
+		Type        respjson.Field
+		Value       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality string
+
+const (
+	ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModalityPeptide       ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality = "peptide"
+	ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModalityAntibody      ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality = "antibody"
+	ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModalityNanobody      ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality = "nanobody"
+	ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModalityCustomProtein ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality = "custom_protein"
+)
+
+// Bond between two atoms. Atom-level ligand references currently support
+// ligand_ccd entities only; ligand_smiles is unsupported.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond struct {
+	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+	// entities only; ligand_smiles is unsupported.
+	Atom1 ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union `json:"atom1" api:"required"`
+	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+	// entities only; ligand_smiles is unsupported.
+	Atom2 ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union
+// contains all possible properties and values from
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	Type     string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
+	ResidueIndex int64 `json:"residue_index"`
+	JSON         struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		Type         respjson.Field
+		ResidueIndex respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+// entities only; ligand_smiles is unsupported.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse struct {
+	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
+	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse struct {
+	// Standardized atom name (verifiable in CIF file on RCSB)
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// 0-based residue index
+	ResidueIndex int64                `json:"residue_index" api:"required"`
+	Type         constant.PolymerAtom `json:"type" default:"polymer_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union
+// contains all possible properties and values from
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	Type     string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
+	ResidueIndex int64 `json:"residue_index"`
+	JSON         struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		Type         respjson.Field
+		ResidueIndex respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+// entities only; ligand_smiles is unsupported.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse struct {
+	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
+	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse struct {
+	// Standardized atom name (verifiable in CIF file on RCSB)
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// 0-based residue index
+	ResidueIndex int64                `json:"residue_index" api:"required"`
+	Type         constant.PolymerAtom `json:"type" default:"polymer_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Constraints applied during sequence design
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseRules struct {
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseRules) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Boltz-managed curated binder specification. Choose a curated nanobody or
+// antibody family and Boltz will select from maintained template lists during
+// design. The curated lists are managed by Boltz and may be updated over time to
+// improve quality and coverage.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse struct {
+	// Boltz-managed curated binder family. Boltz maintains and may update the
+	// underlying template lists on behalf of customers.
+	//
+	// Any of "boltz_nanobody", "boltz_antibody".
+	Binder ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinder `json:"binder" api:"required"`
+	Type   constant.BoltzCurated                                                                                                                        `json:"type" default:"boltz_curated"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseRules `json:"rules"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Binder      respjson.Field
+		Type        respjson.Field
+		Rules       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Boltz-managed curated binder family. Boltz maintains and may update the
+// underlying template lists on behalf of customers.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinder string
+
+const (
+	ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinderBoltzNanobody ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinder = "boltz_nanobody"
+	ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinderBoltzAntibody ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinder = "boltz_antibody"
+)
+
+// Constraints applied during sequence design
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseRules struct {
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseRules) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Boltz-managed curated binder family. Boltz maintains and may update the
+// underlying template lists on behalf of customers.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBinder string
+
+const (
+	ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBinderBoltzNanobody ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBinder = "boltz_nanobody"
+	ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBinderBoltzAntibody ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBinder = "boltz_antibody"
+)
+
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModality string
+
+const (
+	ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModalityPeptide       ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModality = "peptide"
+	ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModalityAntibody      ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModality = "antibody"
+	ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModalityNanobody      ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModality = "nanobody"
+	ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModalityCustomProtein ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModality = "custom_protein"
+)
 
 // Boltz-managed curated binder family. Boltz maintains and may update the
 // underlying template lists on behalf of customers.
@@ -6091,8 +11510,10 @@ func (r *ProteinDesignStartResponseError) UnmarshalJSON(data []byte) error {
 // Pipeline input (null if data deleted)
 type ProteinDesignStartResponseInput struct {
 	// Binder specification for protein design. Use no_template for sequence-defined
-	// binders, structure_template for uploaded binder structures, or boltz_curated for
-	// Boltz-managed nanobody and antibody defaults.
+	// binders, structure_template for uploaded binder structures, boltz_curated for
+	// Boltz-managed nanobody and antibody defaults, or
+	// uniformly_sampled_specifications to sample uniformly across multiple binder
+	// specifications.
 	BinderSpecification ProteinDesignStartResponseInputBinderSpecificationUnion `json:"binder_specification" api:"required"`
 	// Number of protein designs to generate. Must be between 10 and 1,000,000.
 	NumProteins int64 `json:"num_proteins" api:"required"`
@@ -6124,7 +11545,8 @@ func (r *ProteinDesignStartResponseInput) UnmarshalJSON(data []byte) error {
 // properties and values from
 // [ProteinDesignStartResponseInputBinderSpecificationStructureTemplateBinderSpecResponse],
 // [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponse],
-// [ProteinDesignStartResponseInputBinderSpecificationBoltzCuratedBinderSpecResponse].
+// [ProteinDesignStartResponseInputBinderSpecificationBoltzCuratedBinderSpecResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignStartResponseInputBinderSpecificationUnion struct {
@@ -6150,16 +11572,20 @@ type ProteinDesignStartResponseInputBinderSpecificationUnion struct {
 	// This field is from variant
 	// [ProteinDesignStartResponseInputBinderSpecificationBoltzCuratedBinderSpecResponse].
 	Binder ProteinDesignStartResponseInputBinderSpecificationBoltzCuratedBinderSpecResponseBinder `json:"binder"`
-	JSON   struct {
-		ChainSelection respjson.Field
-		Modality       respjson.Field
-		Structure      respjson.Field
-		Type           respjson.Field
-		Rules          respjson.Field
-		Entities       respjson.Field
-		Bonds          respjson.Field
-		Binder         respjson.Field
-		raw            string
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponse].
+	BinderSpecifications []ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion `json:"binder_specifications"`
+	JSON                 struct {
+		ChainSelection       respjson.Field
+		Modality             respjson.Field
+		Structure            respjson.Field
+		Type                 respjson.Field
+		Rules                respjson.Field
+		Entities             respjson.Field
+		Bonds                respjson.Field
+		Binder               respjson.Field
+		BinderSpecifications respjson.Field
+		raw                  string
 	} `json:"-"`
 }
 
@@ -6174,6 +11600,11 @@ func (u ProteinDesignStartResponseInputBinderSpecificationUnion) AsProteinDesign
 }
 
 func (u ProteinDesignStartResponseInputBinderSpecificationUnion) AsProteinDesignStartResponseInputBinderSpecificationBoltzCuratedBinderSpecResponse() (v ProteinDesignStartResponseInputBinderSpecificationBoltzCuratedBinderSpecResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUnion) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -7378,6 +12809,1312 @@ func (r ProteinDesignStartResponseInputBinderSpecificationBoltzCuratedBinderSpec
 func (r *ProteinDesignStartResponseInputBinderSpecificationBoltzCuratedBinderSpecResponseRules) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// A collection of binder specifications sampled uniformly during protein design.
+// This lets one run explore multiple binder definitions while keeping each
+// generation request shape unchanged.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponse struct {
+	// Binder specifications to sample uniformly when generating designs. Each
+	// generation samples one specification from this list; over larger runs this gives
+	// roughly equal representation.
+	BinderSpecifications []ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion `json:"binder_specifications" api:"required"`
+	Type                 constant.UniformlySampledSpecifications                                                                        `json:"type" default:"uniformly_sampled_specifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		BinderSpecifications respjson.Field
+		Type                 respjson.Field
+		ExtraFields          map[string]respjson.Field
+		raw                  string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion
+// contains all possible properties and values from
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion struct {
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse].
+	ChainSelection map[string]ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion `json:"chain_selection"`
+	Modality       string                                                                                                                                                                   `json:"modality"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse].
+	Structure ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseStructure `json:"structure"`
+	Type      string                                                                                                                                              `json:"type"`
+	// This field is a union of
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseRules],
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseRules],
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseRules]
+	Rules ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnionRules `json:"rules"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse].
+	Entities []ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion `json:"entities"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse].
+	Bonds []ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse].
+	Binder ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinder `json:"binder"`
+	JSON   struct {
+		ChainSelection respjson.Field
+		Modality       respjson.Field
+		Structure      respjson.Field
+		Type           respjson.Field
+		Rules          respjson.Field
+		Entities       respjson.Field
+		Bonds          respjson.Field
+		Binder         respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnionRules
+// is an implicit subunion of
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion].
+// ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnionRules
+// provides convenient access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion].
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnionRules struct {
+	ExcludedAminoAcids     []string `json:"excluded_amino_acids"`
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	MaxHydrophobicFraction float64  `json:"max_hydrophobic_fraction"`
+	JSON                   struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnionRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Binder specification starting from an existing 3D structure. Upload a CIF/PDB
+// file and select which chains to include, which residues to keep, and which
+// regions to redesign. Only chains included in chain_selection are part of the
+// pipeline run.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse struct {
+	// Chains selected from the uploaded binder structure, keyed by chain ID. Only
+	// chains listed here are included in the pipeline run — any chains omitted from
+	// this mapping are ignored. Each value defines which residues to keep
+	// (crop_residues). Omit design_motifs to include the chain as fixed scaffold
+	// context.
+	ChainSelection map[string]ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion `json:"chain_selection" api:"required"`
+	// Any of "peptide", "antibody", "nanobody", "custom_protein".
+	Modality  ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality  `json:"modality" api:"required"`
+	Structure ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseStructure `json:"structure" api:"required"`
+	Type      constant.StructureTemplate                                                                                                                          `json:"type" default:"structure_template"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseRules `json:"rules"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainSelection respjson.Field
+		Modality       respjson.Field
+		Structure      respjson.Field
+		Type           respjson.Field
+		Rules          respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion
+// contains all possible properties and values from
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec],
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion struct {
+	ChainType string `json:"chain_type"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec].
+	CropResidues ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion `json:"crop_residues"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec].
+	DesignMotifs []ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion `json:"design_motifs"`
+	JSON         struct {
+		ChainType    respjson.Field
+		CropResidues respjson.Field
+		DesignMotifs respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Per-chain crop and design specification for a polymer chain in
+// structure_template mode.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec struct {
+	ChainType constant.Polymer `json:"chain_type" default:"polymer"`
+	// 0-indexed residue indices to retain from this chain, or 'all' to keep all
+	// residues. Residues not listed are removed before design.
+	CropResidues ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion `json:"crop_residues" api:"required"`
+	// Optional motifs (replacement or insertion) defining which regions to redesign on
+	// this chain. Omit this field to include the chain as fixed scaffold context.
+	DesignMotifs []ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion `json:"design_motifs"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainType    respjson.Field
+		CropResidues respjson.Field
+		DesignMotifs respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion
+// contains all possible properties and values from [[]int64], [constant.All].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfIntArray OfAll]
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion struct {
+	// This field will be present if the value is a [[]int64] instead of an object.
+	OfIntArray []int64 `json:",inline"`
+	// This field will be present if the value is a [constant.All] instead of an
+	// object.
+	OfAll constant.All `json:",inline"`
+	JSON  struct {
+		OfIntArray respjson.Field
+		OfAll      respjson.Field
+		raw        string
+	} `json:"-"`
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) AsIntArray() (v []int64) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) AsAll() (v constant.All) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion
+// contains all possible properties and values from
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif],
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion struct {
+	// This field is a union of
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange],
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange]
+	DesignLengthRange ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange `json:"design_length_range"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif].
+	EndIndex int64 `json:"end_index"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif].
+	StartIndex int64  `json:"start_index"`
+	Type       string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif].
+	AfterResidueIndex int64 `json:"after_residue_index"`
+	JSON              struct {
+		DesignLengthRange respjson.Field
+		EndIndex          respjson.Field
+		StartIndex        respjson.Field
+		Type              respjson.Field
+		AfterResidueIndex respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange
+// is an implicit subunion of
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion].
+// ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange
+// provides convenient access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion].
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange struct {
+	Max  int64 `json:"max"`
+	Min  int64 `json:"min"`
+	JSON struct {
+		Max respjson.Field
+		Min respjson.Field
+		raw string
+	} `json:"-"`
+}
+
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Replace a contiguous region of the sequence with a designed segment. Residues
+// from start_index to end_index (inclusive) are replaced with a new sequence of
+// the specified length.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif struct {
+	// Allowed sequence length range for designed regions
+	DesignLengthRange ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange `json:"design_length_range" api:"required"`
+	// 0-indexed end residue (inclusive)
+	EndIndex int64 `json:"end_index" api:"required"`
+	// 0-indexed start residue (inclusive)
+	StartIndex int64                `json:"start_index" api:"required"`
+	Type       constant.Replacement `json:"type" default:"replacement"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		DesignLengthRange respjson.Field
+		EndIndex          respjson.Field
+		StartIndex        respjson.Field
+		Type              respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Allowed sequence length range for designed regions
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange struct {
+	// Maximum sequence length in residues. Must be >= min.
+	Max int64 `json:"max" api:"required"`
+	// Minimum sequence length in residues
+	Min int64 `json:"min" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Insert a designed segment at a specific position in the sequence.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif struct {
+	// 0-indexed position after which to insert. Use -1 to insert before the first
+	// residue.
+	AfterResidueIndex int64 `json:"after_residue_index" api:"required"`
+	// Allowed sequence length range for designed regions
+	DesignLengthRange ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange `json:"design_length_range" api:"required"`
+	Type              constant.Insertion                                                                                                                                                                                                                  `json:"type" default:"insertion"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AfterResidueIndex respjson.Field
+		DesignLengthRange respjson.Field
+		Type              respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Allowed sequence length range for designed regions
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange struct {
+	// Maximum sequence length in residues. Must be >= min.
+	Max int64 `json:"max" api:"required"`
+	// Minimum sequence length in residues
+	Min int64 `json:"min" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Per-chain specification for a ligand chain in structure_template mode. The full
+// ligand is always included.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec struct {
+	ChainType constant.Ligand `json:"chain_type" default:"ligand"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainType   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality string
+
+const (
+	ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModalityPeptide       ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality = "peptide"
+	ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModalityAntibody      ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality = "antibody"
+	ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModalityNanobody      ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality = "nanobody"
+	ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModalityCustomProtein ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality = "custom_protein"
+)
+
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseStructure struct {
+	// URL to download the file
+	URL string `json:"url" api:"required" format:"uri"`
+	// When the presigned URL expires
+	URLExpiresAt time.Time `json:"url_expires_at" api:"required" format:"date-time"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		URL          respjson.Field
+		URLExpiresAt respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseStructure) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseStructure) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Constraints applied during sequence design
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseRules struct {
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseRules) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Binder specification without a structural template. Define the binder from
+// sequence components (fixed and designed segments) without providing a starting
+// 3D structure.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse struct {
+	// Binder entities composing the design. At least one must be a designed_protein
+	// entity. Additional fixed entities (RNA, DNA, ligands) can be included as part of
+	// the complex.
+	Entities []ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion `json:"entities" api:"required"`
+	// Any of "peptide", "antibody", "nanobody", "custom_protein".
+	Modality ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality `json:"modality" api:"required"`
+	Type     constant.NoTemplate                                                                                                                         `json:"type" default:"no_template"`
+	// Covalent bond constraints between atoms in the binder complex. If defining bonds
+	// where an atom is part of a designed protein chain, assume residue indices count
+	// designed regions as the minimum length. Example: designed protein "1..3C1..2",
+	// "C" is residue 1 (0-indexed) of the designed protein.
+	Bonds []ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond `json:"bonds"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseRules `json:"rules"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Entities    respjson.Field
+		Modality    respjson.Field
+		Type        respjson.Field
+		Bonds       respjson.Field
+		Rules       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion
+// contains all possible properties and values from
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion struct {
+	ChainIDs []string `json:"chain_ids"`
+	Type     string   `json:"type"`
+	Value    string   `json:"value"`
+	Cyclic   bool     `json:"cyclic"`
+	// This field is a union of
+	// [[]ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification],
+	// [[]ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification],
+	// [[]ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification],
+	// [[]ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification]
+	Modifications ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications `json:"modifications"`
+	JSON          struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications
+// is an implicit subunion of
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion].
+// ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications
+// provides convenient access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion].
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid:
+// OfProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModifications
+// OfProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModifications
+// OfProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModifications
+// OfProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModifications]
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications struct {
+	// This field will be present if the value is a
+	// [[]ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification]
+	// instead of an object.
+	OfProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModifications []ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification `json:",inline"`
+	// This field will be present if the value is a
+	// [[]ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification]
+	// instead of an object.
+	OfProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModifications []ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification `json:",inline"`
+	// This field will be present if the value is a
+	// [[]ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification]
+	// instead of an object.
+	OfProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModifications []ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification `json:",inline"`
+	// This field will be present if the value is a
+	// [[]ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification]
+	// instead of an object.
+	OfProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModifications []ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification `json:",inline"`
+	JSON                                                                                                                                                                           struct {
+		OfProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModifications respjson.Field
+		OfProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModifications    respjson.Field
+		OfProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModifications        respjson.Field
+		OfProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModifications        respjson.Field
+		raw                                                                                                                                                                                   string
+	} `json:"-"`
+}
+
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Protein binder entity with designed and/or fixed segments.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string                 `json:"chain_ids" api:"required"`
+	Type     constant.DesignedProtein `json:"type" default:"designed_protein"`
+	// Binder sequence specification. Fixed amino acids are written as literal
+	// single-letter codes. Designed regions are written as a length (fixed) or a
+	// length range (min..max). Example: "MKTAYI5..10VKSHFSRQ" means fixed MKTAYI, then
+	// 5-10 designed residues, then fixed VKSHFSRQ. "20" means 20 fully designed
+	// residues. "ACDE8GHI" means fixed ACDE, then 8 designed residues, then fixed GHI.
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A fixed protein entity whose sequence is not redesigned.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string         `json:"chain_ids" api:"required"`
+	Type     constant.Protein `json:"type" default:"protein"`
+	// Amino acid sequence (one-letter codes)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string     `json:"chain_ids" api:"required"`
+	Type     constant.Rna `json:"type" default:"rna"`
+	// RNA nucleotide sequence (A, C, G, U, N)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string     `json:"chain_ids" api:"required"`
+	Type     constant.Dna `json:"type" default:"dna"`
+	// DNA nucleotide sequence (A, C, G, T, N)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string              `json:"chain_ids" api:"required"`
+	Type     constant.LigandSmiles `json:"type" default:"ligand_smiles"`
+	// SMILES string representing the ligand
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs    respjson.Field
+		Type        respjson.Field
+		Value       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string           `json:"chain_ids" api:"required"`
+	Type     constant.LigandCcd `json:"type" default:"ligand_ccd"`
+	// CCD code from RCSB PDB (e.g. 'ATP', 'ADP')
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs    respjson.Field
+		Type        respjson.Field
+		Value       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality string
+
+const (
+	ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModalityPeptide       ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality = "peptide"
+	ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModalityAntibody      ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality = "antibody"
+	ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModalityNanobody      ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality = "nanobody"
+	ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModalityCustomProtein ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality = "custom_protein"
+)
+
+// Bond between two atoms. Atom-level ligand references currently support
+// ligand_ccd entities only; ligand_smiles is unsupported.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond struct {
+	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+	// entities only; ligand_smiles is unsupported.
+	Atom1 ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union `json:"atom1" api:"required"`
+	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+	// entities only; ligand_smiles is unsupported.
+	Atom2 ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union
+// contains all possible properties and values from
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	Type     string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
+	ResidueIndex int64 `json:"residue_index"`
+	JSON         struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		Type         respjson.Field
+		ResidueIndex respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+// entities only; ligand_smiles is unsupported.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse struct {
+	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
+	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse struct {
+	// Standardized atom name (verifiable in CIF file on RCSB)
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// 0-based residue index
+	ResidueIndex int64                `json:"residue_index" api:"required"`
+	Type         constant.PolymerAtom `json:"type" default:"polymer_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union
+// contains all possible properties and values from
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	Type     string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
+	ResidueIndex int64 `json:"residue_index"`
+	JSON         struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		Type         respjson.Field
+		ResidueIndex respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+// entities only; ligand_smiles is unsupported.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse struct {
+	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
+	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse struct {
+	// Standardized atom name (verifiable in CIF file on RCSB)
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// 0-based residue index
+	ResidueIndex int64                `json:"residue_index" api:"required"`
+	Type         constant.PolymerAtom `json:"type" default:"polymer_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Constraints applied during sequence design
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseRules struct {
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseRules) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Boltz-managed curated binder specification. Choose a curated nanobody or
+// antibody family and Boltz will select from maintained template lists during
+// design. The curated lists are managed by Boltz and may be updated over time to
+// improve quality and coverage.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse struct {
+	// Boltz-managed curated binder family. Boltz maintains and may update the
+	// underlying template lists on behalf of customers.
+	//
+	// Any of "boltz_nanobody", "boltz_antibody".
+	Binder ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinder `json:"binder" api:"required"`
+	Type   constant.BoltzCurated                                                                                                                       `json:"type" default:"boltz_curated"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseRules `json:"rules"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Binder      respjson.Field
+		Type        respjson.Field
+		Rules       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Boltz-managed curated binder family. Boltz maintains and may update the
+// underlying template lists on behalf of customers.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinder string
+
+const (
+	ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinderBoltzNanobody ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinder = "boltz_nanobody"
+	ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinderBoltzAntibody ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinder = "boltz_antibody"
+)
+
+// Constraints applied during sequence design
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseRules struct {
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseRules) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Boltz-managed curated binder family. Boltz maintains and may update the
+// underlying template lists on behalf of customers.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBinder string
+
+const (
+	ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBinderBoltzNanobody ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBinder = "boltz_nanobody"
+	ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBinderBoltzAntibody ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBinder = "boltz_antibody"
+)
+
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModality string
+
+const (
+	ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModalityPeptide       ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModality = "peptide"
+	ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModalityAntibody      ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModality = "antibody"
+	ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModalityNanobody      ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModality = "nanobody"
+	ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModalityCustomProtein ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModality = "custom_protein"
+)
 
 // Boltz-managed curated binder family. Boltz maintains and may update the
 // underlying template lists on behalf of customers.
@@ -8675,8 +15412,10 @@ func (r *ProteinDesignStopResponseError) UnmarshalJSON(data []byte) error {
 // Pipeline input (null if data deleted)
 type ProteinDesignStopResponseInput struct {
 	// Binder specification for protein design. Use no_template for sequence-defined
-	// binders, structure_template for uploaded binder structures, or boltz_curated for
-	// Boltz-managed nanobody and antibody defaults.
+	// binders, structure_template for uploaded binder structures, boltz_curated for
+	// Boltz-managed nanobody and antibody defaults, or
+	// uniformly_sampled_specifications to sample uniformly across multiple binder
+	// specifications.
 	BinderSpecification ProteinDesignStopResponseInputBinderSpecificationUnion `json:"binder_specification" api:"required"`
 	// Number of protein designs to generate. Must be between 10 and 1,000,000.
 	NumProteins int64 `json:"num_proteins" api:"required"`
@@ -8708,7 +15447,8 @@ func (r *ProteinDesignStopResponseInput) UnmarshalJSON(data []byte) error {
 // properties and values from
 // [ProteinDesignStopResponseInputBinderSpecificationStructureTemplateBinderSpecResponse],
 // [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponse],
-// [ProteinDesignStopResponseInputBinderSpecificationBoltzCuratedBinderSpecResponse].
+// [ProteinDesignStopResponseInputBinderSpecificationBoltzCuratedBinderSpecResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignStopResponseInputBinderSpecificationUnion struct {
@@ -8734,16 +15474,20 @@ type ProteinDesignStopResponseInputBinderSpecificationUnion struct {
 	// This field is from variant
 	// [ProteinDesignStopResponseInputBinderSpecificationBoltzCuratedBinderSpecResponse].
 	Binder ProteinDesignStopResponseInputBinderSpecificationBoltzCuratedBinderSpecResponseBinder `json:"binder"`
-	JSON   struct {
-		ChainSelection respjson.Field
-		Modality       respjson.Field
-		Structure      respjson.Field
-		Type           respjson.Field
-		Rules          respjson.Field
-		Entities       respjson.Field
-		Bonds          respjson.Field
-		Binder         respjson.Field
-		raw            string
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponse].
+	BinderSpecifications []ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion `json:"binder_specifications"`
+	JSON                 struct {
+		ChainSelection       respjson.Field
+		Modality             respjson.Field
+		Structure            respjson.Field
+		Type                 respjson.Field
+		Rules                respjson.Field
+		Entities             respjson.Field
+		Bonds                respjson.Field
+		Binder               respjson.Field
+		BinderSpecifications respjson.Field
+		raw                  string
 	} `json:"-"`
 }
 
@@ -8758,6 +15502,11 @@ func (u ProteinDesignStopResponseInputBinderSpecificationUnion) AsProteinDesignS
 }
 
 func (u ProteinDesignStopResponseInputBinderSpecificationUnion) AsProteinDesignStopResponseInputBinderSpecificationBoltzCuratedBinderSpecResponse() (v ProteinDesignStopResponseInputBinderSpecificationBoltzCuratedBinderSpecResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUnion) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -9962,6 +16711,1312 @@ func (r ProteinDesignStopResponseInputBinderSpecificationBoltzCuratedBinderSpecR
 func (r *ProteinDesignStopResponseInputBinderSpecificationBoltzCuratedBinderSpecResponseRules) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// A collection of binder specifications sampled uniformly during protein design.
+// This lets one run explore multiple binder definitions while keeping each
+// generation request shape unchanged.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponse struct {
+	// Binder specifications to sample uniformly when generating designs. Each
+	// generation samples one specification from this list; over larger runs this gives
+	// roughly equal representation.
+	BinderSpecifications []ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion `json:"binder_specifications" api:"required"`
+	Type                 constant.UniformlySampledSpecifications                                                                       `json:"type" default:"uniformly_sampled_specifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		BinderSpecifications respjson.Field
+		Type                 respjson.Field
+		ExtraFields          map[string]respjson.Field
+		raw                  string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion
+// contains all possible properties and values from
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion struct {
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse].
+	ChainSelection map[string]ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion `json:"chain_selection"`
+	Modality       string                                                                                                                                                                  `json:"modality"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse].
+	Structure ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseStructure `json:"structure"`
+	Type      string                                                                                                                                             `json:"type"`
+	// This field is a union of
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseRules],
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseRules],
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseRules]
+	Rules ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnionRules `json:"rules"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse].
+	Entities []ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion `json:"entities"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse].
+	Bonds []ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse].
+	Binder ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinder `json:"binder"`
+	JSON   struct {
+		ChainSelection respjson.Field
+		Modality       respjson.Field
+		Structure      respjson.Field
+		Type           respjson.Field
+		Rules          respjson.Field
+		Entities       respjson.Field
+		Bonds          respjson.Field
+		Binder         respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnionRules
+// is an implicit subunion of
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion].
+// ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnionRules
+// provides convenient access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnion].
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnionRules struct {
+	ExcludedAminoAcids     []string `json:"excluded_amino_acids"`
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	MaxHydrophobicFraction float64  `json:"max_hydrophobic_fraction"`
+	JSON                   struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationUnionRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Binder specification starting from an existing 3D structure. Upload a CIF/PDB
+// file and select which chains to include, which residues to keep, and which
+// regions to redesign. Only chains included in chain_selection are part of the
+// pipeline run.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse struct {
+	// Chains selected from the uploaded binder structure, keyed by chain ID. Only
+	// chains listed here are included in the pipeline run — any chains omitted from
+	// this mapping are ignored. Each value defines which residues to keep
+	// (crop_residues). Omit design_motifs to include the chain as fixed scaffold
+	// context.
+	ChainSelection map[string]ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion `json:"chain_selection" api:"required"`
+	// Any of "peptide", "antibody", "nanobody", "custom_protein".
+	Modality  ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality  `json:"modality" api:"required"`
+	Structure ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseStructure `json:"structure" api:"required"`
+	Type      constant.StructureTemplate                                                                                                                         `json:"type" default:"structure_template"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseRules `json:"rules"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainSelection respjson.Field
+		Modality       respjson.Field
+		Structure      respjson.Field
+		Type           respjson.Field
+		Rules          respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion
+// contains all possible properties and values from
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec],
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion struct {
+	ChainType string `json:"chain_type"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec].
+	CropResidues ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion `json:"crop_residues"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec].
+	DesignMotifs []ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion `json:"design_motifs"`
+	JSON         struct {
+		ChainType    respjson.Field
+		CropResidues respjson.Field
+		DesignMotifs respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Per-chain crop and design specification for a polymer chain in
+// structure_template mode.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec struct {
+	ChainType constant.Polymer `json:"chain_type" default:"polymer"`
+	// 0-indexed residue indices to retain from this chain, or 'all' to keep all
+	// residues. Residues not listed are removed before design.
+	CropResidues ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion `json:"crop_residues" api:"required"`
+	// Optional motifs (replacement or insertion) defining which regions to redesign on
+	// this chain. Omit this field to include the chain as fixed scaffold context.
+	DesignMotifs []ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion `json:"design_motifs"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainType    respjson.Field
+		CropResidues respjson.Field
+		DesignMotifs respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion
+// contains all possible properties and values from [[]int64], [constant.All].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfIntArray OfAll]
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion struct {
+	// This field will be present if the value is a [[]int64] instead of an object.
+	OfIntArray []int64 `json:",inline"`
+	// This field will be present if the value is a [constant.All] instead of an
+	// object.
+	OfAll constant.All `json:",inline"`
+	JSON  struct {
+		OfIntArray respjson.Field
+		OfAll      respjson.Field
+		raw        string
+	} `json:"-"`
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) AsIntArray() (v []int64) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) AsAll() (v constant.All) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion
+// contains all possible properties and values from
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif],
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion struct {
+	// This field is a union of
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange],
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange]
+	DesignLengthRange ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange `json:"design_length_range"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif].
+	EndIndex int64 `json:"end_index"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif].
+	StartIndex int64  `json:"start_index"`
+	Type       string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif].
+	AfterResidueIndex int64 `json:"after_residue_index"`
+	JSON              struct {
+		DesignLengthRange respjson.Field
+		EndIndex          respjson.Field
+		StartIndex        respjson.Field
+		Type              respjson.Field
+		AfterResidueIndex respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange
+// is an implicit subunion of
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion].
+// ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange
+// provides convenient access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion].
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange struct {
+	Max  int64 `json:"max"`
+	Min  int64 `json:"min"`
+	JSON struct {
+		Max respjson.Field
+		Min respjson.Field
+		raw string
+	} `json:"-"`
+}
+
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnionDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Replace a contiguous region of the sequence with a designed segment. Residues
+// from start_index to end_index (inclusive) are replaced with a new sequence of
+// the specified length.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif struct {
+	// Allowed sequence length range for designed regions
+	DesignLengthRange ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange `json:"design_length_range" api:"required"`
+	// 0-indexed end residue (inclusive)
+	EndIndex int64 `json:"end_index" api:"required"`
+	// 0-indexed start residue (inclusive)
+	StartIndex int64                `json:"start_index" api:"required"`
+	Type       constant.Replacement `json:"type" default:"replacement"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		DesignLengthRange respjson.Field
+		EndIndex          respjson.Field
+		StartIndex        respjson.Field
+		Type              respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Allowed sequence length range for designed regions
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange struct {
+	// Maximum sequence length in residues. Must be >= min.
+	Max int64 `json:"max" api:"required"`
+	// Minimum sequence length in residues
+	Min int64 `json:"min" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Insert a designed segment at a specific position in the sequence.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif struct {
+	// 0-indexed position after which to insert. Use -1 to insert before the first
+	// residue.
+	AfterResidueIndex int64 `json:"after_residue_index" api:"required"`
+	// Allowed sequence length range for designed regions
+	DesignLengthRange ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange `json:"design_length_range" api:"required"`
+	Type              constant.Insertion                                                                                                                                                                                                                 `json:"type" default:"insertion"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AfterResidueIndex respjson.Field
+		DesignLengthRange respjson.Field
+		Type              respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Allowed sequence length range for designed regions
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange struct {
+	// Maximum sequence length in residues. Must be >= min.
+	Max int64 `json:"max" api:"required"`
+	// Minimum sequence length in residues
+	Min int64 `json:"min" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Per-chain specification for a ligand chain in structure_template mode. The full
+// ligand is always included.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec struct {
+	ChainType constant.Ligand `json:"chain_type" default:"ligand"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainType   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseChainSelectionStructureTemplateLigandChainSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality string
+
+const (
+	ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModalityPeptide       ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality = "peptide"
+	ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModalityAntibody      ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality = "antibody"
+	ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModalityNanobody      ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality = "nanobody"
+	ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModalityCustomProtein ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseModality = "custom_protein"
+)
+
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseStructure struct {
+	// URL to download the file
+	URL string `json:"url" api:"required" format:"uri"`
+	// When the presigned URL expires
+	URLExpiresAt time.Time `json:"url_expires_at" api:"required" format:"date-time"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		URL          respjson.Field
+		URLExpiresAt respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseStructure) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseStructure) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Constraints applied during sequence design
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseRules struct {
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseRules) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationStructureTemplateBinderSpecResponseRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Binder specification without a structural template. Define the binder from
+// sequence components (fixed and designed segments) without providing a starting
+// 3D structure.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse struct {
+	// Binder entities composing the design. At least one must be a designed_protein
+	// entity. Additional fixed entities (RNA, DNA, ligands) can be included as part of
+	// the complex.
+	Entities []ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion `json:"entities" api:"required"`
+	// Any of "peptide", "antibody", "nanobody", "custom_protein".
+	Modality ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality `json:"modality" api:"required"`
+	Type     constant.NoTemplate                                                                                                                        `json:"type" default:"no_template"`
+	// Covalent bond constraints between atoms in the binder complex. If defining bonds
+	// where an atom is part of a designed protein chain, assume residue indices count
+	// designed regions as the minimum length. Example: designed protein "1..3C1..2",
+	// "C" is residue 1 (0-indexed) of the designed protein.
+	Bonds []ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond `json:"bonds"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseRules `json:"rules"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Entities    respjson.Field
+		Modality    respjson.Field
+		Type        respjson.Field
+		Bonds       respjson.Field
+		Rules       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion
+// contains all possible properties and values from
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion struct {
+	ChainIDs []string `json:"chain_ids"`
+	Type     string   `json:"type"`
+	Value    string   `json:"value"`
+	Cyclic   bool     `json:"cyclic"`
+	// This field is a union of
+	// [[]ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification],
+	// [[]ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification],
+	// [[]ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification],
+	// [[]ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification]
+	Modifications ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications `json:"modifications"`
+	JSON          struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications
+// is an implicit subunion of
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion].
+// ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications
+// provides convenient access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion].
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid:
+// OfProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModifications
+// OfProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModifications
+// OfProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModifications
+// OfProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModifications]
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications struct {
+	// This field will be present if the value is a
+	// [[]ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification]
+	// instead of an object.
+	OfProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModifications []ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification `json:",inline"`
+	// This field will be present if the value is a
+	// [[]ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification]
+	// instead of an object.
+	OfProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModifications []ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification `json:",inline"`
+	// This field will be present if the value is a
+	// [[]ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification]
+	// instead of an object.
+	OfProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModifications []ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification `json:",inline"`
+	// This field will be present if the value is a
+	// [[]ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification]
+	// instead of an object.
+	OfProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModifications []ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification `json:",inline"`
+	JSON                                                                                                                                                                          struct {
+		OfProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModifications respjson.Field
+		OfProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModifications    respjson.Field
+		OfProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModifications        respjson.Field
+		OfProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModifications        respjson.Field
+		raw                                                                                                                                                                                  string
+	} `json:"-"`
+}
+
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Protein binder entity with designed and/or fixed segments.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string                 `json:"chain_ids" api:"required"`
+	Type     constant.DesignedProtein `json:"type" default:"designed_protein"`
+	// Binder sequence specification. Fixed amino acids are written as literal
+	// single-letter codes. Designed regions are written as a length (fixed) or a
+	// length range (min..max). Example: "MKTAYI5..10VKSHFSRQ" means fixed MKTAYI, then
+	// 5-10 designed residues, then fixed VKSHFSRQ. "20" means 20 fully designed
+	// residues. "ACDE8GHI" means fixed ACDE, then 8 designed residues, then fixed GHI.
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityDesignedProteinEntityResponseModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A fixed protein entity whose sequence is not redesigned.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string         `json:"chain_ids" api:"required"`
+	Type     constant.Protein `json:"type" default:"protein"`
+	// Amino acid sequence (one-letter codes)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedProteinEntityResponseModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string     `json:"chain_ids" api:"required"`
+	Type     constant.Rna `json:"type" default:"rna"`
+	// RNA nucleotide sequence (A, C, G, U, N)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string     `json:"chain_ids" api:"required"`
+	Type     constant.Dna `json:"type" default:"dna"`
+	// DNA nucleotide sequence (A, C, G, T, N)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string              `json:"chain_ids" api:"required"`
+	Type     constant.LigandSmiles `json:"type" default:"ligand_smiles"`
+	// SMILES string representing the ligand
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs    respjson.Field
+		Type        respjson.Field
+		Value       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string           `json:"chain_ids" api:"required"`
+	Type     constant.LigandCcd `json:"type" default:"ligand_ccd"`
+	// CCD code from RCSB PDB (e.g. 'ATP', 'ADP')
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs    respjson.Field
+		Type        respjson.Field
+		Value       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality string
+
+const (
+	ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModalityPeptide       ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality = "peptide"
+	ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModalityAntibody      ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality = "antibody"
+	ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModalityNanobody      ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality = "nanobody"
+	ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModalityCustomProtein ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality = "custom_protein"
+)
+
+// Bond between two atoms. Atom-level ligand references currently support
+// ligand_ccd entities only; ligand_smiles is unsupported.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond struct {
+	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+	// entities only; ligand_smiles is unsupported.
+	Atom1 ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union `json:"atom1" api:"required"`
+	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+	// entities only; ligand_smiles is unsupported.
+	Atom2 ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union
+// contains all possible properties and values from
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	Type     string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
+	ResidueIndex int64 `json:"residue_index"`
+	JSON         struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		Type         respjson.Field
+		ResidueIndex respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+// entities only; ligand_smiles is unsupported.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse struct {
+	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
+	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse struct {
+	// Standardized atom name (verifiable in CIF file on RCSB)
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// 0-based residue index
+	ResidueIndex int64                `json:"residue_index" api:"required"`
+	Type         constant.PolymerAtom `json:"type" default:"polymer_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union
+// contains all possible properties and values from
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	Type     string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
+	ResidueIndex int64 `json:"residue_index"`
+	JSON         struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		Type         respjson.Field
+		ResidueIndex respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+// entities only; ligand_smiles is unsupported.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse struct {
+	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
+	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse struct {
+	// Standardized atom name (verifiable in CIF file on RCSB)
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// 0-based residue index
+	ResidueIndex int64                `json:"residue_index" api:"required"`
+	Type         constant.PolymerAtom `json:"type" default:"polymer_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Constraints applied during sequence design
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseRules struct {
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseRules) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Boltz-managed curated binder specification. Choose a curated nanobody or
+// antibody family and Boltz will select from maintained template lists during
+// design. The curated lists are managed by Boltz and may be updated over time to
+// improve quality and coverage.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse struct {
+	// Boltz-managed curated binder family. Boltz maintains and may update the
+	// underlying template lists on behalf of customers.
+	//
+	// Any of "boltz_nanobody", "boltz_antibody".
+	Binder ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinder `json:"binder" api:"required"`
+	Type   constant.BoltzCurated                                                                                                                      `json:"type" default:"boltz_curated"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseRules `json:"rules"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Binder      respjson.Field
+		Type        respjson.Field
+		Rules       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Boltz-managed curated binder family. Boltz maintains and may update the
+// underlying template lists on behalf of customers.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinder string
+
+const (
+	ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinderBoltzNanobody ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinder = "boltz_nanobody"
+	ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinderBoltzAntibody ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseBinder = "boltz_antibody"
+)
+
+// Constraints applied during sequence design
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseRules struct {
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs"`
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction float64 `json:"max_hydrophobic_fraction"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExcludedAminoAcids     respjson.Field
+		ExcludedSequenceMotifs respjson.Field
+		MaxHydrophobicFraction respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseRules) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBoltzCuratedBinderSpecResponseRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Boltz-managed curated binder family. Boltz maintains and may update the
+// underlying template lists on behalf of customers.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBinder string
+
+const (
+	ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBinderBoltzNanobody ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBinder = "boltz_nanobody"
+	ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBinderBoltzAntibody ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationBinder = "boltz_antibody"
+)
+
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModality string
+
+const (
+	ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModalityPeptide       ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModality = "peptide"
+	ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModalityAntibody      ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModality = "antibody"
+	ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModalityNanobody      ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModality = "nanobody"
+	ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModalityCustomProtein ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationModality = "custom_protein"
+)
 
 // Boltz-managed curated binder family. Boltz maintains and may update the
 // underlying template lists on behalf of customers.
@@ -11208,8 +19263,10 @@ func (r ProteinDesignListParams) URLQuery() (v url.Values, err error) {
 
 type ProteinDesignEstimateCostParams struct {
 	// Binder specification for protein design. Use no_template for sequence-defined
-	// binders, structure_template for uploaded binder structures, or boltz_curated for
-	// Boltz-managed nanobody and antibody defaults.
+	// binders, structure_template for uploaded binder structures, boltz_curated for
+	// Boltz-managed nanobody and antibody defaults, or
+	// uniformly_sampled_specifications to sample uniformly across multiple binder
+	// specifications.
 	BinderSpecification ProteinDesignEstimateCostParamsBinderSpecificationUnion `json:"binder_specification,omitzero" api:"required"`
 	// Number of protein designs to generate. Must be between 10 and 1,000,000.
 	NumProteins int64 `json:"num_proteins" api:"required"`
@@ -11237,11 +19294,12 @@ type ProteinDesignEstimateCostParamsBinderSpecificationUnion struct {
 	OfProteinDesignEstimateCostsBinderSpecificationStructureTemplateBinderSpec *ProteinDesignEstimateCostParamsBinderSpecificationStructureTemplateBinderSpec `json:",omitzero,inline"`
 	OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpec        *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpec        `json:",omitzero,inline"`
 	OfProteinDesignEstimateCostsBinderSpecificationBoltzCuratedBinderSpec      *ProteinDesignEstimateCostParamsBinderSpecificationBoltzCuratedBinderSpec      `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpec  *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpec  `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u ProteinDesignEstimateCostParamsBinderSpecificationUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfProteinDesignEstimateCostsBinderSpecificationStructureTemplateBinderSpec, u.OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpec, u.OfProteinDesignEstimateCostsBinderSpecificationBoltzCuratedBinderSpec)
+	return param.MarshalUnion(u, u.OfProteinDesignEstimateCostsBinderSpecificationStructureTemplateBinderSpec, u.OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpec, u.OfProteinDesignEstimateCostsBinderSpecificationBoltzCuratedBinderSpec, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpec)
 }
 func (u *ProteinDesignEstimateCostParamsBinderSpecificationUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -12083,6 +20141,883 @@ func (r *ProteinDesignEstimateCostParamsBinderSpecificationBoltzCuratedBinderSpe
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A collection of binder specifications sampled uniformly during protein design.
+// This lets one run explore multiple binder definitions while keeping each
+// generation request shape unchanged.
+//
+// The properties BinderSpecifications, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpec struct {
+	// Binder specifications to sample uniformly when generating designs. Each
+	// generation samples one specification from this list; over larger runs this gives
+	// roughly equal representation.
+	BinderSpecifications []ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnion `json:"binder_specifications,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as
+	// "uniformly_sampled_specifications".
+	Type constant.UniformlySampledSpecifications `json:"type" default:"uniformly_sampled_specifications"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpec) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpec
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnion struct {
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec        *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec        `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpec      *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpec      `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpec)
+}
+func (u *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// Binder specification starting from an existing 3D structure. Upload a CIF/PDB
+// file and select which chains to include, which residues to keep, and which
+// regions to redesign. Only chains included in chain_selection are part of the
+// pipeline run.
+//
+// The properties ChainSelection, Modality, Structure, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec struct {
+	// Chains selected from the uploaded binder structure, keyed by chain ID. Only
+	// chains listed here are included in the pipeline run — any chains omitted from
+	// this mapping are ignored. Each value defines which residues to keep
+	// (crop_residues). Omit design_motifs to include the chain as fixed scaffold
+	// context.
+	ChainSelection map[string]ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion `json:"chain_selection,omitzero" api:"required"`
+	// Any of "peptide", "antibody", "nanobody", "custom_protein".
+	Modality ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModality `json:"modality,omitzero" api:"required"`
+	// How to provide a CIF structure file. URLs are auto-detected; base64 uploads must
+	// use chemical/x-cif media type.
+	Structure ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureUnion `json:"structure,omitzero" api:"required"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecRules `json:"rules,omitzero"`
+	// This field can be elided, and will marshal its zero value as
+	// "structure_template".
+	Type constant.StructureTemplate `json:"type" default:"structure_template"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion struct {
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec  *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec)
+}
+func (u *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// Per-chain crop and design specification for a polymer chain in
+// structure_template mode.
+//
+// The properties ChainType, CropResidues are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec struct {
+	// 0-indexed residue indices to retain from this chain, or 'all' to keep all
+	// residues. Residues not listed are removed before design.
+	CropResidues ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion `json:"crop_residues,omitzero" api:"required"`
+	// Optional motifs (replacement or insertion) defining which regions to redesign on
+	// this chain. Omit this field to include the chain as fixed scaffold context.
+	DesignMotifs []ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion `json:"design_motifs,omitzero"`
+	// This field can be elided, and will marshal its zero value as "polymer".
+	ChainType constant.Polymer `json:"chain_type" default:"polymer"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion struct {
+	OfIntArray []int64 `json:",omitzero,inline"`
+	// Construct this variant with constant.ValueOf[constant.All]()
+	OfAll constant.All `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfIntArray, u.OfAll)
+}
+func (u *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion struct {
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif   *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif   `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif)
+}
+func (u *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// Replace a contiguous region of the sequence with a designed segment. Residues
+// from start_index to end_index (inclusive) are replaced with a new sequence of
+// the specified length.
+//
+// The properties DesignLengthRange, EndIndex, StartIndex, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif struct {
+	// Allowed sequence length range for designed regions
+	DesignLengthRange ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange `json:"design_length_range,omitzero" api:"required"`
+	// 0-indexed end residue (inclusive)
+	EndIndex int64 `json:"end_index" api:"required"`
+	// 0-indexed start residue (inclusive)
+	StartIndex int64 `json:"start_index" api:"required"`
+	// This field can be elided, and will marshal its zero value as "replacement".
+	Type constant.Replacement `json:"type" default:"replacement"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Allowed sequence length range for designed regions
+//
+// The properties Max, Min are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange struct {
+	// Maximum sequence length in residues. Must be >= min.
+	Max int64 `json:"max" api:"required"`
+	// Minimum sequence length in residues
+	Min int64 `json:"min" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Insert a designed segment at a specific position in the sequence.
+//
+// The properties AfterResidueIndex, DesignLengthRange, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif struct {
+	// 0-indexed position after which to insert. Use -1 to insert before the first
+	// residue.
+	AfterResidueIndex int64 `json:"after_residue_index" api:"required"`
+	// Allowed sequence length range for designed regions
+	DesignLengthRange ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange `json:"design_length_range,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "insertion".
+	Type constant.Insertion `json:"type" default:"insertion"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Allowed sequence length range for designed regions
+//
+// The properties Max, Min are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange struct {
+	// Maximum sequence length in residues. Must be >= min.
+	Max int64 `json:"max" api:"required"`
+	// Minimum sequence length in residues
+	Min int64 `json:"min" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func NewProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec() ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec {
+	return ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec{
+		ChainType: "ligand",
+	}
+}
+
+// Per-chain specification for a ligand chain in structure_template mode. The full
+// ligand is always included.
+//
+// This struct has a constant value, construct it with
+// [NewProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec].
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec struct {
+	ChainType constant.Ligand `json:"chain_type" default:"ligand"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModality string
+
+const (
+	ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModalityPeptide       ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModality = "peptide"
+	ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModalityAntibody      ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModality = "antibody"
+	ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModalityNanobody      ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModality = "nanobody"
+	ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModalityCustomProtein ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModality = "custom_protein"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureUnion struct {
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureURLSource       *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureURLSource       `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureURLSource, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source)
+}
+func (u *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// The properties Type, URL are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureURLSource struct {
+	URL string `json:"url" api:"required" format:"uri"`
+	// This field can be elided, and will marshal its zero value as "url".
+	Type constant.URL `json:"type" default:"url"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureURLSource) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureURLSource
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureURLSource) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Data, MediaType, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source struct {
+	// Base64-encoded CIF file contents
+	Data string `json:"data" api:"required"`
+	// Must be chemical/x-cif for CIF files
+	//
+	// This field can be elided, and will marshal its zero value as "chemical/x-cif".
+	MediaType constant.ChemicalXCif `json:"media_type" default:"chemical/x-cif"`
+	// This field can be elided, and will marshal its zero value as "base64".
+	Type constant.Base64 `json:"type" default:"base64"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Constraints applied during sequence design
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecRules struct {
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction param.Opt[float64] `json:"max_hydrophobic_fraction,omitzero"`
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids,omitzero"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs,omitzero"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecRules) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecRules
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Binder specification without a structural template. Define the binder from
+// sequence components (fixed and designed segments) without providing a starting
+// 3D structure.
+//
+// The properties Entities, Modality, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec struct {
+	// Binder entities composing the design. At least one must be a designed_protein
+	// entity. Additional fixed entities (RNA, DNA, ligands) can be included as part of
+	// the complex.
+	Entities []ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion `json:"entities,omitzero" api:"required"`
+	// Any of "peptide", "antibody", "nanobody", "custom_protein".
+	Modality ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality `json:"modality,omitzero" api:"required"`
+	// Covalent bond constraints between atoms in the binder complex. If defining bonds
+	// where an atom is part of a designed protein chain, assume residue indices count
+	// designed regions as the minimum length. Example: designed protein "1..3C1..2",
+	// "C" is residue 1 (0-indexed) of the designed protein.
+	Bonds []ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBond `json:"bonds,omitzero"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecRules `json:"rules,omitzero"`
+	// This field can be elided, and will marshal its zero value as "no_template".
+	Type constant.NoTemplate `json:"type" default:"no_template"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion struct {
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity   *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity   `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity      *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity      `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity          *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity          `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity          *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity          `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity    *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity    `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity,
+		u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity,
+		u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity,
+		u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity,
+		u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity,
+		u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity)
+}
+func (u *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// Protein binder entity with designed and/or fixed segments.
+//
+// The properties ChainIDs, Type, Value are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// Binder sequence specification. Fixed amino acids are written as literal
+	// single-letter codes. Designed regions are written as a length (fixed) or a
+	// length range (min..max). Example: "MKTAYI5..10VKSHFSRQ" means fixed MKTAYI, then
+	// 5-10 designed residues, then fixed VKSHFSRQ. "20" means 20 fully designed
+	// residues. "ACDE8GHI" means fixed ACDE, then 8 designed residues, then fixed GHI.
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification `json:"modifications,omitzero"`
+	// This field can be elided, and will marshal its zero value as "designed_protein".
+	Type constant.DesignedProtein `json:"type" default:"designed_protein"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
+// The properties ResidueIndex, Type, Value are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
+	// This field can be elided, and will marshal its zero value as "ccd".
+	Type constant.Ccd `json:"type" default:"ccd"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A fixed protein entity whose sequence is not redesigned.
+//
+// The properties ChainIDs, Type, Value are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// Amino acid sequence (one-letter codes)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification `json:"modifications,omitzero"`
+	// This field can be elided, and will marshal its zero value as "protein".
+	Type constant.Protein `json:"type" default:"protein"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
+// The properties ResidueIndex, Type, Value are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
+	// This field can be elided, and will marshal its zero value as "ccd".
+	Type constant.Ccd `json:"type" default:"ccd"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ChainIDs, Type, Value are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// RNA nucleotide sequence (A, C, G, U, N)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification `json:"modifications,omitzero"`
+	// This field can be elided, and will marshal its zero value as "rna".
+	Type constant.Rna `json:"type" default:"rna"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
+// The properties ResidueIndex, Type, Value are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
+	// This field can be elided, and will marshal its zero value as "ccd".
+	Type constant.Ccd `json:"type" default:"ccd"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ChainIDs, Type, Value are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// DNA nucleotide sequence (A, C, G, T, N)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification `json:"modifications,omitzero"`
+	// This field can be elided, and will marshal its zero value as "dna".
+	Type constant.Dna `json:"type" default:"dna"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
+// The properties ResidueIndex, Type, Value are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
+	// This field can be elided, and will marshal its zero value as "ccd".
+	Type constant.Ccd `json:"type" default:"ccd"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ChainIDs, Type, Value are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// SMILES string representing the ligand
+	Value string `json:"value" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ligand_smiles".
+	Type constant.LigandSmiles `json:"type" default:"ligand_smiles"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ChainIDs, Type, Value are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// CCD code from RCSB PDB (e.g. 'ATP', 'ADP')
+	Value string `json:"value" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ligand_ccd".
+	Type constant.LigandCcd `json:"type" default:"ligand_ccd"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality string
+
+const (
+	ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModalityPeptide       ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality = "peptide"
+	ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModalityAntibody      ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality = "antibody"
+	ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModalityNanobody      ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality = "nanobody"
+	ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModalityCustomProtein ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality = "custom_protein"
+)
+
+// Bond between two atoms. Atom-level ligand references currently support
+// ligand_ccd entities only; ligand_smiles is unsupported.
+//
+// The properties Atom1, Atom2 are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBond struct {
+	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+	// entities only; ligand_smiles is unsupported.
+	Atom1 ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union `json:"atom1,omitzero" api:"required"`
+	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+	// entities only; ligand_smiles is unsupported.
+	Atom2 ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union `json:"atom2,omitzero" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBond) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBond
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union struct {
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom  *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom  `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom)
+}
+func (u *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+// entities only; ligand_smiles is unsupported.
+//
+// The properties AtomName, ChainID, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom struct {
+	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
+	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ligand_atom".
+	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomName, ChainID, ResidueIndex, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom struct {
+	// Standardized atom name (verifiable in CIF file on RCSB)
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// 0-based residue index
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// This field can be elided, and will marshal its zero value as "polymer_atom".
+	Type constant.PolymerAtom `json:"type" default:"polymer_atom"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union struct {
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom  *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom  `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom)
+}
+func (u *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+// entities only; ligand_smiles is unsupported.
+//
+// The properties AtomName, ChainID, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom struct {
+	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
+	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ligand_atom".
+	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomName, ChainID, ResidueIndex, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom struct {
+	// Standardized atom name (verifiable in CIF file on RCSB)
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// 0-based residue index
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// This field can be elided, and will marshal its zero value as "polymer_atom".
+	Type constant.PolymerAtom `json:"type" default:"polymer_atom"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Constraints applied during sequence design
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecRules struct {
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction param.Opt[float64] `json:"max_hydrophobic_fraction,omitzero"`
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids,omitzero"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs,omitzero"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecRules) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecRules
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Boltz-managed curated binder specification. Choose a curated nanobody or
+// antibody family and Boltz will select from maintained template lists during
+// design. The curated lists are managed by Boltz and may be updated over time to
+// improve quality and coverage.
+//
+// The properties Binder, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpec struct {
+	// Boltz-managed curated binder family. Boltz maintains and may update the
+	// underlying template lists on behalf of customers.
+	//
+	// Any of "boltz_nanobody", "boltz_antibody".
+	Binder ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecBinder `json:"binder,omitzero" api:"required"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecRules `json:"rules,omitzero"`
+	// This field can be elided, and will marshal its zero value as "boltz_curated".
+	Type constant.BoltzCurated `json:"type" default:"boltz_curated"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpec) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpec
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Boltz-managed curated binder family. Boltz maintains and may update the
+// underlying template lists on behalf of customers.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecBinder string
+
+const (
+	ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecBinderBoltzNanobody ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecBinder = "boltz_nanobody"
+	ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecBinderBoltzAntibody ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecBinder = "boltz_antibody"
+)
+
+// Constraints applied during sequence design
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecRules struct {
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction param.Opt[float64] `json:"max_hydrophobic_fraction,omitzero"`
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids,omitzero"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs,omitzero"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecRules) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecRules
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
@@ -12842,6 +21777,31 @@ func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetConstraintContactC
 	return apijson.UnmarshalRoot(data, r)
 }
 
+type ProteinDesignListCuratedSpecificationsParams struct {
+	// Curated binder library to retrieve.
+	//
+	// Any of "nanobody", "antibody".
+	Type ProteinDesignListCuratedSpecificationsParamsType `query:"type,omitzero" api:"required" json:"-"`
+	paramObj
+}
+
+// URLQuery serializes [ProteinDesignListCuratedSpecificationsParams]'s query
+// parameters as `url.Values`.
+func (r ProteinDesignListCuratedSpecificationsParams) URLQuery() (v url.Values, err error) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatRepeat,
+		NestedFormat: apiquery.NestedQueryFormatBrackets,
+	})
+}
+
+// Curated binder library to retrieve.
+type ProteinDesignListCuratedSpecificationsParamsType string
+
+const (
+	ProteinDesignListCuratedSpecificationsParamsTypeNanobody ProteinDesignListCuratedSpecificationsParamsType = "nanobody"
+	ProteinDesignListCuratedSpecificationsParamsTypeAntibody ProteinDesignListCuratedSpecificationsParamsType = "antibody"
+)
+
 type ProteinDesignListResultsParams struct {
 	// Return results after this ID
 	AfterID param.Opt[string] `query:"after_id,omitzero" json:"-"`
@@ -12871,8 +21831,10 @@ func (r ProteinDesignListResultsParams) URLQuery() (v url.Values, err error) {
 
 type ProteinDesignStartParams struct {
 	// Binder specification for protein design. Use no_template for sequence-defined
-	// binders, structure_template for uploaded binder structures, or boltz_curated for
-	// Boltz-managed nanobody and antibody defaults.
+	// binders, structure_template for uploaded binder structures, boltz_curated for
+	// Boltz-managed nanobody and antibody defaults, or
+	// uniformly_sampled_specifications to sample uniformly across multiple binder
+	// specifications.
 	BinderSpecification ProteinDesignStartParamsBinderSpecificationUnion `json:"binder_specification,omitzero" api:"required"`
 	// Number of protein designs to generate. Must be between 10 and 1,000,000.
 	NumProteins int64 `json:"num_proteins" api:"required"`
@@ -12900,11 +21862,12 @@ type ProteinDesignStartParamsBinderSpecificationUnion struct {
 	OfProteinDesignStartsBinderSpecificationStructureTemplateBinderSpec *ProteinDesignStartParamsBinderSpecificationStructureTemplateBinderSpec `json:",omitzero,inline"`
 	OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpec        *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpec        `json:",omitzero,inline"`
 	OfProteinDesignStartsBinderSpecificationBoltzCuratedBinderSpec      *ProteinDesignStartParamsBinderSpecificationBoltzCuratedBinderSpec      `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpec  *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpec  `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u ProteinDesignStartParamsBinderSpecificationUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfProteinDesignStartsBinderSpecificationStructureTemplateBinderSpec, u.OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpec, u.OfProteinDesignStartsBinderSpecificationBoltzCuratedBinderSpec)
+	return param.MarshalUnion(u, u.OfProteinDesignStartsBinderSpecificationStructureTemplateBinderSpec, u.OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpec, u.OfProteinDesignStartsBinderSpecificationBoltzCuratedBinderSpec, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpec)
 }
 func (u *ProteinDesignStartParamsBinderSpecificationUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -13743,6 +22706,883 @@ func (r ProteinDesignStartParamsBinderSpecificationBoltzCuratedBinderSpecRules) 
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *ProteinDesignStartParamsBinderSpecificationBoltzCuratedBinderSpecRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A collection of binder specifications sampled uniformly during protein design.
+// This lets one run explore multiple binder definitions while keeping each
+// generation request shape unchanged.
+//
+// The properties BinderSpecifications, Type are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpec struct {
+	// Binder specifications to sample uniformly when generating designs. Each
+	// generation samples one specification from this list; over larger runs this gives
+	// roughly equal representation.
+	BinderSpecifications []ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnion `json:"binder_specifications,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as
+	// "uniformly_sampled_specifications".
+	Type constant.UniformlySampledSpecifications `json:"type" default:"uniformly_sampled_specifications"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpec) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpec
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnion struct {
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec        *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec        `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpec      *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpec      `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpec)
+}
+func (u *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// Binder specification starting from an existing 3D structure. Upload a CIF/PDB
+// file and select which chains to include, which residues to keep, and which
+// regions to redesign. Only chains included in chain_selection are part of the
+// pipeline run.
+//
+// The properties ChainSelection, Modality, Structure, Type are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec struct {
+	// Chains selected from the uploaded binder structure, keyed by chain ID. Only
+	// chains listed here are included in the pipeline run — any chains omitted from
+	// this mapping are ignored. Each value defines which residues to keep
+	// (crop_residues). Omit design_motifs to include the chain as fixed scaffold
+	// context.
+	ChainSelection map[string]ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion `json:"chain_selection,omitzero" api:"required"`
+	// Any of "peptide", "antibody", "nanobody", "custom_protein".
+	Modality ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModality `json:"modality,omitzero" api:"required"`
+	// How to provide a CIF structure file. URLs are auto-detected; base64 uploads must
+	// use chemical/x-cif media type.
+	Structure ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureUnion `json:"structure,omitzero" api:"required"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecRules `json:"rules,omitzero"`
+	// This field can be elided, and will marshal its zero value as
+	// "structure_template".
+	Type constant.StructureTemplate `json:"type" default:"structure_template"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion struct {
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec  *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec)
+}
+func (u *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// Per-chain crop and design specification for a polymer chain in
+// structure_template mode.
+//
+// The properties ChainType, CropResidues are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec struct {
+	// 0-indexed residue indices to retain from this chain, or 'all' to keep all
+	// residues. Residues not listed are removed before design.
+	CropResidues ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion `json:"crop_residues,omitzero" api:"required"`
+	// Optional motifs (replacement or insertion) defining which regions to redesign on
+	// this chain. Omit this field to include the chain as fixed scaffold context.
+	DesignMotifs []ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion `json:"design_motifs,omitzero"`
+	// This field can be elided, and will marshal its zero value as "polymer".
+	ChainType constant.Polymer `json:"chain_type" default:"polymer"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion struct {
+	OfIntArray []int64 `json:",omitzero,inline"`
+	// Construct this variant with constant.ValueOf[constant.All]()
+	OfAll constant.All `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfIntArray, u.OfAll)
+}
+func (u *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion struct {
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif   *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif   `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif)
+}
+func (u *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// Replace a contiguous region of the sequence with a designed segment. Residues
+// from start_index to end_index (inclusive) are replaced with a new sequence of
+// the specified length.
+//
+// The properties DesignLengthRange, EndIndex, StartIndex, Type are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif struct {
+	// Allowed sequence length range for designed regions
+	DesignLengthRange ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange `json:"design_length_range,omitzero" api:"required"`
+	// 0-indexed end residue (inclusive)
+	EndIndex int64 `json:"end_index" api:"required"`
+	// 0-indexed start residue (inclusive)
+	StartIndex int64 `json:"start_index" api:"required"`
+	// This field can be elided, and will marshal its zero value as "replacement".
+	Type constant.Replacement `json:"type" default:"replacement"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Allowed sequence length range for designed regions
+//
+// The properties Max, Min are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange struct {
+	// Maximum sequence length in residues. Must be >= min.
+	Max int64 `json:"max" api:"required"`
+	// Minimum sequence length in residues
+	Min int64 `json:"min" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Insert a designed segment at a specific position in the sequence.
+//
+// The properties AfterResidueIndex, DesignLengthRange, Type are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif struct {
+	// 0-indexed position after which to insert. Use -1 to insert before the first
+	// residue.
+	AfterResidueIndex int64 `json:"after_residue_index" api:"required"`
+	// Allowed sequence length range for designed regions
+	DesignLengthRange ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange `json:"design_length_range,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "insertion".
+	Type constant.Insertion `json:"type" default:"insertion"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotif) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Allowed sequence length range for designed regions
+//
+// The properties Max, Min are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange struct {
+	// Maximum sequence length in residues. Must be >= min.
+	Max int64 `json:"max" api:"required"`
+	// Minimum sequence length in residues
+	Min int64 `json:"min" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifInsertionMotifDesignLengthRange) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func NewProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec() ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec {
+	return ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec{
+		ChainType: "ligand",
+	}
+}
+
+// Per-chain specification for a ligand chain in structure_template mode. The full
+// ligand is always included.
+//
+// This struct has a constant value, construct it with
+// [NewProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec].
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec struct {
+	ChainType constant.Ligand `json:"chain_type" default:"ligand"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplateLigandChainSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModality string
+
+const (
+	ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModalityPeptide       ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModality = "peptide"
+	ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModalityAntibody      ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModality = "antibody"
+	ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModalityNanobody      ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModality = "nanobody"
+	ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModalityCustomProtein ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecModality = "custom_protein"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureUnion struct {
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureURLSource       *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureURLSource       `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureURLSource, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source)
+}
+func (u *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// The properties Type, URL are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureURLSource struct {
+	URL string `json:"url" api:"required" format:"uri"`
+	// This field can be elided, and will marshal its zero value as "url".
+	Type constant.URL `json:"type" default:"url"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureURLSource) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureURLSource
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureURLSource) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Data, MediaType, Type are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source struct {
+	// Base64-encoded CIF file contents
+	Data string `json:"data" api:"required"`
+	// Must be chemical/x-cif for CIF files
+	//
+	// This field can be elided, and will marshal its zero value as "chemical/x-cif".
+	MediaType constant.ChemicalXCif `json:"media_type" default:"chemical/x-cif"`
+	// This field can be elided, and will marshal its zero value as "base64".
+	Type constant.Base64 `json:"type" default:"base64"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecStructureCifBase64Source) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Constraints applied during sequence design
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecRules struct {
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction param.Opt[float64] `json:"max_hydrophobic_fraction,omitzero"`
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids,omitzero"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs,omitzero"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecRules) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecRules
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationStructureTemplateBinderSpecRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Binder specification without a structural template. Define the binder from
+// sequence components (fixed and designed segments) without providing a starting
+// 3D structure.
+//
+// The properties Entities, Modality, Type are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec struct {
+	// Binder entities composing the design. At least one must be a designed_protein
+	// entity. Additional fixed entities (RNA, DNA, ligands) can be included as part of
+	// the complex.
+	Entities []ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion `json:"entities,omitzero" api:"required"`
+	// Any of "peptide", "antibody", "nanobody", "custom_protein".
+	Modality ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality `json:"modality,omitzero" api:"required"`
+	// Covalent bond constraints between atoms in the binder complex. If defining bonds
+	// where an atom is part of a designed protein chain, assume residue indices count
+	// designed regions as the minimum length. Example: designed protein "1..3C1..2",
+	// "C" is residue 1 (0-indexed) of the designed protein.
+	Bonds []ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBond `json:"bonds,omitzero"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecRules `json:"rules,omitzero"`
+	// This field can be elided, and will marshal its zero value as "no_template".
+	Type constant.NoTemplate `json:"type" default:"no_template"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion struct {
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity   *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity   `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity      *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity      `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity          *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity          `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity          *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity          `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity    *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity    `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity,
+		u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity,
+		u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity,
+		u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity,
+		u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity,
+		u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity)
+}
+func (u *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// Protein binder entity with designed and/or fixed segments.
+//
+// The properties ChainIDs, Type, Value are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// Binder sequence specification. Fixed amino acids are written as literal
+	// single-letter codes. Designed regions are written as a length (fixed) or a
+	// length range (min..max). Example: "MKTAYI5..10VKSHFSRQ" means fixed MKTAYI, then
+	// 5-10 designed residues, then fixed VKSHFSRQ. "20" means 20 fully designed
+	// residues. "ACDE8GHI" means fixed ACDE, then 8 designed residues, then fixed GHI.
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification `json:"modifications,omitzero"`
+	// This field can be elided, and will marshal its zero value as "designed_protein".
+	Type constant.DesignedProtein `json:"type" default:"designed_protein"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
+// The properties ResidueIndex, Type, Value are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
+	// This field can be elided, and will marshal its zero value as "ccd".
+	Type constant.Ccd `json:"type" default:"ccd"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityDesignedProteinEntityModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A fixed protein entity whose sequence is not redesigned.
+//
+// The properties ChainIDs, Type, Value are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// Amino acid sequence (one-letter codes)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification `json:"modifications,omitzero"`
+	// This field can be elided, and will marshal its zero value as "protein".
+	Type constant.Protein `json:"type" default:"protein"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
+// The properties ResidueIndex, Type, Value are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
+	// This field can be elided, and will marshal its zero value as "ccd".
+	Type constant.Ccd `json:"type" default:"ccd"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedProteinEntityModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ChainIDs, Type, Value are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// RNA nucleotide sequence (A, C, G, U, N)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification `json:"modifications,omitzero"`
+	// This field can be elided, and will marshal its zero value as "rna".
+	Type constant.Rna `json:"type" default:"rna"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
+// The properties ResidueIndex, Type, Value are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
+	// This field can be elided, and will marshal its zero value as "ccd".
+	Type constant.Ccd `json:"type" default:"ccd"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ChainIDs, Type, Value are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// DNA nucleotide sequence (A, C, G, T, N)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
+	// Optional CCD polymer modifications. Defaults to [] when omitted. SMILES
+	// modifications are not supported.
+	Modifications []ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification `json:"modifications,omitzero"`
+	// This field can be elided, and will marshal its zero value as "dna".
+	Type constant.Dna `json:"type" default:"dna"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+//
+// The properties ResidueIndex, Type, Value are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	//
+	// This field can be elided, and will marshal its zero value as "ccd".
+	Type constant.Ccd `json:"type" default:"ccd"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ChainIDs, Type, Value are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// SMILES string representing the ligand
+	Value string `json:"value" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ligand_smiles".
+	Type constant.LigandSmiles `json:"type" default:"ligand_smiles"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ChainIDs, Type, Value are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity struct {
+	// Chain IDs to assign to this entity
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// CCD code from RCSB PDB (e.g. 'ATP', 'ADP')
+	Value string `json:"value" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ligand_ccd".
+	Type constant.LigandCcd `json:"type" default:"ligand_ccd"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality string
+
+const (
+	ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModalityPeptide       ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality = "peptide"
+	ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModalityAntibody      ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality = "antibody"
+	ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModalityNanobody      ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality = "nanobody"
+	ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModalityCustomProtein ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality = "custom_protein"
+)
+
+// Bond between two atoms. Atom-level ligand references currently support
+// ligand_ccd entities only; ligand_smiles is unsupported.
+//
+// The properties Atom1, Atom2 are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBond struct {
+	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+	// entities only; ligand_smiles is unsupported.
+	Atom1 ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union `json:"atom1,omitzero" api:"required"`
+	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+	// entities only; ligand_smiles is unsupported.
+	Atom2 ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union `json:"atom2,omitzero" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBond) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBond
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union struct {
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom  *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom  `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom)
+}
+func (u *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+// entities only; ligand_smiles is unsupported.
+//
+// The properties AtomName, ChainID, Type are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom struct {
+	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
+	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ligand_atom".
+	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomName, ChainID, ResidueIndex, Type are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom struct {
+	// Standardized atom name (verifiable in CIF file on RCSB)
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// 0-based residue index
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// This field can be elided, and will marshal its zero value as "polymer_atom".
+	Type constant.PolymerAtom `json:"type" default:"polymer_atom"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union struct {
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom  *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom  `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom)
+}
+func (u *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
+// entities only; ligand_smiles is unsupported.
+//
+// The properties AtomName, ChainID, Type are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom struct {
+	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
+	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ligand_atom".
+	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomName, ChainID, ResidueIndex, Type are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom struct {
+	// Standardized atom name (verifiable in CIF file on RCSB)
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// 0-based residue index
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// This field can be elided, and will marshal its zero value as "polymer_atom".
+	Type constant.PolymerAtom `json:"type" default:"polymer_atom"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Constraints applied during sequence design
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecRules struct {
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction param.Opt[float64] `json:"max_hydrophobic_fraction,omitzero"`
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids,omitzero"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs,omitzero"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecRules) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecRules
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecRules) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Boltz-managed curated binder specification. Choose a curated nanobody or
+// antibody family and Boltz will select from maintained template lists during
+// design. The curated lists are managed by Boltz and may be updated over time to
+// improve quality and coverage.
+//
+// The properties Binder, Type are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpec struct {
+	// Boltz-managed curated binder family. Boltz maintains and may update the
+	// underlying template lists on behalf of customers.
+	//
+	// Any of "boltz_nanobody", "boltz_antibody".
+	Binder ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecBinder `json:"binder,omitzero" api:"required"`
+	// Constraints applied during sequence design
+	Rules ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecRules `json:"rules,omitzero"`
+	// This field can be elided, and will marshal its zero value as "boltz_curated".
+	Type constant.BoltzCurated `json:"type" default:"boltz_curated"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpec) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpec
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpec) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Boltz-managed curated binder family. Boltz maintains and may update the
+// underlying template lists on behalf of customers.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecBinder string
+
+const (
+	ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecBinderBoltzNanobody ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecBinder = "boltz_nanobody"
+	ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecBinderBoltzAntibody ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecBinder = "boltz_antibody"
+)
+
+// Constraints applied during sequence design
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecRules struct {
+	// Maximum allowed fraction of hydrophobic residues (I, L, V, M, F, W, Y) in
+	// designed regions. Designs exceeding this threshold are filtered out before
+	// scoring. Leave empty to disable.
+	MaxHydrophobicFraction param.Opt[float64] `json:"max_hydrophobic_fraction,omitzero"`
+	// Single-letter amino acid codes to exclude from design (e.g. ['C', 'P'] to
+	// exclude cysteine and proline)
+	ExcludedAminoAcids []string `json:"excluded_amino_acids,omitzero"`
+	// Sequence motifs to exclude from designed regions. Designs containing any of
+	// these motifs are filtered out before scoring. Use X as a single-residue wildcard
+	// (e.g. "NGS", "NXS").
+	ExcludedSequenceMotifs []string `json:"excluded_sequence_motifs,omitzero"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecRules) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecRules
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationBoltzCuratedBinderSpecRules) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

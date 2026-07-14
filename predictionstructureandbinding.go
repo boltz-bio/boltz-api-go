@@ -742,7 +742,7 @@ func (r *PredictionStructureAndBindingGetResponseInputBindingUnion) UnmarshalJSO
 }
 
 type PredictionStructureAndBindingGetResponseInputBindingLigandProteinBindingResponse struct {
-	// Chain ID of the ligand binder (must have exactly 1 copy, at most 100 heavy
+	// Chain ID of the ligand binder (must have exactly 1 copy, at most 2048 heavy
 	// atoms, and only ligands+proteins in entities)
 	BinderChainID string                        `json:"binder_chain_id" api:"required"`
 	Type          constant.LigandProteinBinding `json:"type" default:"ligand_protein_binding"`
@@ -2563,7 +2563,7 @@ func (r *PredictionStructureAndBindingStartResponseInputBindingUnion) UnmarshalJ
 }
 
 type PredictionStructureAndBindingStartResponseInputBindingLigandProteinBindingResponse struct {
-	// Chain ID of the ligand binder (must have exactly 1 copy, at most 100 heavy
+	// Chain ID of the ligand binder (must have exactly 1 copy, at most 2048 heavy
 	// atoms, and only ligands+proteins in entities)
 	BinderChainID string                        `json:"binder_chain_id" api:"required"`
 	Type          constant.LigandProteinBinding `json:"type" default:"ligand_protein_binding"`
@@ -4030,7 +4030,7 @@ func (u *PredictionStructureAndBindingEstimateCostParamsInputBindingUnion) Unmar
 
 // The properties BinderChainID, Type are required.
 type PredictionStructureAndBindingEstimateCostParamsInputBindingLigandProteinBinding struct {
-	// Chain ID of the ligand binder (must have exactly 1 copy, at most 100 heavy
+	// Chain ID of the ligand binder (must have exactly 1 copy, at most 2048 heavy
 	// atoms, and only ligands+proteins in entities)
 	BinderChainID string `json:"binder_chain_id" api:"required"`
 	// This field can be elided, and will marshal its zero value as
@@ -4930,7 +4930,7 @@ func (u *PredictionStructureAndBindingStartParamsInputBindingUnion) UnmarshalJSO
 
 // The properties BinderChainID, Type are required.
 type PredictionStructureAndBindingStartParamsInputBindingLigandProteinBinding struct {
-	// Chain ID of the ligand binder (must have exactly 1 copy, at most 100 heavy
+	// Chain ID of the ligand binder (must have exactly 1 copy, at most 2048 heavy
 	// atoms, and only ligands+proteins in entities)
 	BinderChainID string `json:"binder_chain_id" api:"required"`
 	// This field can be elided, and will marshal its zero value as

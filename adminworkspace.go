@@ -464,20 +464,44 @@ const (
 // Configured lifetime workspace spending limit, or null if unset. Unset workspaces
 // have no workspace-level cap and continue to use organization-level billing.
 type AdminWorkspaceGetSpendingLimitResponse struct {
-	Limit AdminWorkspaceGetSpendingLimitResponseLimit `json:"limit" api:"required"`
-	Type  constant.Lifetime                           `json:"type" default:"lifetime"`
+	AccruedUsage AdminWorkspaceGetSpendingLimitResponseAccruedUsage `json:"accrued_usage" api:"required"`
+	Limit        AdminWorkspaceGetSpendingLimitResponseLimit        `json:"limit" api:"required"`
+	Type         constant.Lifetime                                  `json:"type" default:"lifetime"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Limit       respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		AccruedUsage respjson.Field
+		Limit        respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
 	} `json:"-"`
 }
 
 // Returns the unmodified JSON received from the API
 func (r AdminWorkspaceGetSpendingLimitResponse) RawJSON() string { return r.JSON.raw }
 func (r *AdminWorkspaceGetSpendingLimitResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AdminWorkspaceGetSpendingLimitResponseAccruedUsage struct {
+	// Workspace spending limit amount in milli-USD. Tracking starts when the limit is
+	// configured; prior or already-committed unreserved work is not counted in this
+	// workspace cap ledger.
+	Amount int64 `json:"amount" api:"required"`
+	// Workspace spending limits currently support milli-USD only.
+	Currency constant.MilliUsd `json:"currency" default:"MILLI_USD"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Amount      respjson.Field
+		Currency    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AdminWorkspaceGetSpendingLimitResponseAccruedUsage) RawJSON() string { return r.JSON.raw }
+func (r *AdminWorkspaceGetSpendingLimitResponseAccruedUsage) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -506,20 +530,44 @@ func (r *AdminWorkspaceGetSpendingLimitResponseLimit) UnmarshalJSON(data []byte)
 // Configured lifetime workspace spending limit, or null if unset. Unset workspaces
 // have no workspace-level cap and continue to use organization-level billing.
 type AdminWorkspaceSetSpendingLimitResponse struct {
-	Limit AdminWorkspaceSetSpendingLimitResponseLimit `json:"limit" api:"required"`
-	Type  constant.Lifetime                           `json:"type" default:"lifetime"`
+	AccruedUsage AdminWorkspaceSetSpendingLimitResponseAccruedUsage `json:"accrued_usage" api:"required"`
+	Limit        AdminWorkspaceSetSpendingLimitResponseLimit        `json:"limit" api:"required"`
+	Type         constant.Lifetime                                  `json:"type" default:"lifetime"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Limit       respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		AccruedUsage respjson.Field
+		Limit        respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
 	} `json:"-"`
 }
 
 // Returns the unmodified JSON received from the API
 func (r AdminWorkspaceSetSpendingLimitResponse) RawJSON() string { return r.JSON.raw }
 func (r *AdminWorkspaceSetSpendingLimitResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AdminWorkspaceSetSpendingLimitResponseAccruedUsage struct {
+	// Workspace spending limit amount in milli-USD. Tracking starts when the limit is
+	// configured; prior or already-committed unreserved work is not counted in this
+	// workspace cap ledger.
+	Amount int64 `json:"amount" api:"required"`
+	// Workspace spending limits currently support milli-USD only.
+	Currency constant.MilliUsd `json:"currency" default:"MILLI_USD"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Amount      respjson.Field
+		Currency    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AdminWorkspaceSetSpendingLimitResponseAccruedUsage) RawJSON() string { return r.JSON.raw }
+func (r *AdminWorkspaceSetSpendingLimitResponseAccruedUsage) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

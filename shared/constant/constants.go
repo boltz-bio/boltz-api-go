@@ -18,53 +18,56 @@ func ValueOf[T Constant[T]]() T {
 	return t.Default()
 }
 
-type String1_0 string                    // Always "1.0"
-type AdmeV1 string                       // Always "adme-v1"
-type All string                          // Always "all"
-type APIKey string                       // Always "api_key"
-type Base64 string                       // Always "base64"
-type BoltzCurated string                 // Always "boltz_curated"
-type Boltz2_1 string                     // Always "boltz-2.1"
-type Boltzmol string                     // Always "boltzmol"
-type Boltzprot string                    // Always "boltzprot"
-type Ccd string                          // Always "ccd"
-type ChemicalXCif string                 // Always "chemical/x-cif"
-type Contact string                      // Always "contact"
-type Custom string                       // Always "custom"
-type DesignedProtein string              // Always "designed_protein"
-type Dna string                          // Always "dna"
-type Empty string                        // Always "empty"
-type Failed string                       // Always "failed"
-type Insertion string                    // Always "insertion"
-type Lifetime string                     // Always "lifetime"
-type Ligand string                       // Always "ligand"
-type LigandAtom string                   // Always "ligand_atom"
-type LigandCcd string                    // Always "ligand_ccd"
-type LigandContact string                // Always "ligand_contact"
-type LigandProteinBinding string         // Always "ligand_protein_binding"
-type LigandProteinBindingMetrics string  // Always "ligand_protein_binding_metrics"
-type LigandSmiles string                 // Always "ligand_smiles"
-type LipinskiFilter string               // Always "lipinski_filter"
-type MilliUsd string                     // Always "MILLI_USD"
-type NoTemplate string                   // Always "no_template"
-type Pocket string                       // Always "pocket"
-type Polymer string                      // Always "polymer"
-type PolymerAtom string                  // Always "polymer_atom"
-type PolymerContact string               // Always "polymer_contact"
-type Protein string                      // Always "protein"
-type ProteinProteinBinding string        // Always "protein_protein_binding"
-type ProteinProteinBindingMetrics string // Always "protein_protein_binding_metrics"
-type RdkitDescriptorFilter string        // Always "rdkit_descriptor_filter"
-type Replacement string                  // Always "replacement"
-type Rna string                          // Always "rna"
-type SmartsCatalogFilter string          // Always "smarts_catalog_filter"
-type SmartsCustomFilter string           // Always "smarts_custom_filter"
-type SmilesRegexFilter string            // Always "smiles_regex_filter"
-type StructureTemplate string            // Always "structure_template"
-type Succeeded string                    // Always "succeeded"
-type URL string                          // Always "url"
-type User string                         // Always "user"
-type Workspace string                    // Always "workspace"
+type String1_0 string                      // Always "1.0"
+type AdmeV1 string                         // Always "adme-v1"
+type All string                            // Always "all"
+type APIKey string                         // Always "api_key"
+type Base64 string                         // Always "base64"
+type BoltzCurated string                   // Always "boltz_curated"
+type Boltz2_1 string                       // Always "boltz-2.1"
+type Boltzmol string                       // Always "boltzmol"
+type Boltzprot string                      // Always "boltzprot"
+type Ccd string                            // Always "ccd"
+type ChemicalXCif string                   // Always "chemical/x-cif"
+type Contact string                        // Always "contact"
+type Custom string                         // Always "custom"
+type DesignedProtein string                // Always "designed_protein"
+type Dna string                            // Always "dna"
+type Email string                          // Always "email"
+type Empty string                          // Always "empty"
+type Failed string                         // Always "failed"
+type Insertion string                      // Always "insertion"
+type Lifetime string                       // Always "lifetime"
+type Ligand string                         // Always "ligand"
+type LigandAtom string                     // Always "ligand_atom"
+type LigandCcd string                      // Always "ligand_ccd"
+type LigandContact string                  // Always "ligand_contact"
+type LigandProteinBinding string           // Always "ligand_protein_binding"
+type LigandProteinBindingMetrics string    // Always "ligand_protein_binding_metrics"
+type LigandSmiles string                   // Always "ligand_smiles"
+type LipinskiFilter string                 // Always "lipinski_filter"
+type MilliUsd string                       // Always "MILLI_USD"
+type NoTemplate string                     // Always "no_template"
+type Pocket string                         // Always "pocket"
+type Polymer string                        // Always "polymer"
+type PolymerAtom string                    // Always "polymer_atom"
+type PolymerContact string                 // Always "polymer_contact"
+type Protein string                        // Always "protein"
+type ProteinProteinBinding string          // Always "protein_protein_binding"
+type ProteinProteinBindingMetrics string   // Always "protein_protein_binding_metrics"
+type Public string                         // Always "public"
+type RdkitDescriptorFilter string          // Always "rdkit_descriptor_filter"
+type Replacement string                    // Always "replacement"
+type Rna string                            // Always "rna"
+type SmartsCatalogFilter string            // Always "smarts_catalog_filter"
+type SmartsCustomFilter string             // Always "smarts_custom_filter"
+type SmilesRegexFilter string              // Always "smiles_regex_filter"
+type StructureTemplate string              // Always "structure_template"
+type Succeeded string                      // Always "succeeded"
+type UniformlySampledSpecifications string // Always "uniformly_sampled_specifications"
+type URL string                            // Always "url"
+type User string                           // Always "user"
+type Workspace string                      // Always "workspace"
 
 func (c String1_0) Default() String1_0                       { return "1.0" }
 func (c AdmeV1) Default() AdmeV1                             { return "adme-v1" }
@@ -81,6 +84,7 @@ func (c Contact) Default() Contact                           { return "contact" 
 func (c Custom) Default() Custom                             { return "custom" }
 func (c DesignedProtein) Default() DesignedProtein           { return "designed_protein" }
 func (c Dna) Default() Dna                                   { return "dna" }
+func (c Email) Default() Email                               { return "email" }
 func (c Empty) Default() Empty                               { return "empty" }
 func (c Failed) Default() Failed                             { return "failed" }
 func (c Insertion) Default() Insertion                       { return "insertion" }
@@ -106,6 +110,7 @@ func (c ProteinProteinBinding) Default() ProteinProteinBinding { return "protein
 func (c ProteinProteinBindingMetrics) Default() ProteinProteinBindingMetrics {
 	return "protein_protein_binding_metrics"
 }
+func (c Public) Default() Public                               { return "public" }
 func (c RdkitDescriptorFilter) Default() RdkitDescriptorFilter { return "rdkit_descriptor_filter" }
 func (c Replacement) Default() Replacement                     { return "replacement" }
 func (c Rna) Default() Rna                                     { return "rna" }
@@ -114,57 +119,63 @@ func (c SmartsCustomFilter) Default() SmartsCustomFilter       { return "smarts_
 func (c SmilesRegexFilter) Default() SmilesRegexFilter         { return "smiles_regex_filter" }
 func (c StructureTemplate) Default() StructureTemplate         { return "structure_template" }
 func (c Succeeded) Default() Succeeded                         { return "succeeded" }
-func (c URL) Default() URL                                     { return "url" }
-func (c User) Default() User                                   { return "user" }
-func (c Workspace) Default() Workspace                         { return "workspace" }
+func (c UniformlySampledSpecifications) Default() UniformlySampledSpecifications {
+	return "uniformly_sampled_specifications"
+}
+func (c URL) Default() URL             { return "url" }
+func (c User) Default() User           { return "user" }
+func (c Workspace) Default() Workspace { return "workspace" }
 
-func (c String1_0) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
-func (c AdmeV1) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
-func (c All) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
-func (c APIKey) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
-func (c Base64) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
-func (c BoltzCurated) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
-func (c Boltz2_1) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
-func (c Boltzmol) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
-func (c Boltzprot) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
-func (c Ccd) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
-func (c ChemicalXCif) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
-func (c Contact) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
-func (c Custom) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
-func (c DesignedProtein) MarshalJSON() ([]byte, error)              { return marshalString(c) }
-func (c Dna) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
-func (c Empty) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
-func (c Failed) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
-func (c Insertion) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
-func (c Lifetime) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
-func (c Ligand) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
-func (c LigandAtom) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
-func (c LigandCcd) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
-func (c LigandContact) MarshalJSON() ([]byte, error)                { return marshalString(c) }
-func (c LigandProteinBinding) MarshalJSON() ([]byte, error)         { return marshalString(c) }
-func (c LigandProteinBindingMetrics) MarshalJSON() ([]byte, error)  { return marshalString(c) }
-func (c LigandSmiles) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
-func (c LipinskiFilter) MarshalJSON() ([]byte, error)               { return marshalString(c) }
-func (c MilliUsd) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
-func (c NoTemplate) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
-func (c Pocket) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
-func (c Polymer) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
-func (c PolymerAtom) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
-func (c PolymerContact) MarshalJSON() ([]byte, error)               { return marshalString(c) }
-func (c Protein) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
-func (c ProteinProteinBinding) MarshalJSON() ([]byte, error)        { return marshalString(c) }
-func (c ProteinProteinBindingMetrics) MarshalJSON() ([]byte, error) { return marshalString(c) }
-func (c RdkitDescriptorFilter) MarshalJSON() ([]byte, error)        { return marshalString(c) }
-func (c Replacement) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
-func (c Rna) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
-func (c SmartsCatalogFilter) MarshalJSON() ([]byte, error)          { return marshalString(c) }
-func (c SmartsCustomFilter) MarshalJSON() ([]byte, error)           { return marshalString(c) }
-func (c SmilesRegexFilter) MarshalJSON() ([]byte, error)            { return marshalString(c) }
-func (c StructureTemplate) MarshalJSON() ([]byte, error)            { return marshalString(c) }
-func (c Succeeded) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
-func (c URL) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
-func (c User) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
-func (c Workspace) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c String1_0) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c AdmeV1) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c All) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c APIKey) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c Base64) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c BoltzCurated) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
+func (c Boltz2_1) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c Boltzmol) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c Boltzprot) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c Ccd) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c ChemicalXCif) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
+func (c Contact) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c Custom) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c DesignedProtein) MarshalJSON() ([]byte, error)                { return marshalString(c) }
+func (c Dna) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c Email) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c Empty) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c Failed) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c Insertion) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c Lifetime) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c Ligand) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c LigandAtom) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c LigandCcd) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c LigandContact) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
+func (c LigandProteinBinding) MarshalJSON() ([]byte, error)           { return marshalString(c) }
+func (c LigandProteinBindingMetrics) MarshalJSON() ([]byte, error)    { return marshalString(c) }
+func (c LigandSmiles) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
+func (c LipinskiFilter) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
+func (c MilliUsd) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c NoTemplate) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c Pocket) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c Polymer) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c PolymerAtom) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c PolymerContact) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
+func (c Protein) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c ProteinProteinBinding) MarshalJSON() ([]byte, error)          { return marshalString(c) }
+func (c ProteinProteinBindingMetrics) MarshalJSON() ([]byte, error)   { return marshalString(c) }
+func (c Public) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c RdkitDescriptorFilter) MarshalJSON() ([]byte, error)          { return marshalString(c) }
+func (c Replacement) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c Rna) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c SmartsCatalogFilter) MarshalJSON() ([]byte, error)            { return marshalString(c) }
+func (c SmartsCustomFilter) MarshalJSON() ([]byte, error)             { return marshalString(c) }
+func (c SmilesRegexFilter) MarshalJSON() ([]byte, error)              { return marshalString(c) }
+func (c StructureTemplate) MarshalJSON() ([]byte, error)              { return marshalString(c) }
+func (c Succeeded) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c UniformlySampledSpecifications) MarshalJSON() ([]byte, error) { return marshalString(c) }
+func (c URL) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c User) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
+func (c Workspace) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 
 type constant[T any] interface {
 	Constant[T]
