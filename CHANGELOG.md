@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.34.0 (2026-07-18)
+
+Full Changelog: [v0.33.0...v0.34.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.33.0...v0.34.0)
+
+### Features
+
+* **stlc:** configurable CI runner and private-production-repo support in workflow templates ([12e1afa](https://github.com/boltz-bio/boltz-api-go/commit/12e1afa5520bd7624032647a64e381efb860110f))
+
 ## 0.33.0 (2026-07-01)
 
 Full Changelog: [v0.32.1...v0.33.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.32.1...v0.33.0)
