@@ -400,12 +400,11 @@ func (r *ShareLinkArchiveResponse) UnmarshalJSON(data []byte) error {
 
 // A single generated protein design
 type ShareLinkListPipelineResultsResponse struct {
-	// Unique result ID
+	// Unique result ID.
 	ID        string                                        `json:"id" api:"required"`
 	Artifacts ShareLinkListPipelineResultsResponseArtifacts `json:"artifacts" api:"required"`
 	CreatedAt time.Time                                     `json:"created_at" api:"required" format:"date-time"`
-	// Entities of the designed binder complex. Includes both designed entities and
-	// fixed entities from the input.
+	// Entities in the designed complex, including designed and fixed input entities.
 	Entities []ShareLinkListPipelineResultsResponseEntityUnion `json:"entities" api:"required"`
 	// Structural and binding quality metrics for a designed protein binder
 	Metrics ShareLinkListPipelineResultsResponseMetrics `json:"metrics" api:"required"`

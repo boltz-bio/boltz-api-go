@@ -7057,12 +7057,11 @@ const (
 
 // A single generated protein design
 type ProteinDesignListResultsResponse struct {
-	// Unique result ID
+	// Unique result ID.
 	ID        string                                    `json:"id" api:"required"`
 	Artifacts ProteinDesignListResultsResponseArtifacts `json:"artifacts" api:"required"`
 	CreatedAt time.Time                                 `json:"created_at" api:"required" format:"date-time"`
-	// Entities of the designed binder complex. Includes both designed entities and
-	// fixed entities from the input.
+	// Entities in the designed complex, including designed and fixed input entities.
 	Entities []ProteinDesignListResultsResponseEntityUnion `json:"entities" api:"required"`
 	// Structural and binding quality metrics for a designed protein binder
 	Metrics ProteinDesignListResultsResponseMetrics `json:"metrics" api:"required"`

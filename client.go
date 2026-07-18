@@ -25,8 +25,8 @@ type Client struct {
 	// libraries against protein targets. Includes de novo generation and virtual
 	// screening.
 	SmallMolecule SmallMoleculeService
-	// Protein Pipeline: design novel protein binders and screen protein libraries
-	// against targets. Includes de novo protein design and library screening.
+	// Design novel protein binders, redesign selected residues in fixed structures,
+	// and screen protein libraries against targets.
 	Protein ProteinService
 	// Share read-only access to predictions and pipeline runs by issuing time-limited
 	// links that visitors can open without an API key or, for email-restricted links,

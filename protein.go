@@ -6,8 +6,8 @@ import (
 	"github.com/boltz-bio/boltz-api-go/option"
 )
 
-// Protein Pipeline: design novel protein binders and screen protein libraries
-// against targets. Includes de novo protein design and library screening.
+// Design novel protein binders, redesign selected residues in fixed structures,
+// and screen protein libraries against targets.
 //
 // ProteinService contains methods and other services that help with interacting
 // with the boltz API.
@@ -23,6 +23,12 @@ type ProteinService struct {
 	// are scored by binding confidence (likelihood of protein-protein interaction) and
 	// structure confidence.
 	Design ProteinDesignService
+	// Redesign selected protein residues in one fixed CIF structure. Use the top-level
+	// type discriminator to choose binder redesign, with target and binder chain
+	// roles, or generic redesign. Every chain in the input structure must be assigned
+	// exactly once. Binder results include binding and structure metrics; generic
+	// results include structure and secondary-structure metrics.
+	SequenceRedesign ProteinSequenceRedesignService
 	// Screen an existing library of proteins against a target structure. Results are
 	// scored by binding confidence (likelihood of protein-protein interaction) and
 	// structure confidence.
@@ -36,6 +42,7 @@ func NewProteinService(opts ...option.RequestOption) (r ProteinService) {
 	r = ProteinService{}
 	r.Options = opts
 	r.Design = NewProteinDesignService(opts...)
+	r.SequenceRedesign = NewProteinSequenceRedesignService(opts...)
 	r.LibraryScreen = NewProteinLibraryScreenService(opts...)
 	return
 }
