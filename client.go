@@ -25,9 +25,22 @@ type Client struct {
 	// libraries against protein targets. Includes de novo generation and virtual
 	// screening.
 	SmallMolecule SmallMoleculeService
-	// Protein Pipeline: design novel protein binders and screen protein libraries
-	// against targets. Includes de novo protein design and library screening.
+	// Design novel protein binders, redesign selected residues in fixed structures,
+	// and screen protein libraries against targets.
 	Protein ProteinService
+	// Share read-only access to predictions and pipeline runs by issuing time-limited
+	// links that visitors can open without an API key or, for email-restricted links,
+	// after signing in with an allowed email. A share link is scoped to a single
+	// workspace and bundles one or more predictions and pipeline runs. The link ID is
+	// itself the bearer credential; treat it as a secret. Create, retrieve, and
+	// archive require a workspace-scoped API key with read permission on every
+	// referenced resource. Retrieving metadata remains available after expiry or
+	// archive. Viewing content and listing shared pipeline results are gated by the
+	// link ID and the link's access mode. Archiving a link revokes public access
+	// immediately; subsequent content reads return 404. The underlying predictions and
+	// pipelines are unaffected and remain accessible through their own authenticated
+	// endpoints.
+	ShareLinks ShareLinkService
 	// Manage workspaces and API keys. Requires an admin API key. Admin keys have full
 	// access to all management and compute operations across all workspaces in the
 	// organization.
@@ -75,6 +88,7 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 	r.Predictions = NewPredictionService(opts...)
 	r.SmallMolecule = NewSmallMoleculeService(opts...)
 	r.Protein = NewProteinService(opts...)
+	r.ShareLinks = NewShareLinkService(opts...)
 	r.Admin = NewAdminService(opts...)
 	r.Cli = NewCliService(opts...)
 	r.Auth = NewAuthService(opts...)
