@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.34.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.33.0...v0.34.0) (2026-07-19)
+
+
+### Features
+
+* **sdk:** regenerate from reviewed API contract ([f7fde96](https://github.com/boltz-bio/boltz-api-go/commit/f7fde96048b21489e3d7f62303e2fc035452cef3))
+
+
+### Bug Fixes
+
+* **ci:** isolate public release credentials ([9841b92](https://github.com/boltz-bio/boltz-api-go/commit/9841b9231b6f3a4753bb5725f4a0b36685220b9c))
+* **ci:** isolate public release credentials ([e9a5c08](https://github.com/boltz-bio/boltz-api-go/commit/e9a5c081b31d6e60194409d36c251577c5fc61a2))
+* **ci:** mint scoped SDK automation tokens ([c2faa89](https://github.com/boltz-bio/boltz-api-go/commit/c2faa89e47ff7b1241ef443095501ee186ccb1f2))
+* **ci:** mint scoped SDK automation tokens ([2c9016a](https://github.com/boltz-bio/boltz-api-go/commit/2c9016a2b2b82f2cbcda7693d1d18b7e491a19b3))
+* **stlc:** promote through merge-commit PRs ([aaba723](https://github.com/boltz-bio/boltz-api-go/commit/aaba723a7c7229032597e45b3d320330971c6019))
+
+
+### Chores
+
+* bootstrap STLC release automation ([4af7c87](https://github.com/boltz-bio/boltz-api-go/commit/4af7c87090ea3931dba8505f9e8115ec2f793ca8))
+* migrate SDK automation to STLC ([86ddcef](https://github.com/boltz-bio/boltz-api-go/commit/86ddcef06406064744dcb600e5c1a575726659d6))
+* migrate SDK automation to STLC ([9f8bfea](https://github.com/boltz-bio/boltz-api-go/commit/9f8bfea81ac8d4f6676b40c4d87f4d5b4c0b0401))
+* migrate SDK automation to STLC ([90a083c](https://github.com/boltz-bio/boltz-api-go/commit/90a083c1ea515bcc7fb381e2b066513572df83f6))
+* migrate SDK automation to STLC ([a7b53b9](https://github.com/boltz-bio/boltz-api-go/commit/a7b53b9529e95d9605dd70a96a2de1307e044efc))
+* **sdk:** regenerate from reviewed API contract ([3ead302](https://github.com/boltz-bio/boltz-api-go/commit/3ead302b0cfc5cdfa816de1675ddcea44da04416))
+* **stlc:** merge production trunk ([183d598](https://github.com/boltz-bio/boltz-api-go/commit/183d598ebed379b88ddd1f90ca21b611d8e03118))
+* **stlc:** reconcile bootstrap lineage ([1dba6b0](https://github.com/boltz-bio/boltz-api-go/commit/1dba6b0c44e62bda7aa0bea4ca2fbfca095fb1d8))
+* **stlc:** reconcile bootstrap lineage ([16c79ac](https://github.com/boltz-bio/boltz-api-go/commit/16c79acba55d52288ef5278277c0460da2724cf2))
+
 ## 0.33.0 (2026-07-01)
 
 Full Changelog: [v0.32.1...v0.33.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.32.1...v0.33.0)
