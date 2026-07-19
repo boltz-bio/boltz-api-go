@@ -28,7 +28,7 @@ Or to pin the version:
 <!-- x-release-please-start-version -->
 
 ```sh
-go get -u 'github.com/boltz-bio/boltz-api-go@v0.33.0'
+go get -u 'github.com/boltz-bio/boltz-api-go@v0.34.0'
 ```
 
 <!-- x-release-please-end -->
