@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.35.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.34.0...v0.35.0) (2026-08-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* **sdk:** regenerate from reviewed API contract
+
+### Features
+
+* **sdk:** regenerate from reviewed API contract ([db84578](https://github.com/boltz-bio/boltz-api-go/commit/db84578dcf3058f7a0a15295c2c435251ad360be))
+
+
+### Bug Fixes
+
+* **ci:** authenticate staging PR head fetch ([6eb5be9](https://github.com/boltz-bio/boltz-api-go/commit/6eb5be9ec06dba754648d12d6e9cd432d281b705))
+* **ci:** authenticate staging PR head fetch ([ace4190](https://github.com/boltz-bio/boltz-api-go/commit/ace41902e882a24c34c9e9441adb7e4e916a8609))
+* **ci:** evaluate trunk lock per PR ([8e2d995](https://github.com/boltz-bio/boltz-api-go/commit/8e2d9952cb991a9208506fb0e3dfad694ba0846e))
+* **ci:** evaluate trunk lock per PR ([2db84d2](https://github.com/boltz-bio/boltz-api-go/commit/2db84d2b086df9b0cbf56ccdb008145ee227ff1c))
+* **ci:** preserve STLC promotion lineage ([21d8919](https://github.com/boltz-bio/boltz-api-go/commit/21d8919dd81c00441aa4ca77fc09930646f9ba0b))
+* **ci:** select runners by repository ([7d20c94](https://github.com/boltz-bio/boltz-api-go/commit/7d20c94bd10332a9550f698653909f2f48aa2105))
+
+
+### Chores
+
+* **sdk:** promote generated SDK ([271cdb4](https://github.com/boltz-bio/boltz-api-go/commit/271cdb4f517542186cd9b6e94298b9c5d7a5b8c3))
+* **stlc:** reconcile production into staging ([d192379](https://github.com/boltz-bio/boltz-api-go/commit/d192379a03f087fc64b9052b27b45b623dbfaf04))
+* **stlc:** reconcile production into staging ([bafa165](https://github.com/boltz-bio/boltz-api-go/commit/bafa1658135762c9ecd1cb16d4bce8cc731ed9e1))
+* **stlc:** refresh production reconciliation ([adc5567](https://github.com/boltz-bio/boltz-api-go/commit/adc556729a0da72dd2c0db7d7e8a592d192ee84c))
+* **stlc:** refresh production reconciliation ([8b588b8](https://github.com/boltz-bio/boltz-api-go/commit/8b588b8645ecf18b87c737b289a87e451f54951b))
+
 ## [0.34.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.33.0...v0.34.0) (2026-07-19)
 
 
