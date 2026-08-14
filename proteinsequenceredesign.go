@@ -1686,7 +1686,8 @@ func (r *ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultArti
 // [ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityRnaEntity],
 // [ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityDnaEntity],
 // [ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityLigandCcdEntity],
-// [ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityLigandSmilesEntity].
+// [ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityLigandSmilesEntity],
+// [ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntity].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityUnion struct {
@@ -1699,12 +1700,20 @@ type ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityUn
 	// [[]ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityRnaEntityModification],
 	// [[]ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityDnaEntityModification]
 	Modifications ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntity].
+	Bonds []ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntityBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntity].
+	Residues []ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntityResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -1730,6 +1739,11 @@ func (u ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntit
 }
 
 func (u ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityUnion) AsProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityLigandSmilesEntity() (v ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityLigandSmilesEntity) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityUnion) AsProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntity() (v ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntity) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1963,7 +1977,8 @@ type ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityLi
 	// Chain IDs for this ligand
 	ChainIDs []string           `json:"chain_ids" api:"required"`
 	Type     constant.LigandCcd `json:"type" default:"ligand_ccd"`
-	// CCD code (e.g., ATP, ADP)
+	// One CCD code (for example ATP or ADP). This field remains a string; use a glycan
+	// entity for multiple connected CCD residues.
 	Value string `json:"value" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -2004,6 +2019,125 @@ func (r ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntit
 	return r.JSON.raw
 }
 func (r *ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityLigandSmilesEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntity struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntityBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntityResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                                `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntity) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntityBond struct {
+	Atom1 ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntityBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntityBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntityBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntityBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntityBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntityBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntityBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntityBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntityBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntityBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntityResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntityResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityGlycanEntityResidue) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -2174,7 +2308,8 @@ func (r *ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultArt
 // [ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityRnaEntity],
 // [ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityDnaEntity],
 // [ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityLigandCcdEntity],
-// [ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityLigandSmilesEntity].
+// [ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityLigandSmilesEntity],
+// [ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntity].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityUnion struct {
@@ -2187,12 +2322,20 @@ type ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityU
 	// [[]ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityRnaEntityModification],
 	// [[]ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityDnaEntityModification]
 	Modifications ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntity].
+	Bonds []ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntityBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntity].
+	Residues []ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntityResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -2218,6 +2361,11 @@ func (u ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEnti
 }
 
 func (u ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityUnion) AsProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityLigandSmilesEntity() (v ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityLigandSmilesEntity) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityUnion) AsProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntity() (v ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntity) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2451,7 +2599,8 @@ type ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityL
 	// Chain IDs for this ligand
 	ChainIDs []string           `json:"chain_ids" api:"required"`
 	Type     constant.LigandCcd `json:"type" default:"ligand_ccd"`
-	// CCD code (e.g., ATP, ADP)
+	// One CCD code (for example ATP or ADP). This field remains a string; use a glycan
+	// entity for multiple connected CCD residues.
 	Value string `json:"value" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -2492,6 +2641,125 @@ func (r ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEnti
 	return r.JSON.raw
 }
 func (r *ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityLigandSmilesEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntity struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntityBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntityResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                                 `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntity) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntityBond struct {
+	Atom1 ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntityBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntityBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntityBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntityBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntityBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntityBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntityBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntityBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntityBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntityBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntityResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntityResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityGlycanEntityResidue) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

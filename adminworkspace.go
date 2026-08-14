@@ -23,7 +23,10 @@ import (
 
 // Workspaces provide isolated environments for organizing predictions and pipeline
 // runs across teams, projects, or customers. Each workspace has independent data
-// retention settings and can be associated with workspace API keys.
+// retention settings, can be associated with workspace API keys, and can have a
+// lifetime spending limit for tenant-level budget enforcement. Spending limits use
+// milli-USD and begin tracking usage when first configured. Admin keys can create
+// or change a limit; a workspace key can read the limit for its own workspace.
 //
 // AdminWorkspaceService contains methods and other services that help with
 // interacting with the boltz API.
@@ -112,7 +115,9 @@ func (r *AdminWorkspaceService) Archive(ctx context.Context, workspaceID string,
 	return res, err
 }
 
-// Get a workspace spending limit
+// Return the lifetime spending limit and accrued usage for a workspace, or null
+// when no workspace-level limit is configured. Admin API keys can read any
+// workspace in their organization; a workspace key can read its own limit.
 func (r *AdminWorkspaceService) GetSpendingLimit(ctx context.Context, workspaceID string, opts ...option.RequestOption) (res *AdminWorkspaceGetSpendingLimitResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if workspaceID == "" {
@@ -124,7 +129,10 @@ func (r *AdminWorkspaceService) GetSpendingLimit(ctx context.Context, workspaceI
 	return res, err
 }
 
-// Set a workspace spending limit
+// Create or replace the absolute lifetime spending ceiling for a workspace.
+// Tracking starts when the limit is first configured. The new limit cannot be
+// lower than accrued usage plus spend reserved by active work. Requires an admin
+// API key.
 func (r *AdminWorkspaceService) SetSpendingLimit(ctx context.Context, workspaceID string, body AdminWorkspaceSetSpendingLimitParams, opts ...option.RequestOption) (res *AdminWorkspaceSetSpendingLimitResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if workspaceID == "" {
@@ -486,7 +494,9 @@ func (r *AdminWorkspaceGetSpendingLimitResponse) UnmarshalJSON(data []byte) erro
 type AdminWorkspaceGetSpendingLimitResponseAccruedUsage struct {
 	// Workspace spending limit amount in milli-USD. Tracking starts when the limit is
 	// configured; prior or already-committed unreserved work is not counted in this
-	// workspace cap ledger.
+	// workspace cap ledger. An amount of 9007199254740991 (2^53 - 1) is the unlimited
+	// sentinel: usage is tracked but never blocked, and amounts at or above half the
+	// sentinel are normalized to it.
 	Amount int64 `json:"amount" api:"required"`
 	// Workspace spending limits currently support milli-USD only.
 	Currency constant.MilliUsd `json:"currency" default:"MILLI_USD"`
@@ -508,7 +518,9 @@ func (r *AdminWorkspaceGetSpendingLimitResponseAccruedUsage) UnmarshalJSON(data 
 type AdminWorkspaceGetSpendingLimitResponseLimit struct {
 	// Workspace spending limit amount in milli-USD. Tracking starts when the limit is
 	// configured; prior or already-committed unreserved work is not counted in this
-	// workspace cap ledger.
+	// workspace cap ledger. An amount of 9007199254740991 (2^53 - 1) is the unlimited
+	// sentinel: usage is tracked but never blocked, and amounts at or above half the
+	// sentinel are normalized to it.
 	Amount int64 `json:"amount" api:"required"`
 	// Workspace spending limits currently support milli-USD only.
 	Currency constant.MilliUsd `json:"currency" default:"MILLI_USD"`
@@ -552,7 +564,9 @@ func (r *AdminWorkspaceSetSpendingLimitResponse) UnmarshalJSON(data []byte) erro
 type AdminWorkspaceSetSpendingLimitResponseAccruedUsage struct {
 	// Workspace spending limit amount in milli-USD. Tracking starts when the limit is
 	// configured; prior or already-committed unreserved work is not counted in this
-	// workspace cap ledger.
+	// workspace cap ledger. An amount of 9007199254740991 (2^53 - 1) is the unlimited
+	// sentinel: usage is tracked but never blocked, and amounts at or above half the
+	// sentinel are normalized to it.
 	Amount int64 `json:"amount" api:"required"`
 	// Workspace spending limits currently support milli-USD only.
 	Currency constant.MilliUsd `json:"currency" default:"MILLI_USD"`
@@ -574,7 +588,9 @@ func (r *AdminWorkspaceSetSpendingLimitResponseAccruedUsage) UnmarshalJSON(data 
 type AdminWorkspaceSetSpendingLimitResponseLimit struct {
 	// Workspace spending limit amount in milli-USD. Tracking starts when the limit is
 	// configured; prior or already-committed unreserved work is not counted in this
-	// workspace cap ledger.
+	// workspace cap ledger. An amount of 9007199254740991 (2^53 - 1) is the unlimited
+	// sentinel: usage is tracked but never blocked, and amounts at or above half the
+	// sentinel are normalized to it.
 	Amount int64 `json:"amount" api:"required"`
 	// Workspace spending limits currently support milli-USD only.
 	Currency constant.MilliUsd `json:"currency" default:"MILLI_USD"`
@@ -661,7 +677,9 @@ func (r *AdminWorkspaceNewParamsSpendingLimit) UnmarshalJSON(data []byte) error 
 type AdminWorkspaceNewParamsSpendingLimitLimit struct {
 	// Workspace spending limit amount in milli-USD. Tracking starts when the limit is
 	// configured; prior or already-committed unreserved work is not counted in this
-	// workspace cap ledger.
+	// workspace cap ledger. An amount of 9007199254740991 (2^53 - 1) is the unlimited
+	// sentinel: usage is tracked but never blocked, and amounts at or above half the
+	// sentinel are normalized to it.
 	Amount int64 `json:"amount" api:"required"`
 	// Workspace spending limits currently support milli-USD only.
 	//
@@ -764,7 +782,9 @@ func (r *AdminWorkspaceSetSpendingLimitParams) UnmarshalJSON(data []byte) error 
 type AdminWorkspaceSetSpendingLimitParamsLimit struct {
 	// Workspace spending limit amount in milli-USD. Tracking starts when the limit is
 	// configured; prior or already-committed unreserved work is not counted in this
-	// workspace cap ledger.
+	// workspace cap ledger. An amount of 9007199254740991 (2^53 - 1) is the unlimited
+	// sentinel: usage is tracked but never blocked, and amounts at or above half the
+	// sentinel are normalized to it.
 	Amount int64 `json:"amount" api:"required"`
 	// Workspace spending limits currently support milli-USD only.
 	//

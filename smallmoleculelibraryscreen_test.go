@@ -112,26 +112,30 @@ func TestSmallMoleculeLibraryScreenEstimateCostWithOptionalParams(t *testing.T) 
 			ID:     boltzapi.String("id"),
 		}},
 		Target: boltzapi.SmallMoleculeLibraryScreenEstimateCostParamsTarget{
-			Entities: []boltzapi.SmallMoleculeLibraryScreenEstimateCostParamsTargetEntity{{
-				ChainIDs: []string{"string"},
-				Value:    "value",
-				Cyclic:   boltzapi.Bool(true),
-				Modifications: []boltzapi.SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModification{{
-					ResidueIndex: 0,
-					Value:        "value",
-				}},
+			Entities: []boltzapi.SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityUnion{{
+				OfSmallMoleculeLibraryScreenEstimateCostsTargetEntityProteinEntity: &boltzapi.SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityProteinEntity{
+					ChainIDs: []string{"string"},
+					Value:    "value",
+					Cyclic:   boltzapi.Bool(true),
+					Modifications: []boltzapi.SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityProteinEntityModification{{
+						ResidueIndex: 0,
+						Value:        "value",
+					}},
+				},
 			}},
 			Bonds: []boltzapi.SmallMoleculeLibraryScreenEstimateCostParamsTargetBond{{
 				Atom1: boltzapi.SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1Union{
-					OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom1LigandAtom: &boltzapi.SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1LigandAtom{
-						AtomName: "atom_name",
-						ChainID:  "chain_id",
+					OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom1PolymerAtom: &boltzapi.SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1PolymerAtom{
+						AtomName:     "atom_name",
+						ChainID:      "chain_id",
+						ResidueIndex: 0,
 					},
 				},
 				Atom2: boltzapi.SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2Union{
-					OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom2LigandAtom: &boltzapi.SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2LigandAtom{
-						AtomName: "atom_name",
-						ChainID:  "chain_id",
+					OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom2PolymerAtom: &boltzapi.SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2PolymerAtom{
+						AtomName:     "atom_name",
+						ChainID:      "chain_id",
+						ResidueIndex: 0,
 					},
 				},
 			}},
@@ -250,26 +254,30 @@ func TestSmallMoleculeLibraryScreenStartWithOptionalParams(t *testing.T) {
 			ID:     boltzapi.String("id"),
 		}},
 		Target: boltzapi.SmallMoleculeLibraryScreenStartParamsTarget{
-			Entities: []boltzapi.SmallMoleculeLibraryScreenStartParamsTargetEntity{{
-				ChainIDs: []string{"string"},
-				Value:    "value",
-				Cyclic:   boltzapi.Bool(true),
-				Modifications: []boltzapi.SmallMoleculeLibraryScreenStartParamsTargetEntityModification{{
-					ResidueIndex: 0,
-					Value:        "value",
-				}},
+			Entities: []boltzapi.SmallMoleculeLibraryScreenStartParamsTargetEntityUnion{{
+				OfSmallMoleculeLibraryScreenStartsTargetEntityProteinEntity: &boltzapi.SmallMoleculeLibraryScreenStartParamsTargetEntityProteinEntity{
+					ChainIDs: []string{"string"},
+					Value:    "value",
+					Cyclic:   boltzapi.Bool(true),
+					Modifications: []boltzapi.SmallMoleculeLibraryScreenStartParamsTargetEntityProteinEntityModification{{
+						ResidueIndex: 0,
+						Value:        "value",
+					}},
+				},
 			}},
 			Bonds: []boltzapi.SmallMoleculeLibraryScreenStartParamsTargetBond{{
 				Atom1: boltzapi.SmallMoleculeLibraryScreenStartParamsTargetBondAtom1Union{
-					OfSmallMoleculeLibraryScreenStartsTargetBondAtom1LigandAtom: &boltzapi.SmallMoleculeLibraryScreenStartParamsTargetBondAtom1LigandAtom{
-						AtomName: "atom_name",
-						ChainID:  "chain_id",
+					OfSmallMoleculeLibraryScreenStartsTargetBondAtom1PolymerAtom: &boltzapi.SmallMoleculeLibraryScreenStartParamsTargetBondAtom1PolymerAtom{
+						AtomName:     "atom_name",
+						ChainID:      "chain_id",
+						ResidueIndex: 0,
 					},
 				},
 				Atom2: boltzapi.SmallMoleculeLibraryScreenStartParamsTargetBondAtom2Union{
-					OfSmallMoleculeLibraryScreenStartsTargetBondAtom2LigandAtom: &boltzapi.SmallMoleculeLibraryScreenStartParamsTargetBondAtom2LigandAtom{
-						AtomName: "atom_name",
-						ChainID:  "chain_id",
+					OfSmallMoleculeLibraryScreenStartsTargetBondAtom2PolymerAtom: &boltzapi.SmallMoleculeLibraryScreenStartParamsTargetBondAtom2PolymerAtom{
+						AtomName:     "atom_name",
+						ChainID:      "chain_id",
+						ResidueIndex: 0,
 					},
 				},
 			}},

@@ -18,8 +18,8 @@ import (
 type PredictionService struct {
 	Options []option.RequestOption
 	// Predict 3D structure coordinates, per-residue confidence scores, and binding
-	// metrics for a molecular complex. Supports optional template-guided folding and
-	// per-protein MSA control.
+	// metrics for a molecular complex. Supports explicit glycan graphs and covalent
+	// attachments, optional template-guided folding, and per-protein MSA control.
 	StructureAndBinding PredictionStructureAndBindingService
 	// Predict Tier 1 ADME summary values for a batch of small molecules specified by
 	// SMILES.

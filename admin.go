@@ -20,7 +20,10 @@ type AdminService struct {
 	Options []option.RequestOption
 	// Workspaces provide isolated environments for organizing predictions and pipeline
 	// runs across teams, projects, or customers. Each workspace has independent data
-	// retention settings and can be associated with workspace API keys.
+	// retention settings, can be associated with workspace API keys, and can have a
+	// lifetime spending limit for tenant-level budget enforcement. Spending limits use
+	// milli-USD and begin tracking usage when first configured. Admin keys can create
+	// or change a limit; a workspace key can read the limit for its own workspace.
 	Workspaces AdminWorkspaceService
 	// API keys authenticate requests to the Boltz API. There are two key types: admin
 	// keys have full access to all management and compute operations across the

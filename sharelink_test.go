@@ -122,3 +122,26 @@ func TestShareLinkListPipelineResultsWithOptionalParams(t *testing.T) {
 		t.Fatalf("err should be nil: %s", err.Error())
 	}
 }
+
+func TestShareLinkRead(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := boltzapi.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.ShareLinks.Read(context.TODO(), "shr_qoEFr2BlPTBLuM5BinaC8x7iVPP_AwppEOmlxQjJ-eo")
+	if err != nil {
+		var apierr *boltzapi.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
