@@ -30,6 +30,7 @@ type BoltzProteinRedesign string           // Always "boltz-protein-redesign"
 type Boltzmol string                       // Always "boltzmol"
 type Boltzprot string                      // Always "boltzprot"
 type Ccd string                            // Always "ccd"
+type CcdAtom string                        // Always "ccd_atom"
 type ChemicalXCif string                   // Always "chemical/x-cif"
 type Contact string                        // Always "contact"
 type Custom string                         // Always "custom"
@@ -42,6 +43,7 @@ type ExcludedSequenceMotifs string         // Always "excluded_sequence_motifs"
 type Failed string                         // Always "failed"
 type FromTemplate string                   // Always "from_template"
 type Generic string                        // Always "generic"
+type Glycan string                         // Always "glycan"
 type Insertion string                      // Always "insertion"
 type Lifetime string                       // Always "lifetime"
 type Ligand string                         // Always "ligand"
@@ -69,6 +71,7 @@ type Residues string                       // Always "residues"
 type Rna string                            // Always "rna"
 type SmartsCatalogFilter string            // Always "smarts_catalog_filter"
 type SmartsCustomFilter string             // Always "smarts_custom_filter"
+type SmilesAtom string                     // Always "smiles_atom"
 type SmilesRegexFilter string              // Always "smiles_regex_filter"
 type StructureTemplate string              // Always "structure_template"
 type Succeeded string                      // Always "succeeded"
@@ -76,6 +79,7 @@ type Target string                         // Always "target"
 type UniformlySampledSpecifications string // Always "uniformly_sampled_specifications"
 type URL string                            // Always "url"
 type User string                           // Always "user"
+type V2026_03_01 string                    // Always "v2026-03-01"
 type V2026_07_14 string                    // Always "v2026-07-14"
 type Workspace string                      // Always "workspace"
 
@@ -91,6 +95,7 @@ func (c BoltzProteinRedesign) Default() BoltzProteinRedesign     { return "boltz
 func (c Boltzmol) Default() Boltzmol                             { return "boltzmol" }
 func (c Boltzprot) Default() Boltzprot                           { return "boltzprot" }
 func (c Ccd) Default() Ccd                                       { return "ccd" }
+func (c CcdAtom) Default() CcdAtom                               { return "ccd_atom" }
 func (c ChemicalXCif) Default() ChemicalXCif                     { return "chemical/x-cif" }
 func (c Contact) Default() Contact                               { return "contact" }
 func (c Custom) Default() Custom                                 { return "custom" }
@@ -103,6 +108,7 @@ func (c ExcludedSequenceMotifs) Default() ExcludedSequenceMotifs { return "exclu
 func (c Failed) Default() Failed                                 { return "failed" }
 func (c FromTemplate) Default() FromTemplate                     { return "from_template" }
 func (c Generic) Default() Generic                               { return "generic" }
+func (c Glycan) Default() Glycan                                 { return "glycan" }
 func (c Insertion) Default() Insertion                           { return "insertion" }
 func (c Lifetime) Default() Lifetime                             { return "lifetime" }
 func (c Ligand) Default() Ligand                                 { return "ligand" }
@@ -134,6 +140,7 @@ func (c Residues) Default() Residues                           { return "residue
 func (c Rna) Default() Rna                                     { return "rna" }
 func (c SmartsCatalogFilter) Default() SmartsCatalogFilter     { return "smarts_catalog_filter" }
 func (c SmartsCustomFilter) Default() SmartsCustomFilter       { return "smarts_custom_filter" }
+func (c SmilesAtom) Default() SmilesAtom                       { return "smiles_atom" }
 func (c SmilesRegexFilter) Default() SmilesRegexFilter         { return "smiles_regex_filter" }
 func (c StructureTemplate) Default() StructureTemplate         { return "structure_template" }
 func (c Succeeded) Default() Succeeded                         { return "succeeded" }
@@ -143,6 +150,7 @@ func (c UniformlySampledSpecifications) Default() UniformlySampledSpecifications
 }
 func (c URL) Default() URL                 { return "url" }
 func (c User) Default() User               { return "user" }
+func (c V2026_03_01) Default() V2026_03_01 { return "v2026-03-01" }
 func (c V2026_07_14) Default() V2026_07_14 { return "v2026-07-14" }
 func (c Workspace) Default() Workspace     { return "workspace" }
 
@@ -158,6 +166,7 @@ func (c BoltzProteinRedesign) MarshalJSON() ([]byte, error)           { return m
 func (c Boltzmol) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Boltzprot) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c Ccd) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c CcdAtom) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c ChemicalXCif) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c Contact) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c Custom) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
@@ -170,6 +179,7 @@ func (c ExcludedSequenceMotifs) MarshalJSON() ([]byte, error)         { return m
 func (c Failed) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c FromTemplate) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c Generic) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c Glycan) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c Insertion) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c Lifetime) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Ligand) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
@@ -197,6 +207,7 @@ func (c Residues) MarshalJSON() ([]byte, error)                       { return m
 func (c Rna) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c SmartsCatalogFilter) MarshalJSON() ([]byte, error)            { return marshalString(c) }
 func (c SmartsCustomFilter) MarshalJSON() ([]byte, error)             { return marshalString(c) }
+func (c SmilesAtom) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c SmilesRegexFilter) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c StructureTemplate) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c Succeeded) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
@@ -204,6 +215,7 @@ func (c Target) MarshalJSON() ([]byte, error)                         { return m
 func (c UniformlySampledSpecifications) MarshalJSON() ([]byte, error) { return marshalString(c) }
 func (c URL) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c User) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
+func (c V2026_03_01) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c V2026_07_14) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c Workspace) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 

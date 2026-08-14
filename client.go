@@ -33,9 +33,9 @@ type Client struct {
 	// after signing in with an allowed email. A share link is scoped to a single
 	// workspace and bundles one or more predictions and pipeline runs. The link ID is
 	// itself the bearer credential; treat it as a secret. Create, retrieve, and
-	// archive require a workspace-scoped API key with read permission on every
-	// referenced resource. Retrieving metadata remains available after expiry or
-	// archive. Viewing content and listing shared pipeline results are gated by the
+	// archive require an API key or supported OAuth bearer token with read permission
+	// on every referenced resource. Retrieving metadata remains available after expiry
+	// or archive. Viewing content and listing shared pipeline results are gated by the
 	// link ID and the link's access mode. Archiving a link revokes public access
 	// immediately; subsequent content reads return 404. The underlying predictions and
 	// pipelines are unaffected and remain accessible through their own authenticated

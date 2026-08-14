@@ -297,14 +297,14 @@ func (r *SmallMoleculeLibraryScreenGetResponseInputMolecules) UnmarshalJSON(data
 
 // Target protein sequences for small molecule design or screening.
 type SmallMoleculeLibraryScreenGetResponseInputTarget struct {
-	// Protein entities defining the target structure. Each entity represents a protein
-	// chain.
-	Entities []SmallMoleculeLibraryScreenGetResponseInputTargetEntity `json:"entities" api:"required"`
-	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
-	// references currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Protein and glycan entities defining the target structure. At least one protein
+	// entity is required.
+	Entities []SmallMoleculeLibraryScreenGetResponseInputTargetEntityUnion `json:"entities" api:"required"`
+	// Covalent bond constraints between atoms in the target complex. Ligand atom
+	// references support CCD atom names and explicitly atom-mapped SMILES atoms.
 	Bonds []SmallMoleculeLibraryScreenGetResponseInputTargetBond `json:"bonds"`
-	// Structural constraints (pocket and contact). Atom-level ligand references
-	// currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Structural constraints (pocket and contact). Ligand atom references support CCD
+	// atom names and explicitly atom-mapped SMILES atoms.
 	Constraints []SmallMoleculeLibraryScreenGetResponseInputTargetConstraintUnion `json:"constraints"`
 	// Binding pocket residues, keyed by chain ID. Each key is a chain ID (e.g. "A")
 	// and the value is an array of 0-indexed residue indices that define the binding
@@ -341,7 +341,62 @@ func (r *SmallMoleculeLibraryScreenGetResponseInputTarget) UnmarshalJSON(data []
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type SmallMoleculeLibraryScreenGetResponseInputTargetEntity struct {
+// SmallMoleculeLibraryScreenGetResponseInputTargetEntityUnion contains all
+// possible properties and values from
+// [SmallMoleculeLibraryScreenGetResponseInputTargetEntityProteinEntityResponse],
+// [SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type SmallMoleculeLibraryScreenGetResponseInputTargetEntityUnion struct {
+	ChainIDs []string `json:"chain_ids"`
+	Type     string   `json:"type"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenGetResponseInputTargetEntityProteinEntityResponse].
+	Value string `json:"value"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenGetResponseInputTargetEntityProteinEntityResponse].
+	Cyclic bool `json:"cyclic"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenGetResponseInputTargetEntityProteinEntityResponse].
+	Modifications []SmallMoleculeLibraryScreenGetResponseInputTargetEntityProteinEntityResponseModification `json:"modifications"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponse].
+	Bonds []SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponseBond `json:"bonds"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponse].
+	Residues []SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponseResidue `json:"residues"`
+	JSON     struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+func (u SmallMoleculeLibraryScreenGetResponseInputTargetEntityUnion) AsSmallMoleculeLibraryScreenGetResponseInputTargetEntityProteinEntityResponse() (v SmallMoleculeLibraryScreenGetResponseInputTargetEntityProteinEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenGetResponseInputTargetEntityUnion) AsSmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponse() (v SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u SmallMoleculeLibraryScreenGetResponseInputTargetEntityUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *SmallMoleculeLibraryScreenGetResponseInputTargetEntityUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SmallMoleculeLibraryScreenGetResponseInputTargetEntityProteinEntityResponse struct {
 	// Chain IDs for this entity
 	ChainIDs []string         `json:"chain_ids" api:"required"`
 	Type     constant.Protein `json:"type" default:"protein"`
@@ -351,7 +406,7 @@ type SmallMoleculeLibraryScreenGetResponseInputTargetEntity struct {
 	Cyclic bool `json:"cyclic"`
 	// CCD post-translational modifications. Optional; defaults to an empty list when
 	// omitted. SMILES modifications are not supported.
-	Modifications []SmallMoleculeLibraryScreenGetResponseInputTargetEntityModification `json:"modifications"`
+	Modifications []SmallMoleculeLibraryScreenGetResponseInputTargetEntityProteinEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainIDs      respjson.Field
@@ -365,14 +420,16 @@ type SmallMoleculeLibraryScreenGetResponseInputTargetEntity struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenGetResponseInputTargetEntity) RawJSON() string { return r.JSON.raw }
-func (r *SmallMoleculeLibraryScreenGetResponseInputTargetEntity) UnmarshalJSON(data []byte) error {
+func (r SmallMoleculeLibraryScreenGetResponseInputTargetEntityProteinEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenGetResponseInputTargetEntityProteinEntityResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // Polymer residue modification. Only CCD codes are supported; SMILES modifications
 // are not accepted.
-type SmallMoleculeLibraryScreenGetResponseInputTargetEntityModification struct {
+type SmallMoleculeLibraryScreenGetResponseInputTargetEntityProteinEntityResponseModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64 `json:"residue_index" api:"required"`
 	// Modification format. Only CCD polymer modifications are supported.
@@ -391,21 +448,138 @@ type SmallMoleculeLibraryScreenGetResponseInputTargetEntityModification struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenGetResponseInputTargetEntityModification) RawJSON() string {
+func (r SmallMoleculeLibraryScreenGetResponseInputTargetEntityProteinEntityResponseModification) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *SmallMoleculeLibraryScreenGetResponseInputTargetEntityModification) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenGetResponseInputTargetEntityProteinEntityResponseModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponse struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponseBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponseResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                     `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponseBond struct {
+	Atom1 SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponseBondAtom1 `json:"atom1" api:"required"`
+	Atom2 SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponseBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponseBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponseBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponseBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponseBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponseBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponseBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponseResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponseResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenGetResponseInputTargetEntityGlycanEntityResponseResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type SmallMoleculeLibraryScreenGetResponseInputTargetBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -424,32 +598,56 @@ func (r *SmallMoleculeLibraryScreenGetResponseInputTargetBond) UnmarshalJSON(dat
 
 // SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1Union contains all
 // possible properties and values from
-// [SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1LigandAtomResponse],
-// [SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1PolymerAtomResponse].
+// [SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1PolymerAtomResponse],
+// [SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1CcdAtomResponse],
+// [SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1SmilesAtomResponse],
+// [SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1LigandAtomResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1LigandAtomResponse() (v SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1LigandAtomResponse) {
+func (u SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1PolymerAtomResponse() (v SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1PolymerAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1PolymerAtomResponse() (v SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1PolymerAtomResponse) {
+func (u SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1CcdAtomResponse() (v SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1SmilesAtomResponse() (v SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1LigandAtomResponse() (v SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1LigandAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -460,33 +658,6 @@ func (u SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1Union) RawJSON(
 }
 
 func (r *SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1LigandAtomResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -517,52 +688,67 @@ func (r *SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1PolymerAtomRes
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2Union contains all
-// possible properties and values from
-// [SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2LigandAtomResponse],
-// [SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2PolymerAtomResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2LigandAtomResponse() (v SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2LigandAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2PolymerAtomResponse() (v SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2PolymerAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1CcdAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -578,10 +764,75 @@ type SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2LigandAtomResponse
 }
 
 // Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2LigandAtomResponse) RawJSON() string {
+func (r SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1LigandAtomResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2Union contains all
+// possible properties and values from
+// [SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2PolymerAtomResponse],
+// [SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2CcdAtomResponse],
+// [SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2SmilesAtomResponse],
+// [SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2PolymerAtomResponse() (v SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2CcdAtomResponse() (v SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2SmilesAtomResponse() (v SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2LigandAtomResponse() (v SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -609,6 +860,89 @@ func (r SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2PolymerAtomResp
 	return r.JSON.raw
 }
 func (r *SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenGetResponseInputTargetBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -699,16 +1033,14 @@ func (r *SmallMoleculeLibraryScreenGetResponseInputTargetConstraintPocketConstra
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Contact constraint between two tokens. Atom-level ligand references currently
-// support ligand_ccd entities only; ligand_smiles is unsupported.
+// Maximum-distance contact constraint between two polymer residues or ligand
+// atoms.
 type SmallMoleculeLibraryScreenGetResponseInputTargetConstraintContactConstraintResponse struct {
 	// Maximum distance in Angstroms
 	MaxDistanceAngstrom float64 `json:"max_distance_angstrom" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token1 SmallMoleculeLibraryScreenGetResponseInputTargetConstraintContactConstraintResponseToken1Union `json:"token1" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token2 SmallMoleculeLibraryScreenGetResponseInputTargetConstraintContactConstraintResponseToken2Union `json:"token2" api:"required"`
 	Type   constant.Contact                                                                               `json:"type" default:"contact"`
 	// Whether to force the constraint
@@ -800,11 +1132,12 @@ func (r *SmallMoleculeLibraryScreenGetResponseInputTargetConstraintContactConstr
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type SmallMoleculeLibraryScreenGetResponseInputTargetConstraintContactConstraintResponseToken1LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -894,11 +1227,12 @@ func (r *SmallMoleculeLibraryScreenGetResponseInputTargetConstraintContactConstr
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type SmallMoleculeLibraryScreenGetResponseInputTargetConstraintContactConstraintResponseToken2LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -2125,14 +2459,14 @@ func (r *SmallMoleculeLibraryScreenResumeResponseInputMolecules) UnmarshalJSON(d
 
 // Target protein sequences for small molecule design or screening.
 type SmallMoleculeLibraryScreenResumeResponseInputTarget struct {
-	// Protein entities defining the target structure. Each entity represents a protein
-	// chain.
-	Entities []SmallMoleculeLibraryScreenResumeResponseInputTargetEntity `json:"entities" api:"required"`
-	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
-	// references currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Protein and glycan entities defining the target structure. At least one protein
+	// entity is required.
+	Entities []SmallMoleculeLibraryScreenResumeResponseInputTargetEntityUnion `json:"entities" api:"required"`
+	// Covalent bond constraints between atoms in the target complex. Ligand atom
+	// references support CCD atom names and explicitly atom-mapped SMILES atoms.
 	Bonds []SmallMoleculeLibraryScreenResumeResponseInputTargetBond `json:"bonds"`
-	// Structural constraints (pocket and contact). Atom-level ligand references
-	// currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Structural constraints (pocket and contact). Ligand atom references support CCD
+	// atom names and explicitly atom-mapped SMILES atoms.
 	Constraints []SmallMoleculeLibraryScreenResumeResponseInputTargetConstraintUnion `json:"constraints"`
 	// Binding pocket residues, keyed by chain ID. Each key is a chain ID (e.g. "A")
 	// and the value is an array of 0-indexed residue indices that define the binding
@@ -2169,7 +2503,62 @@ func (r *SmallMoleculeLibraryScreenResumeResponseInputTarget) UnmarshalJSON(data
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type SmallMoleculeLibraryScreenResumeResponseInputTargetEntity struct {
+// SmallMoleculeLibraryScreenResumeResponseInputTargetEntityUnion contains all
+// possible properties and values from
+// [SmallMoleculeLibraryScreenResumeResponseInputTargetEntityProteinEntityResponse],
+// [SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type SmallMoleculeLibraryScreenResumeResponseInputTargetEntityUnion struct {
+	ChainIDs []string `json:"chain_ids"`
+	Type     string   `json:"type"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenResumeResponseInputTargetEntityProteinEntityResponse].
+	Value string `json:"value"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenResumeResponseInputTargetEntityProteinEntityResponse].
+	Cyclic bool `json:"cyclic"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenResumeResponseInputTargetEntityProteinEntityResponse].
+	Modifications []SmallMoleculeLibraryScreenResumeResponseInputTargetEntityProteinEntityResponseModification `json:"modifications"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponse].
+	Bonds []SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponseBond `json:"bonds"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponse].
+	Residues []SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponseResidue `json:"residues"`
+	JSON     struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+func (u SmallMoleculeLibraryScreenResumeResponseInputTargetEntityUnion) AsSmallMoleculeLibraryScreenResumeResponseInputTargetEntityProteinEntityResponse() (v SmallMoleculeLibraryScreenResumeResponseInputTargetEntityProteinEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenResumeResponseInputTargetEntityUnion) AsSmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponse() (v SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u SmallMoleculeLibraryScreenResumeResponseInputTargetEntityUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetEntityUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SmallMoleculeLibraryScreenResumeResponseInputTargetEntityProteinEntityResponse struct {
 	// Chain IDs for this entity
 	ChainIDs []string         `json:"chain_ids" api:"required"`
 	Type     constant.Protein `json:"type" default:"protein"`
@@ -2179,7 +2568,7 @@ type SmallMoleculeLibraryScreenResumeResponseInputTargetEntity struct {
 	Cyclic bool `json:"cyclic"`
 	// CCD post-translational modifications. Optional; defaults to an empty list when
 	// omitted. SMILES modifications are not supported.
-	Modifications []SmallMoleculeLibraryScreenResumeResponseInputTargetEntityModification `json:"modifications"`
+	Modifications []SmallMoleculeLibraryScreenResumeResponseInputTargetEntityProteinEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainIDs      respjson.Field
@@ -2193,16 +2582,16 @@ type SmallMoleculeLibraryScreenResumeResponseInputTargetEntity struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenResumeResponseInputTargetEntity) RawJSON() string {
+func (r SmallMoleculeLibraryScreenResumeResponseInputTargetEntityProteinEntityResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetEntity) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetEntityProteinEntityResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // Polymer residue modification. Only CCD codes are supported; SMILES modifications
 // are not accepted.
-type SmallMoleculeLibraryScreenResumeResponseInputTargetEntityModification struct {
+type SmallMoleculeLibraryScreenResumeResponseInputTargetEntityProteinEntityResponseModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64 `json:"residue_index" api:"required"`
 	// Modification format. Only CCD polymer modifications are supported.
@@ -2221,21 +2610,138 @@ type SmallMoleculeLibraryScreenResumeResponseInputTargetEntityModification struc
 }
 
 // Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenResumeResponseInputTargetEntityModification) RawJSON() string {
+func (r SmallMoleculeLibraryScreenResumeResponseInputTargetEntityProteinEntityResponseModification) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetEntityModification) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetEntityProteinEntityResponseModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponse struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponseBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponseResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                        `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponseBond struct {
+	Atom1 SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponseBondAtom1 `json:"atom1" api:"required"`
+	Atom2 SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponseBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponseBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponseBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponseBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponseBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponseBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponseBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponseResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponseResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetEntityGlycanEntityResponseResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type SmallMoleculeLibraryScreenResumeResponseInputTargetBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -2254,32 +2760,56 @@ func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetBond) UnmarshalJSON(
 
 // SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1Union contains all
 // possible properties and values from
-// [SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1LigandAtomResponse],
-// [SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1PolymerAtomResponse].
+// [SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1PolymerAtomResponse],
+// [SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1CcdAtomResponse],
+// [SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1SmilesAtomResponse],
+// [SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1LigandAtomResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1LigandAtomResponse() (v SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1LigandAtomResponse) {
+func (u SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1PolymerAtomResponse() (v SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1PolymerAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1PolymerAtomResponse() (v SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1PolymerAtomResponse) {
+func (u SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1CcdAtomResponse() (v SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1SmilesAtomResponse() (v SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1LigandAtomResponse() (v SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1LigandAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2290,33 +2820,6 @@ func (u SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1Union) RawJS
 }
 
 func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1LigandAtomResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -2347,52 +2850,67 @@ func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1PolymerAtom
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2Union contains all
-// possible properties and values from
-// [SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2LigandAtomResponse],
-// [SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2PolymerAtomResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2LigandAtomResponse() (v SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2LigandAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2PolymerAtomResponse() (v SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2PolymerAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1CcdAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -2408,10 +2926,75 @@ type SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2LigandAtomRespo
 }
 
 // Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2LigandAtomResponse) RawJSON() string {
+func (r SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1LigandAtomResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2Union contains all
+// possible properties and values from
+// [SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2PolymerAtomResponse],
+// [SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2CcdAtomResponse],
+// [SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2SmilesAtomResponse],
+// [SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2PolymerAtomResponse() (v SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2CcdAtomResponse() (v SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2SmilesAtomResponse() (v SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2LigandAtomResponse() (v SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -2439,6 +3022,89 @@ func (r SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2PolymerAtomR
 	return r.JSON.raw
 }
 func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -2529,16 +3195,14 @@ func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetConstraintPocketCons
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Contact constraint between two tokens. Atom-level ligand references currently
-// support ligand_ccd entities only; ligand_smiles is unsupported.
+// Maximum-distance contact constraint between two polymer residues or ligand
+// atoms.
 type SmallMoleculeLibraryScreenResumeResponseInputTargetConstraintContactConstraintResponse struct {
 	// Maximum distance in Angstroms
 	MaxDistanceAngstrom float64 `json:"max_distance_angstrom" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token1 SmallMoleculeLibraryScreenResumeResponseInputTargetConstraintContactConstraintResponseToken1Union `json:"token1" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token2 SmallMoleculeLibraryScreenResumeResponseInputTargetConstraintContactConstraintResponseToken2Union `json:"token2" api:"required"`
 	Type   constant.Contact                                                                                  `json:"type" default:"contact"`
 	// Whether to force the constraint
@@ -2630,11 +3294,12 @@ func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetConstraintContactCon
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type SmallMoleculeLibraryScreenResumeResponseInputTargetConstraintContactConstraintResponseToken1LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -2724,11 +3389,12 @@ func (r *SmallMoleculeLibraryScreenResumeResponseInputTargetConstraintContactCon
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type SmallMoleculeLibraryScreenResumeResponseInputTargetConstraintContactConstraintResponseToken2LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -3502,14 +4168,14 @@ func (r *SmallMoleculeLibraryScreenStartResponseInputMolecules) UnmarshalJSON(da
 
 // Target protein sequences for small molecule design or screening.
 type SmallMoleculeLibraryScreenStartResponseInputTarget struct {
-	// Protein entities defining the target structure. Each entity represents a protein
-	// chain.
-	Entities []SmallMoleculeLibraryScreenStartResponseInputTargetEntity `json:"entities" api:"required"`
-	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
-	// references currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Protein and glycan entities defining the target structure. At least one protein
+	// entity is required.
+	Entities []SmallMoleculeLibraryScreenStartResponseInputTargetEntityUnion `json:"entities" api:"required"`
+	// Covalent bond constraints between atoms in the target complex. Ligand atom
+	// references support CCD atom names and explicitly atom-mapped SMILES atoms.
 	Bonds []SmallMoleculeLibraryScreenStartResponseInputTargetBond `json:"bonds"`
-	// Structural constraints (pocket and contact). Atom-level ligand references
-	// currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Structural constraints (pocket and contact). Ligand atom references support CCD
+	// atom names and explicitly atom-mapped SMILES atoms.
 	Constraints []SmallMoleculeLibraryScreenStartResponseInputTargetConstraintUnion `json:"constraints"`
 	// Binding pocket residues, keyed by chain ID. Each key is a chain ID (e.g. "A")
 	// and the value is an array of 0-indexed residue indices that define the binding
@@ -3546,7 +4212,62 @@ func (r *SmallMoleculeLibraryScreenStartResponseInputTarget) UnmarshalJSON(data 
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type SmallMoleculeLibraryScreenStartResponseInputTargetEntity struct {
+// SmallMoleculeLibraryScreenStartResponseInputTargetEntityUnion contains all
+// possible properties and values from
+// [SmallMoleculeLibraryScreenStartResponseInputTargetEntityProteinEntityResponse],
+// [SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type SmallMoleculeLibraryScreenStartResponseInputTargetEntityUnion struct {
+	ChainIDs []string `json:"chain_ids"`
+	Type     string   `json:"type"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStartResponseInputTargetEntityProteinEntityResponse].
+	Value string `json:"value"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStartResponseInputTargetEntityProteinEntityResponse].
+	Cyclic bool `json:"cyclic"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStartResponseInputTargetEntityProteinEntityResponse].
+	Modifications []SmallMoleculeLibraryScreenStartResponseInputTargetEntityProteinEntityResponseModification `json:"modifications"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponse].
+	Bonds []SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponseBond `json:"bonds"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponse].
+	Residues []SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponseResidue `json:"residues"`
+	JSON     struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+func (u SmallMoleculeLibraryScreenStartResponseInputTargetEntityUnion) AsSmallMoleculeLibraryScreenStartResponseInputTargetEntityProteinEntityResponse() (v SmallMoleculeLibraryScreenStartResponseInputTargetEntityProteinEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenStartResponseInputTargetEntityUnion) AsSmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponse() (v SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u SmallMoleculeLibraryScreenStartResponseInputTargetEntityUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *SmallMoleculeLibraryScreenStartResponseInputTargetEntityUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SmallMoleculeLibraryScreenStartResponseInputTargetEntityProteinEntityResponse struct {
 	// Chain IDs for this entity
 	ChainIDs []string         `json:"chain_ids" api:"required"`
 	Type     constant.Protein `json:"type" default:"protein"`
@@ -3556,7 +4277,7 @@ type SmallMoleculeLibraryScreenStartResponseInputTargetEntity struct {
 	Cyclic bool `json:"cyclic"`
 	// CCD post-translational modifications. Optional; defaults to an empty list when
 	// omitted. SMILES modifications are not supported.
-	Modifications []SmallMoleculeLibraryScreenStartResponseInputTargetEntityModification `json:"modifications"`
+	Modifications []SmallMoleculeLibraryScreenStartResponseInputTargetEntityProteinEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainIDs      respjson.Field
@@ -3570,14 +4291,16 @@ type SmallMoleculeLibraryScreenStartResponseInputTargetEntity struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenStartResponseInputTargetEntity) RawJSON() string { return r.JSON.raw }
-func (r *SmallMoleculeLibraryScreenStartResponseInputTargetEntity) UnmarshalJSON(data []byte) error {
+func (r SmallMoleculeLibraryScreenStartResponseInputTargetEntityProteinEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenStartResponseInputTargetEntityProteinEntityResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // Polymer residue modification. Only CCD codes are supported; SMILES modifications
 // are not accepted.
-type SmallMoleculeLibraryScreenStartResponseInputTargetEntityModification struct {
+type SmallMoleculeLibraryScreenStartResponseInputTargetEntityProteinEntityResponseModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64 `json:"residue_index" api:"required"`
 	// Modification format. Only CCD polymer modifications are supported.
@@ -3596,21 +4319,138 @@ type SmallMoleculeLibraryScreenStartResponseInputTargetEntityModification struct
 }
 
 // Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenStartResponseInputTargetEntityModification) RawJSON() string {
+func (r SmallMoleculeLibraryScreenStartResponseInputTargetEntityProteinEntityResponseModification) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *SmallMoleculeLibraryScreenStartResponseInputTargetEntityModification) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenStartResponseInputTargetEntityProteinEntityResponseModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponse struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponseBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponseResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                       `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponseBond struct {
+	Atom1 SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponseBondAtom1 `json:"atom1" api:"required"`
+	Atom2 SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponseBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponseBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponseBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponseBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponseBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponseBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponseBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponseResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponseResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenStartResponseInputTargetEntityGlycanEntityResponseResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type SmallMoleculeLibraryScreenStartResponseInputTargetBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -3629,32 +4469,56 @@ func (r *SmallMoleculeLibraryScreenStartResponseInputTargetBond) UnmarshalJSON(d
 
 // SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1Union contains all
 // possible properties and values from
-// [SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1LigandAtomResponse],
-// [SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1PolymerAtomResponse].
+// [SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1PolymerAtomResponse],
+// [SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1CcdAtomResponse],
+// [SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1SmilesAtomResponse],
+// [SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1LigandAtomResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1LigandAtomResponse() (v SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1LigandAtomResponse) {
+func (u SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1PolymerAtomResponse() (v SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1PolymerAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1PolymerAtomResponse() (v SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1PolymerAtomResponse) {
+func (u SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1CcdAtomResponse() (v SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1SmilesAtomResponse() (v SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1LigandAtomResponse() (v SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1LigandAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -3665,33 +4529,6 @@ func (u SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1Union) RawJSO
 }
 
 func (r *SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1LigandAtomResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -3722,52 +4559,67 @@ func (r *SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1PolymerAtomR
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2Union contains all
-// possible properties and values from
-// [SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2LigandAtomResponse],
-// [SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2PolymerAtomResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2LigandAtomResponse() (v SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2LigandAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2PolymerAtomResponse() (v SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2PolymerAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1CcdAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -3783,10 +4635,75 @@ type SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2LigandAtomRespon
 }
 
 // Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2LigandAtomResponse) RawJSON() string {
+func (r SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1LigandAtomResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2Union contains all
+// possible properties and values from
+// [SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2PolymerAtomResponse],
+// [SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2CcdAtomResponse],
+// [SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2SmilesAtomResponse],
+// [SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2PolymerAtomResponse() (v SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2CcdAtomResponse() (v SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2SmilesAtomResponse() (v SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2LigandAtomResponse() (v SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -3814,6 +4731,89 @@ func (r SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2PolymerAtomRe
 	return r.JSON.raw
 }
 func (r *SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenStartResponseInputTargetBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -3904,16 +4904,14 @@ func (r *SmallMoleculeLibraryScreenStartResponseInputTargetConstraintPocketConst
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Contact constraint between two tokens. Atom-level ligand references currently
-// support ligand_ccd entities only; ligand_smiles is unsupported.
+// Maximum-distance contact constraint between two polymer residues or ligand
+// atoms.
 type SmallMoleculeLibraryScreenStartResponseInputTargetConstraintContactConstraintResponse struct {
 	// Maximum distance in Angstroms
 	MaxDistanceAngstrom float64 `json:"max_distance_angstrom" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token1 SmallMoleculeLibraryScreenStartResponseInputTargetConstraintContactConstraintResponseToken1Union `json:"token1" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token2 SmallMoleculeLibraryScreenStartResponseInputTargetConstraintContactConstraintResponseToken2Union `json:"token2" api:"required"`
 	Type   constant.Contact                                                                                 `json:"type" default:"contact"`
 	// Whether to force the constraint
@@ -4005,11 +5003,12 @@ func (r *SmallMoleculeLibraryScreenStartResponseInputTargetConstraintContactCons
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type SmallMoleculeLibraryScreenStartResponseInputTargetConstraintContactConstraintResponseToken1LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -4099,11 +5098,12 @@ func (r *SmallMoleculeLibraryScreenStartResponseInputTargetConstraintContactCons
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type SmallMoleculeLibraryScreenStartResponseInputTargetConstraintContactConstraintResponseToken2LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -4877,14 +5877,14 @@ func (r *SmallMoleculeLibraryScreenStopResponseInputMolecules) UnmarshalJSON(dat
 
 // Target protein sequences for small molecule design or screening.
 type SmallMoleculeLibraryScreenStopResponseInputTarget struct {
-	// Protein entities defining the target structure. Each entity represents a protein
-	// chain.
-	Entities []SmallMoleculeLibraryScreenStopResponseInputTargetEntity `json:"entities" api:"required"`
-	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
-	// references currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Protein and glycan entities defining the target structure. At least one protein
+	// entity is required.
+	Entities []SmallMoleculeLibraryScreenStopResponseInputTargetEntityUnion `json:"entities" api:"required"`
+	// Covalent bond constraints between atoms in the target complex. Ligand atom
+	// references support CCD atom names and explicitly atom-mapped SMILES atoms.
 	Bonds []SmallMoleculeLibraryScreenStopResponseInputTargetBond `json:"bonds"`
-	// Structural constraints (pocket and contact). Atom-level ligand references
-	// currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Structural constraints (pocket and contact). Ligand atom references support CCD
+	// atom names and explicitly atom-mapped SMILES atoms.
 	Constraints []SmallMoleculeLibraryScreenStopResponseInputTargetConstraintUnion `json:"constraints"`
 	// Binding pocket residues, keyed by chain ID. Each key is a chain ID (e.g. "A")
 	// and the value is an array of 0-indexed residue indices that define the binding
@@ -4921,7 +5921,62 @@ func (r *SmallMoleculeLibraryScreenStopResponseInputTarget) UnmarshalJSON(data [
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type SmallMoleculeLibraryScreenStopResponseInputTargetEntity struct {
+// SmallMoleculeLibraryScreenStopResponseInputTargetEntityUnion contains all
+// possible properties and values from
+// [SmallMoleculeLibraryScreenStopResponseInputTargetEntityProteinEntityResponse],
+// [SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type SmallMoleculeLibraryScreenStopResponseInputTargetEntityUnion struct {
+	ChainIDs []string `json:"chain_ids"`
+	Type     string   `json:"type"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStopResponseInputTargetEntityProteinEntityResponse].
+	Value string `json:"value"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStopResponseInputTargetEntityProteinEntityResponse].
+	Cyclic bool `json:"cyclic"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStopResponseInputTargetEntityProteinEntityResponse].
+	Modifications []SmallMoleculeLibraryScreenStopResponseInputTargetEntityProteinEntityResponseModification `json:"modifications"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponse].
+	Bonds []SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponseBond `json:"bonds"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponse].
+	Residues []SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponseResidue `json:"residues"`
+	JSON     struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+func (u SmallMoleculeLibraryScreenStopResponseInputTargetEntityUnion) AsSmallMoleculeLibraryScreenStopResponseInputTargetEntityProteinEntityResponse() (v SmallMoleculeLibraryScreenStopResponseInputTargetEntityProteinEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenStopResponseInputTargetEntityUnion) AsSmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponse() (v SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u SmallMoleculeLibraryScreenStopResponseInputTargetEntityUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *SmallMoleculeLibraryScreenStopResponseInputTargetEntityUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SmallMoleculeLibraryScreenStopResponseInputTargetEntityProteinEntityResponse struct {
 	// Chain IDs for this entity
 	ChainIDs []string         `json:"chain_ids" api:"required"`
 	Type     constant.Protein `json:"type" default:"protein"`
@@ -4931,7 +5986,7 @@ type SmallMoleculeLibraryScreenStopResponseInputTargetEntity struct {
 	Cyclic bool `json:"cyclic"`
 	// CCD post-translational modifications. Optional; defaults to an empty list when
 	// omitted. SMILES modifications are not supported.
-	Modifications []SmallMoleculeLibraryScreenStopResponseInputTargetEntityModification `json:"modifications"`
+	Modifications []SmallMoleculeLibraryScreenStopResponseInputTargetEntityProteinEntityResponseModification `json:"modifications"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainIDs      respjson.Field
@@ -4945,14 +6000,16 @@ type SmallMoleculeLibraryScreenStopResponseInputTargetEntity struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenStopResponseInputTargetEntity) RawJSON() string { return r.JSON.raw }
-func (r *SmallMoleculeLibraryScreenStopResponseInputTargetEntity) UnmarshalJSON(data []byte) error {
+func (r SmallMoleculeLibraryScreenStopResponseInputTargetEntityProteinEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenStopResponseInputTargetEntityProteinEntityResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // Polymer residue modification. Only CCD codes are supported; SMILES modifications
 // are not accepted.
-type SmallMoleculeLibraryScreenStopResponseInputTargetEntityModification struct {
+type SmallMoleculeLibraryScreenStopResponseInputTargetEntityProteinEntityResponseModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64 `json:"residue_index" api:"required"`
 	// Modification format. Only CCD polymer modifications are supported.
@@ -4971,21 +6028,138 @@ type SmallMoleculeLibraryScreenStopResponseInputTargetEntityModification struct 
 }
 
 // Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenStopResponseInputTargetEntityModification) RawJSON() string {
+func (r SmallMoleculeLibraryScreenStopResponseInputTargetEntityProteinEntityResponseModification) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *SmallMoleculeLibraryScreenStopResponseInputTargetEntityModification) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenStopResponseInputTargetEntityProteinEntityResponseModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponse struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponseBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponseResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                      `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponseBond struct {
+	Atom1 SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponseBondAtom1 `json:"atom1" api:"required"`
+	Atom2 SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponseBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponseBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponseBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponseBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponseBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponseBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponseBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponseResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponseResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenStopResponseInputTargetEntityGlycanEntityResponseResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type SmallMoleculeLibraryScreenStopResponseInputTargetBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -5004,32 +6178,56 @@ func (r *SmallMoleculeLibraryScreenStopResponseInputTargetBond) UnmarshalJSON(da
 
 // SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1Union contains all
 // possible properties and values from
-// [SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1LigandAtomResponse],
-// [SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1PolymerAtomResponse].
+// [SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1PolymerAtomResponse],
+// [SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1CcdAtomResponse],
+// [SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1SmilesAtomResponse],
+// [SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1LigandAtomResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1LigandAtomResponse() (v SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1LigandAtomResponse) {
+func (u SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1PolymerAtomResponse() (v SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1PolymerAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1PolymerAtomResponse() (v SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1PolymerAtomResponse) {
+func (u SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1CcdAtomResponse() (v SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1SmilesAtomResponse() (v SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1Union) AsSmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1LigandAtomResponse() (v SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1LigandAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -5040,33 +6238,6 @@ func (u SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1Union) RawJSON
 }
 
 func (r *SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1LigandAtomResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -5097,52 +6268,67 @@ func (r *SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1PolymerAtomRe
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2Union contains all
-// possible properties and values from
-// [SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2LigandAtomResponse],
-// [SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2PolymerAtomResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2LigandAtomResponse() (v SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2LigandAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2PolymerAtomResponse() (v SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2PolymerAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1CcdAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -5158,10 +6344,75 @@ type SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2LigandAtomRespons
 }
 
 // Returns the unmodified JSON received from the API
-func (r SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2LigandAtomResponse) RawJSON() string {
+func (r SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1LigandAtomResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2Union contains all
+// possible properties and values from
+// [SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2PolymerAtomResponse],
+// [SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2CcdAtomResponse],
+// [SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2SmilesAtomResponse],
+// [SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2PolymerAtomResponse() (v SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2CcdAtomResponse() (v SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2SmilesAtomResponse() (v SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2Union) AsSmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2LigandAtomResponse() (v SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -5189,6 +6440,89 @@ func (r SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2PolymerAtomRes
 	return r.JSON.raw
 }
 func (r *SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeLibraryScreenStopResponseInputTargetBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -5279,16 +6613,14 @@ func (r *SmallMoleculeLibraryScreenStopResponseInputTargetConstraintPocketConstr
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Contact constraint between two tokens. Atom-level ligand references currently
-// support ligand_ccd entities only; ligand_smiles is unsupported.
+// Maximum-distance contact constraint between two polymer residues or ligand
+// atoms.
 type SmallMoleculeLibraryScreenStopResponseInputTargetConstraintContactConstraintResponse struct {
 	// Maximum distance in Angstroms
 	MaxDistanceAngstrom float64 `json:"max_distance_angstrom" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token1 SmallMoleculeLibraryScreenStopResponseInputTargetConstraintContactConstraintResponseToken1Union `json:"token1" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token2 SmallMoleculeLibraryScreenStopResponseInputTargetConstraintContactConstraintResponseToken2Union `json:"token2" api:"required"`
 	Type   constant.Contact                                                                                `json:"type" default:"contact"`
 	// Whether to force the constraint
@@ -5380,11 +6712,12 @@ func (r *SmallMoleculeLibraryScreenStopResponseInputTargetConstraintContactConst
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type SmallMoleculeLibraryScreenStopResponseInputTargetConstraintContactConstraintResponseToken1LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -5474,11 +6807,12 @@ func (r *SmallMoleculeLibraryScreenStopResponseInputTargetConstraintContactConst
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type SmallMoleculeLibraryScreenStopResponseInputTargetConstraintContactConstraintResponseToken2LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -6203,14 +7537,14 @@ func (r *SmallMoleculeLibraryScreenEstimateCostParamsMolecule) UnmarshalJSON(dat
 //
 // The property Entities is required.
 type SmallMoleculeLibraryScreenEstimateCostParamsTarget struct {
-	// Protein entities defining the target structure. Each entity represents a protein
-	// chain.
-	Entities []SmallMoleculeLibraryScreenEstimateCostParamsTargetEntity `json:"entities,omitzero" api:"required"`
-	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
-	// references currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Protein and glycan entities defining the target structure. At least one protein
+	// entity is required.
+	Entities []SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityUnion `json:"entities,omitzero" api:"required"`
+	// Covalent bond constraints between atoms in the target complex. Ligand atom
+	// references support CCD atom names and explicitly atom-mapped SMILES atoms.
 	Bonds []SmallMoleculeLibraryScreenEstimateCostParamsTargetBond `json:"bonds,omitzero"`
-	// Structural constraints (pocket and contact). Atom-level ligand references
-	// currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Structural constraints (pocket and contact). Ligand atom references support CCD
+	// atom names and explicitly atom-mapped SMILES atoms.
 	Constraints []SmallMoleculeLibraryScreenEstimateCostParamsTargetConstraintUnion `json:"constraints,omitzero"`
 	// Binding pocket residues, keyed by chain ID. Each key is a chain ID (e.g. "A")
 	// and the value is an array of 0-indexed residue indices that define the binding
@@ -6245,8 +7579,24 @@ func init() {
 	)
 }
 
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityUnion struct {
+	OfSmallMoleculeLibraryScreenEstimateCostsTargetEntityProteinEntity *SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityProteinEntity `json:",omitzero,inline"`
+	OfSmallMoleculeLibraryScreenEstimateCostsTargetEntityGlycanEntity  *SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntity  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfSmallMoleculeLibraryScreenEstimateCostsTargetEntityProteinEntity, u.OfSmallMoleculeLibraryScreenEstimateCostsTargetEntityGlycanEntity)
+}
+func (u *SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
 // The properties ChainIDs, Type, Value are required.
-type SmallMoleculeLibraryScreenEstimateCostParamsTargetEntity struct {
+type SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityProteinEntity struct {
 	// Chain IDs for this entity
 	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
 	// Amino acid sequence (one-letter codes)
@@ -6255,17 +7605,17 @@ type SmallMoleculeLibraryScreenEstimateCostParamsTargetEntity struct {
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
 	// CCD post-translational modifications. Optional; defaults to an empty list when
 	// omitted. SMILES modifications are not supported.
-	Modifications []SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModification `json:"modifications,omitzero"`
+	Modifications []SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityProteinEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "protein".
 	Type constant.Protein `json:"type" default:"protein"`
 	paramObj
 }
 
-func (r SmallMoleculeLibraryScreenEstimateCostParamsTargetEntity) MarshalJSON() (data []byte, err error) {
-	type shadow SmallMoleculeLibraryScreenEstimateCostParamsTargetEntity
+func (r SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityProteinEntity) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityProteinEntity
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetEntity) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityProteinEntity) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -6273,7 +7623,7 @@ func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetEntity) UnmarshalJSON
 // are not accepted.
 //
 // The properties ResidueIndex, Type, Value are required.
-type SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModification struct {
+type SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityProteinEntityModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64 `json:"residue_index" api:"required"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
@@ -6286,24 +7636,117 @@ type SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModification struct
 	paramObj
 }
 
-func (r SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModification) MarshalJSON() (data []byte, err error) {
-	type shadow SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModification
+func (r SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityProteinEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityProteinEntityModification
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityModification) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityProteinEntityModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+//
+// The properties Bonds, ChainIDs, Residues, Type are required.
+type SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntity struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntityBond `json:"bonds,omitzero" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntityResidue `json:"residues,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "glycan".
+	Type constant.Glycan `json:"type" default:"glycan"`
+	paramObj
+}
+
+func (r SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntity) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+//
+// The properties Atom1, Atom2 are required.
+type SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntityBond struct {
+	Atom1 SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntityBondAtom1 `json:"atom1,omitzero" api:"required"`
+	Atom2 SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntityBondAtom2 `json:"atom2,omitzero" api:"required"`
+	paramObj
+}
+
+func (r SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntityBond) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntityBond
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntityBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntityBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntityBondAtom1) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntityBondAtom1
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntityBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntityBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntityBondAtom2) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntityBondAtom2
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntityBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ID, Ccd are required.
+type SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntityResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	paramObj
+}
+
+func (r SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntityResidue) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntityResidue
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetEntityGlycanEntityResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 //
 // The properties Atom1, Atom2 are required.
 type SmallMoleculeLibraryScreenEstimateCostParamsTargetBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1Union `json:"atom1,omitzero" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2Union `json:"atom2,omitzero" api:"required"`
 	paramObj
 }
@@ -6320,39 +7763,18 @@ func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetBond) UnmarshalJSON(d
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1Union struct {
-	OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom1LigandAtom  *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1LigandAtom  `json:",omitzero,inline"`
 	OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom1PolymerAtom *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1PolymerAtom `json:",omitzero,inline"`
+	OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom1CcdAtom     *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1CcdAtom     `json:",omitzero,inline"`
+	OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom1SmilesAtom  *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1SmilesAtom  `json:",omitzero,inline"`
+	OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom1LigandAtom  *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1LigandAtom  `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1Union) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom1LigandAtom, u.OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom1PolymerAtom)
+	return param.MarshalUnion(u, u.OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom1PolymerAtom, u.OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom1CcdAtom, u.OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom1SmilesAtom, u.OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom1LigandAtom)
 }
 func (u *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-//
-// The properties AtomName, ChainID, Type are required.
-type SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string `json:"chain_id" api:"required"`
-	// This field can be elided, and will marshal its zero value as "ligand_atom".
-	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
-	paramObj
-}
-
-func (r SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
-	type shadow SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1LigandAtom
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties AtomName, ChainID, ResidueIndex, Type are required.
@@ -6376,29 +7798,60 @@ func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1PolymerAtom)
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
+// Atom reference for a specific CCD residue in a glycan graph.
 //
-// Use [param.IsOmitted] to confirm if a field is set.
-type SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2Union struct {
-	OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom2LigandAtom  *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2LigandAtom  `json:",omitzero,inline"`
-	OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom2PolymerAtom *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2PolymerAtom `json:",omitzero,inline"`
-	paramUnion
+// The properties AtomID, ChainID, ResidueID, Type are required.
+type SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string `json:"residue_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ccd_atom".
+	Type constant.CcdAtom `json:"type" default:"ccd_atom"`
+	paramObj
 }
 
-func (u SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2Union) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom2LigandAtom, u.OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom2PolymerAtom)
+func (r SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1CcdAtom) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1CcdAtom
+	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (u *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
+func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+//
+// The properties AtomMap, ChainID, Type are required.
+type SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "smiles_atom".
+	Type constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	paramObj
+}
+
+func (r SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1SmilesAtom) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1SmilesAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
 //
 // The properties AtomName, ChainID, Type are required.
-type SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+type SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string `json:"chain_id" api:"required"`
@@ -6407,12 +7860,30 @@ type SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2LigandAtom struc
 	paramObj
 }
 
-func (r SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
-	type shadow SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2LigandAtom
+func (r SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1LigandAtom
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2Union struct {
+	OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom2PolymerAtom *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2PolymerAtom `json:",omitzero,inline"`
+	OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom2CcdAtom     *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2CcdAtom     `json:",omitzero,inline"`
+	OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom2SmilesAtom  *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2SmilesAtom  `json:",omitzero,inline"`
+	OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom2LigandAtom  *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2LigandAtom  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2Union) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom2PolymerAtom, u.OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom2CcdAtom, u.OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom2SmilesAtom, u.OfSmallMoleculeLibraryScreenEstimateCostsTargetBondAtom2LigandAtom)
+}
+func (u *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 // The properties AtomName, ChainID, ResidueIndex, Type are required.
@@ -6433,6 +7904,76 @@ func (r SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2PolymerAtom) 
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2PolymerAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+//
+// The properties AtomID, ChainID, ResidueID, Type are required.
+type SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string `json:"residue_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ccd_atom".
+	Type constant.CcdAtom `json:"type" default:"ccd_atom"`
+	paramObj
+}
+
+func (r SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2CcdAtom) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2CcdAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+//
+// The properties AtomMap, ChainID, Type are required.
+type SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "smiles_atom".
+	Type constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	paramObj
+}
+
+func (r SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2SmilesAtom) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2SmilesAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+//
+// The properties AtomName, ChainID, Type are required.
+type SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ligand_atom".
+	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
+	paramObj
+}
+
+func (r SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2LigandAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -6481,18 +8022,16 @@ func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetConstraintPocketConst
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Contact constraint between two tokens. Atom-level ligand references currently
-// support ligand_ccd entities only; ligand_smiles is unsupported.
+// Maximum-distance contact constraint between two polymer residues or ligand
+// atoms.
 //
 // The properties MaxDistanceAngstrom, Token1, Token2, Type are required.
 type SmallMoleculeLibraryScreenEstimateCostParamsTargetConstraintContactConstraint struct {
 	// Maximum distance in Angstroms
 	MaxDistanceAngstrom float64 `json:"max_distance_angstrom" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token1 SmallMoleculeLibraryScreenEstimateCostParamsTargetConstraintContactConstraintToken1Union `json:"token1,omitzero" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token2 SmallMoleculeLibraryScreenEstimateCostParamsTargetConstraintContactConstraintToken2Union `json:"token2,omitzero" api:"required"`
 	// Whether to force the constraint
 	Force param.Opt[bool] `json:"force,omitzero"`
@@ -6544,13 +8083,14 @@ func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetConstraintContactCons
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 //
 // The properties AtomName, ChainID, Type are required.
 type SmallMoleculeLibraryScreenEstimateCostParamsTargetConstraintContactConstraintToken1LigandContactToken struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string `json:"chain_id" api:"required"`
@@ -6602,13 +8142,14 @@ func (r *SmallMoleculeLibraryScreenEstimateCostParamsTargetConstraintContactCons
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 //
 // The properties AtomName, ChainID, Type are required.
 type SmallMoleculeLibraryScreenEstimateCostParamsTargetConstraintContactConstraintToken2LigandContactToken struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string `json:"chain_id" api:"required"`
@@ -7076,14 +8617,14 @@ func (r *SmallMoleculeLibraryScreenStartParamsMolecule) UnmarshalJSON(data []byt
 //
 // The property Entities is required.
 type SmallMoleculeLibraryScreenStartParamsTarget struct {
-	// Protein entities defining the target structure. Each entity represents a protein
-	// chain.
-	Entities []SmallMoleculeLibraryScreenStartParamsTargetEntity `json:"entities,omitzero" api:"required"`
-	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
-	// references currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Protein and glycan entities defining the target structure. At least one protein
+	// entity is required.
+	Entities []SmallMoleculeLibraryScreenStartParamsTargetEntityUnion `json:"entities,omitzero" api:"required"`
+	// Covalent bond constraints between atoms in the target complex. Ligand atom
+	// references support CCD atom names and explicitly atom-mapped SMILES atoms.
 	Bonds []SmallMoleculeLibraryScreenStartParamsTargetBond `json:"bonds,omitzero"`
-	// Structural constraints (pocket and contact). Atom-level ligand references
-	// currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Structural constraints (pocket and contact). Ligand atom references support CCD
+	// atom names and explicitly atom-mapped SMILES atoms.
 	Constraints []SmallMoleculeLibraryScreenStartParamsTargetConstraintUnion `json:"constraints,omitzero"`
 	// Binding pocket residues, keyed by chain ID. Each key is a chain ID (e.g. "A")
 	// and the value is an array of 0-indexed residue indices that define the binding
@@ -7118,8 +8659,24 @@ func init() {
 	)
 }
 
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type SmallMoleculeLibraryScreenStartParamsTargetEntityUnion struct {
+	OfSmallMoleculeLibraryScreenStartsTargetEntityProteinEntity *SmallMoleculeLibraryScreenStartParamsTargetEntityProteinEntity `json:",omitzero,inline"`
+	OfSmallMoleculeLibraryScreenStartsTargetEntityGlycanEntity  *SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntity  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u SmallMoleculeLibraryScreenStartParamsTargetEntityUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfSmallMoleculeLibraryScreenStartsTargetEntityProteinEntity, u.OfSmallMoleculeLibraryScreenStartsTargetEntityGlycanEntity)
+}
+func (u *SmallMoleculeLibraryScreenStartParamsTargetEntityUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
 // The properties ChainIDs, Type, Value are required.
-type SmallMoleculeLibraryScreenStartParamsTargetEntity struct {
+type SmallMoleculeLibraryScreenStartParamsTargetEntityProteinEntity struct {
 	// Chain IDs for this entity
 	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
 	// Amino acid sequence (one-letter codes)
@@ -7128,17 +8685,17 @@ type SmallMoleculeLibraryScreenStartParamsTargetEntity struct {
 	Cyclic param.Opt[bool] `json:"cyclic,omitzero"`
 	// CCD post-translational modifications. Optional; defaults to an empty list when
 	// omitted. SMILES modifications are not supported.
-	Modifications []SmallMoleculeLibraryScreenStartParamsTargetEntityModification `json:"modifications,omitzero"`
+	Modifications []SmallMoleculeLibraryScreenStartParamsTargetEntityProteinEntityModification `json:"modifications,omitzero"`
 	// This field can be elided, and will marshal its zero value as "protein".
 	Type constant.Protein `json:"type" default:"protein"`
 	paramObj
 }
 
-func (r SmallMoleculeLibraryScreenStartParamsTargetEntity) MarshalJSON() (data []byte, err error) {
-	type shadow SmallMoleculeLibraryScreenStartParamsTargetEntity
+func (r SmallMoleculeLibraryScreenStartParamsTargetEntityProteinEntity) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenStartParamsTargetEntityProteinEntity
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *SmallMoleculeLibraryScreenStartParamsTargetEntity) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenStartParamsTargetEntityProteinEntity) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -7146,7 +8703,7 @@ func (r *SmallMoleculeLibraryScreenStartParamsTargetEntity) UnmarshalJSON(data [
 // are not accepted.
 //
 // The properties ResidueIndex, Type, Value are required.
-type SmallMoleculeLibraryScreenStartParamsTargetEntityModification struct {
+type SmallMoleculeLibraryScreenStartParamsTargetEntityProteinEntityModification struct {
 	// 0-based index of the residue to modify
 	ResidueIndex int64 `json:"residue_index" api:"required"`
 	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
@@ -7159,24 +8716,117 @@ type SmallMoleculeLibraryScreenStartParamsTargetEntityModification struct {
 	paramObj
 }
 
-func (r SmallMoleculeLibraryScreenStartParamsTargetEntityModification) MarshalJSON() (data []byte, err error) {
-	type shadow SmallMoleculeLibraryScreenStartParamsTargetEntityModification
+func (r SmallMoleculeLibraryScreenStartParamsTargetEntityProteinEntityModification) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenStartParamsTargetEntityProteinEntityModification
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *SmallMoleculeLibraryScreenStartParamsTargetEntityModification) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenStartParamsTargetEntityProteinEntityModification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+//
+// The properties Bonds, ChainIDs, Residues, Type are required.
+type SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntity struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntityBond `json:"bonds,omitzero" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntityResidue `json:"residues,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "glycan".
+	Type constant.Glycan `json:"type" default:"glycan"`
+	paramObj
+}
+
+func (r SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntity) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+//
+// The properties Atom1, Atom2 are required.
+type SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntityBond struct {
+	Atom1 SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntityBondAtom1 `json:"atom1,omitzero" api:"required"`
+	Atom2 SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntityBondAtom2 `json:"atom2,omitzero" api:"required"`
+	paramObj
+}
+
+func (r SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntityBond) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntityBond
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntityBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntityBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntityBondAtom1) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntityBondAtom1
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntityBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntityBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntityBondAtom2) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntityBondAtom2
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntityBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ID, Ccd are required.
+type SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntityResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	paramObj
+}
+
+func (r SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntityResidue) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntityResidue
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SmallMoleculeLibraryScreenStartParamsTargetEntityGlycanEntityResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 //
 // The properties Atom1, Atom2 are required.
 type SmallMoleculeLibraryScreenStartParamsTargetBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 SmallMoleculeLibraryScreenStartParamsTargetBondAtom1Union `json:"atom1,omitzero" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 SmallMoleculeLibraryScreenStartParamsTargetBondAtom2Union `json:"atom2,omitzero" api:"required"`
 	paramObj
 }
@@ -7193,39 +8843,18 @@ func (r *SmallMoleculeLibraryScreenStartParamsTargetBond) UnmarshalJSON(data []b
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type SmallMoleculeLibraryScreenStartParamsTargetBondAtom1Union struct {
-	OfSmallMoleculeLibraryScreenStartsTargetBondAtom1LigandAtom  *SmallMoleculeLibraryScreenStartParamsTargetBondAtom1LigandAtom  `json:",omitzero,inline"`
 	OfSmallMoleculeLibraryScreenStartsTargetBondAtom1PolymerAtom *SmallMoleculeLibraryScreenStartParamsTargetBondAtom1PolymerAtom `json:",omitzero,inline"`
+	OfSmallMoleculeLibraryScreenStartsTargetBondAtom1CcdAtom     *SmallMoleculeLibraryScreenStartParamsTargetBondAtom1CcdAtom     `json:",omitzero,inline"`
+	OfSmallMoleculeLibraryScreenStartsTargetBondAtom1SmilesAtom  *SmallMoleculeLibraryScreenStartParamsTargetBondAtom1SmilesAtom  `json:",omitzero,inline"`
+	OfSmallMoleculeLibraryScreenStartsTargetBondAtom1LigandAtom  *SmallMoleculeLibraryScreenStartParamsTargetBondAtom1LigandAtom  `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u SmallMoleculeLibraryScreenStartParamsTargetBondAtom1Union) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfSmallMoleculeLibraryScreenStartsTargetBondAtom1LigandAtom, u.OfSmallMoleculeLibraryScreenStartsTargetBondAtom1PolymerAtom)
+	return param.MarshalUnion(u, u.OfSmallMoleculeLibraryScreenStartsTargetBondAtom1PolymerAtom, u.OfSmallMoleculeLibraryScreenStartsTargetBondAtom1CcdAtom, u.OfSmallMoleculeLibraryScreenStartsTargetBondAtom1SmilesAtom, u.OfSmallMoleculeLibraryScreenStartsTargetBondAtom1LigandAtom)
 }
 func (u *SmallMoleculeLibraryScreenStartParamsTargetBondAtom1Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-//
-// The properties AtomName, ChainID, Type are required.
-type SmallMoleculeLibraryScreenStartParamsTargetBondAtom1LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string `json:"chain_id" api:"required"`
-	// This field can be elided, and will marshal its zero value as "ligand_atom".
-	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
-	paramObj
-}
-
-func (r SmallMoleculeLibraryScreenStartParamsTargetBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
-	type shadow SmallMoleculeLibraryScreenStartParamsTargetBondAtom1LigandAtom
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *SmallMoleculeLibraryScreenStartParamsTargetBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties AtomName, ChainID, ResidueIndex, Type are required.
@@ -7249,29 +8878,60 @@ func (r *SmallMoleculeLibraryScreenStartParamsTargetBondAtom1PolymerAtom) Unmars
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
+// Atom reference for a specific CCD residue in a glycan graph.
 //
-// Use [param.IsOmitted] to confirm if a field is set.
-type SmallMoleculeLibraryScreenStartParamsTargetBondAtom2Union struct {
-	OfSmallMoleculeLibraryScreenStartsTargetBondAtom2LigandAtom  *SmallMoleculeLibraryScreenStartParamsTargetBondAtom2LigandAtom  `json:",omitzero,inline"`
-	OfSmallMoleculeLibraryScreenStartsTargetBondAtom2PolymerAtom *SmallMoleculeLibraryScreenStartParamsTargetBondAtom2PolymerAtom `json:",omitzero,inline"`
-	paramUnion
+// The properties AtomID, ChainID, ResidueID, Type are required.
+type SmallMoleculeLibraryScreenStartParamsTargetBondAtom1CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string `json:"residue_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ccd_atom".
+	Type constant.CcdAtom `json:"type" default:"ccd_atom"`
+	paramObj
 }
 
-func (u SmallMoleculeLibraryScreenStartParamsTargetBondAtom2Union) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfSmallMoleculeLibraryScreenStartsTargetBondAtom2LigandAtom, u.OfSmallMoleculeLibraryScreenStartsTargetBondAtom2PolymerAtom)
+func (r SmallMoleculeLibraryScreenStartParamsTargetBondAtom1CcdAtom) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenStartParamsTargetBondAtom1CcdAtom
+	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (u *SmallMoleculeLibraryScreenStartParamsTargetBondAtom2Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
+func (r *SmallMoleculeLibraryScreenStartParamsTargetBondAtom1CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+//
+// The properties AtomMap, ChainID, Type are required.
+type SmallMoleculeLibraryScreenStartParamsTargetBondAtom1SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "smiles_atom".
+	Type constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	paramObj
+}
+
+func (r SmallMoleculeLibraryScreenStartParamsTargetBondAtom1SmilesAtom) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenStartParamsTargetBondAtom1SmilesAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SmallMoleculeLibraryScreenStartParamsTargetBondAtom1SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
 //
 // The properties AtomName, ChainID, Type are required.
-type SmallMoleculeLibraryScreenStartParamsTargetBondAtom2LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+type SmallMoleculeLibraryScreenStartParamsTargetBondAtom1LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string `json:"chain_id" api:"required"`
@@ -7280,12 +8940,30 @@ type SmallMoleculeLibraryScreenStartParamsTargetBondAtom2LigandAtom struct {
 	paramObj
 }
 
-func (r SmallMoleculeLibraryScreenStartParamsTargetBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
-	type shadow SmallMoleculeLibraryScreenStartParamsTargetBondAtom2LigandAtom
+func (r SmallMoleculeLibraryScreenStartParamsTargetBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenStartParamsTargetBondAtom1LigandAtom
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *SmallMoleculeLibraryScreenStartParamsTargetBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
+func (r *SmallMoleculeLibraryScreenStartParamsTargetBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type SmallMoleculeLibraryScreenStartParamsTargetBondAtom2Union struct {
+	OfSmallMoleculeLibraryScreenStartsTargetBondAtom2PolymerAtom *SmallMoleculeLibraryScreenStartParamsTargetBondAtom2PolymerAtom `json:",omitzero,inline"`
+	OfSmallMoleculeLibraryScreenStartsTargetBondAtom2CcdAtom     *SmallMoleculeLibraryScreenStartParamsTargetBondAtom2CcdAtom     `json:",omitzero,inline"`
+	OfSmallMoleculeLibraryScreenStartsTargetBondAtom2SmilesAtom  *SmallMoleculeLibraryScreenStartParamsTargetBondAtom2SmilesAtom  `json:",omitzero,inline"`
+	OfSmallMoleculeLibraryScreenStartsTargetBondAtom2LigandAtom  *SmallMoleculeLibraryScreenStartParamsTargetBondAtom2LigandAtom  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u SmallMoleculeLibraryScreenStartParamsTargetBondAtom2Union) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfSmallMoleculeLibraryScreenStartsTargetBondAtom2PolymerAtom, u.OfSmallMoleculeLibraryScreenStartsTargetBondAtom2CcdAtom, u.OfSmallMoleculeLibraryScreenStartsTargetBondAtom2SmilesAtom, u.OfSmallMoleculeLibraryScreenStartsTargetBondAtom2LigandAtom)
+}
+func (u *SmallMoleculeLibraryScreenStartParamsTargetBondAtom2Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 // The properties AtomName, ChainID, ResidueIndex, Type are required.
@@ -7306,6 +8984,76 @@ func (r SmallMoleculeLibraryScreenStartParamsTargetBondAtom2PolymerAtom) Marshal
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *SmallMoleculeLibraryScreenStartParamsTargetBondAtom2PolymerAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+//
+// The properties AtomID, ChainID, ResidueID, Type are required.
+type SmallMoleculeLibraryScreenStartParamsTargetBondAtom2CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string `json:"residue_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ccd_atom".
+	Type constant.CcdAtom `json:"type" default:"ccd_atom"`
+	paramObj
+}
+
+func (r SmallMoleculeLibraryScreenStartParamsTargetBondAtom2CcdAtom) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenStartParamsTargetBondAtom2CcdAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SmallMoleculeLibraryScreenStartParamsTargetBondAtom2CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+//
+// The properties AtomMap, ChainID, Type are required.
+type SmallMoleculeLibraryScreenStartParamsTargetBondAtom2SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "smiles_atom".
+	Type constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	paramObj
+}
+
+func (r SmallMoleculeLibraryScreenStartParamsTargetBondAtom2SmilesAtom) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenStartParamsTargetBondAtom2SmilesAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SmallMoleculeLibraryScreenStartParamsTargetBondAtom2SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+//
+// The properties AtomName, ChainID, Type are required.
+type SmallMoleculeLibraryScreenStartParamsTargetBondAtom2LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ligand_atom".
+	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
+	paramObj
+}
+
+func (r SmallMoleculeLibraryScreenStartParamsTargetBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow SmallMoleculeLibraryScreenStartParamsTargetBondAtom2LigandAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SmallMoleculeLibraryScreenStartParamsTargetBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -7354,18 +9102,16 @@ func (r *SmallMoleculeLibraryScreenStartParamsTargetConstraintPocketConstraint) 
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Contact constraint between two tokens. Atom-level ligand references currently
-// support ligand_ccd entities only; ligand_smiles is unsupported.
+// Maximum-distance contact constraint between two polymer residues or ligand
+// atoms.
 //
 // The properties MaxDistanceAngstrom, Token1, Token2, Type are required.
 type SmallMoleculeLibraryScreenStartParamsTargetConstraintContactConstraint struct {
 	// Maximum distance in Angstroms
 	MaxDistanceAngstrom float64 `json:"max_distance_angstrom" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token1 SmallMoleculeLibraryScreenStartParamsTargetConstraintContactConstraintToken1Union `json:"token1,omitzero" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token2 SmallMoleculeLibraryScreenStartParamsTargetConstraintContactConstraintToken2Union `json:"token2,omitzero" api:"required"`
 	// Whether to force the constraint
 	Force param.Opt[bool] `json:"force,omitzero"`
@@ -7417,13 +9163,14 @@ func (r *SmallMoleculeLibraryScreenStartParamsTargetConstraintContactConstraintT
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 //
 // The properties AtomName, ChainID, Type are required.
 type SmallMoleculeLibraryScreenStartParamsTargetConstraintContactConstraintToken1LigandContactToken struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string `json:"chain_id" api:"required"`
@@ -7475,13 +9222,14 @@ func (r *SmallMoleculeLibraryScreenStartParamsTargetConstraintContactConstraintT
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 //
 // The properties AtomName, ChainID, Type are required.
 type SmallMoleculeLibraryScreenStartParamsTargetConstraintContactConstraintToken2LigandContactToken struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string `json:"chain_id" api:"required"`

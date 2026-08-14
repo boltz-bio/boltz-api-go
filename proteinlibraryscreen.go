@@ -553,11 +553,11 @@ type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponse struct {
 	// Entities (proteins, RNA, DNA, ligands) defining the target complex.
 	Entities []ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityUnion `json:"entities" api:"required"`
 	Type     constant.NoTemplate                                                             `json:"type" default:"no_template"`
-	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
-	// references currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Covalent bond constraints between atoms in the target complex. Ligand atom
+	// references support CCD atom names and explicitly atom-mapped SMILES atoms.
 	Bonds []ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBond `json:"bonds"`
-	// Structural constraints (pocket and contact). Atom-level ligand references
-	// currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Structural constraints (pocket and contact). Ligand atom references support CCD
+	// atom names and explicitly atom-mapped SMILES atoms.
 	Constraints []ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseConstraintUnion `json:"constraints"`
 	// Chain IDs of ligand entities that are part of the binding epitope. Ligands are
 	// marked as epitope in full (no residue-level selection).
@@ -598,7 +598,8 @@ func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponse) Unm
 // [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponse],
 // [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponse],
 // [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityLigandCcdEntityResponse],
-// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse].
+// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse],
+// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityUnion struct {
@@ -611,12 +612,20 @@ type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityUni
 	// [[]ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponseModification],
 	// [[]ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponseModification]
 	Modifications ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
+	Bonds []ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
+	Residues []ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -642,6 +651,11 @@ func (u ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntity
 }
 
 func (u ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityUnion) AsProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse() (v ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityUnion) AsProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse() (v ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -875,7 +889,8 @@ type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityLig
 	// Chain IDs for this ligand
 	ChainIDs []string           `json:"chain_ids" api:"required"`
 	Type     constant.LigandCcd `json:"type" default:"ligand_ccd"`
-	// CCD code (e.g., ATP, ADP)
+	// One CCD code (for example ATP or ADP). This field remains a string; use a glycan
+	// entity for multiple connected CCD residues.
 	Value string `json:"value" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -919,14 +934,131 @@ func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntit
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                                       `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond struct {
+	Atom1 ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -947,32 +1079,56 @@ func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBond)
 
 // ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1Union
 // contains all possible properties and values from
-// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse],
-// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse].
+// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse],
+// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse],
+// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse],
+// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse() (v ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) {
+func (u ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse() (v ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse() (v ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse) {
+func (u ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse() (v ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse() (v ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse() (v ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -983,33 +1139,6 @@ func (u ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAt
 }
 
 func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1040,52 +1169,67 @@ func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondA
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union
-// contains all possible properties and values from
-// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse],
-// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse() (v ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse() (v ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -1101,10 +1245,75 @@ type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2
 }
 
 // Returns the unmodified JSON received from the API
-func (r ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) RawJSON() string {
+func (r ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union
+// contains all possible properties and values from
+// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse],
+// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse],
+// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse],
+// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse() (v ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse() (v ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse() (v ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse() (v ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1132,6 +1341,89 @@ func (r ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAt
 	return r.JSON.raw
 }
 func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1222,16 +1514,14 @@ func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseConst
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Contact constraint between two tokens. Atom-level ligand references currently
-// support ligand_ccd entities only; ligand_smiles is unsupported.
+// Maximum-distance contact constraint between two polymer residues or ligand
+// atoms.
 type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponse struct {
 	// Maximum distance in Angstroms
 	MaxDistanceAngstrom float64 `json:"max_distance_angstrom" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token1 ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken1Union `json:"token1" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token2 ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken2Union `json:"token2" api:"required"`
 	Type   constant.Contact                                                                                                 `json:"type" default:"contact"`
 	// Whether to force the constraint
@@ -1323,11 +1613,12 @@ func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseConst
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken1LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -1417,11 +1708,12 @@ func (r *ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseConst
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type ProteinLibraryScreenGetResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken2LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -1790,7 +2082,8 @@ func (r *ProteinLibraryScreenListResultsResponseArtifactsStructure) UnmarshalJSO
 // [ProteinLibraryScreenListResultsResponseEntityRnaEntity],
 // [ProteinLibraryScreenListResultsResponseEntityDnaEntity],
 // [ProteinLibraryScreenListResultsResponseEntityLigandCcdEntity],
-// [ProteinLibraryScreenListResultsResponseEntityLigandSmilesEntity].
+// [ProteinLibraryScreenListResultsResponseEntityLigandSmilesEntity],
+// [ProteinLibraryScreenListResultsResponseEntityGlycanEntity].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinLibraryScreenListResultsResponseEntityUnion struct {
@@ -1803,12 +2096,20 @@ type ProteinLibraryScreenListResultsResponseEntityUnion struct {
 	// [[]ProteinLibraryScreenListResultsResponseEntityRnaEntityModification],
 	// [[]ProteinLibraryScreenListResultsResponseEntityDnaEntityModification]
 	Modifications ProteinLibraryScreenListResultsResponseEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [ProteinLibraryScreenListResultsResponseEntityGlycanEntity].
+	Bonds []ProteinLibraryScreenListResultsResponseEntityGlycanEntityBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinLibraryScreenListResultsResponseEntityGlycanEntity].
+	Residues []ProteinLibraryScreenListResultsResponseEntityGlycanEntityResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -1834,6 +2135,11 @@ func (u ProteinLibraryScreenListResultsResponseEntityUnion) AsProteinLibraryScre
 }
 
 func (u ProteinLibraryScreenListResultsResponseEntityUnion) AsProteinLibraryScreenListResultsResponseEntityLigandSmilesEntity() (v ProteinLibraryScreenListResultsResponseEntityLigandSmilesEntity) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenListResultsResponseEntityUnion) AsProteinLibraryScreenListResultsResponseEntityGlycanEntity() (v ProteinLibraryScreenListResultsResponseEntityGlycanEntity) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2060,7 +2366,8 @@ type ProteinLibraryScreenListResultsResponseEntityLigandCcdEntity struct {
 	// Chain IDs for this ligand
 	ChainIDs []string           `json:"chain_ids" api:"required"`
 	Type     constant.LigandCcd `json:"type" default:"ligand_ccd"`
-	// CCD code (e.g., ATP, ADP)
+	// One CCD code (for example ATP or ADP). This field remains a string; use a glycan
+	// entity for multiple connected CCD residues.
 	Value string `json:"value" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -2101,6 +2408,125 @@ func (r ProteinLibraryScreenListResultsResponseEntityLigandSmilesEntity) RawJSON
 	return r.JSON.raw
 }
 func (r *ProteinLibraryScreenListResultsResponseEntityLigandSmilesEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinLibraryScreenListResultsResponseEntityGlycanEntity struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinLibraryScreenListResultsResponseEntityGlycanEntityBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinLibraryScreenListResultsResponseEntityGlycanEntityResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                    `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenListResultsResponseEntityGlycanEntity) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenListResultsResponseEntityGlycanEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinLibraryScreenListResultsResponseEntityGlycanEntityBond struct {
+	Atom1 ProteinLibraryScreenListResultsResponseEntityGlycanEntityBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinLibraryScreenListResultsResponseEntityGlycanEntityBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenListResultsResponseEntityGlycanEntityBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenListResultsResponseEntityGlycanEntityBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinLibraryScreenListResultsResponseEntityGlycanEntityBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenListResultsResponseEntityGlycanEntityBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenListResultsResponseEntityGlycanEntityBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinLibraryScreenListResultsResponseEntityGlycanEntityBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenListResultsResponseEntityGlycanEntityBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenListResultsResponseEntityGlycanEntityBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinLibraryScreenListResultsResponseEntityGlycanEntityResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenListResultsResponseEntityGlycanEntityResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenListResultsResponseEntityGlycanEntityResidue) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -2554,11 +2980,11 @@ type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponse struc
 	// Entities (proteins, RNA, DNA, ligands) defining the target complex.
 	Entities []ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityUnion `json:"entities" api:"required"`
 	Type     constant.NoTemplate                                                                `json:"type" default:"no_template"`
-	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
-	// references currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Covalent bond constraints between atoms in the target complex. Ligand atom
+	// references support CCD atom names and explicitly atom-mapped SMILES atoms.
 	Bonds []ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBond `json:"bonds"`
-	// Structural constraints (pocket and contact). Atom-level ligand references
-	// currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Structural constraints (pocket and contact). Ligand atom references support CCD
+	// atom names and explicitly atom-mapped SMILES atoms.
 	Constraints []ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseConstraintUnion `json:"constraints"`
 	// Chain IDs of ligand entities that are part of the binding epitope. Ligands are
 	// marked as epitope in full (no residue-level selection).
@@ -2599,7 +3025,8 @@ func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponse) 
 // [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponse],
 // [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponse],
 // [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityLigandCcdEntityResponse],
-// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse].
+// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse],
+// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityUnion struct {
@@ -2612,12 +3039,20 @@ type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntity
 	// [[]ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponseModification],
 	// [[]ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponseModification]
 	Modifications ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
+	Bonds []ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
+	Residues []ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -2643,6 +3078,11 @@ func (u ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEnt
 }
 
 func (u ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityUnion) AsProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse() (v ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityUnion) AsProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse() (v ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2876,7 +3316,8 @@ type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntity
 	// Chain IDs for this ligand
 	ChainIDs []string           `json:"chain_ids" api:"required"`
 	Type     constant.LigandCcd `json:"type" default:"ligand_ccd"`
-	// CCD code (e.g., ATP, ADP)
+	// One CCD code (for example ATP or ADP). This field remains a string; use a glycan
+	// entity for multiple connected CCD residues.
 	Value string `json:"value" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -2920,14 +3361,131 @@ func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEn
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                                          `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond struct {
+	Atom1 ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -2948,32 +3506,56 @@ func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBo
 
 // ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1Union
 // contains all possible properties and values from
-// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse],
-// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse].
+// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse],
+// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse],
+// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse],
+// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse() (v ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) {
+func (u ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse() (v ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse() (v ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse) {
+func (u ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse() (v ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse() (v ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse() (v ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2984,33 +3566,6 @@ func (u ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBon
 }
 
 func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -3041,52 +3596,67 @@ func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBo
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union
-// contains all possible properties and values from
-// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse],
-// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse() (v ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse() (v ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -3102,10 +3672,75 @@ type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAt
 }
 
 // Returns the unmodified JSON received from the API
-func (r ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) RawJSON() string {
+func (r ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union
+// contains all possible properties and values from
+// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse],
+// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse],
+// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse],
+// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse() (v ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse() (v ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse() (v ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse() (v ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -3133,6 +3768,89 @@ func (r ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBon
 	return r.JSON.raw
 }
 func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -3223,16 +3941,14 @@ func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseCo
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Contact constraint between two tokens. Atom-level ligand references currently
-// support ligand_ccd entities only; ligand_smiles is unsupported.
+// Maximum-distance contact constraint between two polymer residues or ligand
+// atoms.
 type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponse struct {
 	// Maximum distance in Angstroms
 	MaxDistanceAngstrom float64 `json:"max_distance_angstrom" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token1 ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken1Union `json:"token1" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token2 ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken2Union `json:"token2" api:"required"`
 	Type   constant.Contact                                                                                                    `json:"type" default:"contact"`
 	// Whether to force the constraint
@@ -3324,11 +4040,12 @@ func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseCo
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken1LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -3418,11 +4135,12 @@ func (r *ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseCo
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type ProteinLibraryScreenResumeResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken2LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -3872,11 +4590,11 @@ type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponse struct
 	// Entities (proteins, RNA, DNA, ligands) defining the target complex.
 	Entities []ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityUnion `json:"entities" api:"required"`
 	Type     constant.NoTemplate                                                               `json:"type" default:"no_template"`
-	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
-	// references currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Covalent bond constraints between atoms in the target complex. Ligand atom
+	// references support CCD atom names and explicitly atom-mapped SMILES atoms.
 	Bonds []ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBond `json:"bonds"`
-	// Structural constraints (pocket and contact). Atom-level ligand references
-	// currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Structural constraints (pocket and contact). Ligand atom references support CCD
+	// atom names and explicitly atom-mapped SMILES atoms.
 	Constraints []ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseConstraintUnion `json:"constraints"`
 	// Chain IDs of ligand entities that are part of the binding epitope. Ligands are
 	// marked as epitope in full (no residue-level selection).
@@ -3917,7 +4635,8 @@ func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponse) U
 // [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponse],
 // [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponse],
 // [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityLigandCcdEntityResponse],
-// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse].
+// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse],
+// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityUnion struct {
@@ -3930,12 +4649,20 @@ type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityU
 	// [[]ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponseModification],
 	// [[]ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponseModification]
 	Modifications ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
+	Bonds []ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
+	Residues []ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -3961,6 +4688,11 @@ func (u ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEnti
 }
 
 func (u ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityUnion) AsProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse() (v ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityUnion) AsProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse() (v ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -4194,7 +4926,8 @@ type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityL
 	// Chain IDs for this ligand
 	ChainIDs []string           `json:"chain_ids" api:"required"`
 	Type     constant.LigandCcd `json:"type" default:"ligand_ccd"`
-	// CCD code (e.g., ATP, ADP)
+	// One CCD code (for example ATP or ADP). This field remains a string; use a glycan
+	// entity for multiple connected CCD residues.
 	Value string `json:"value" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -4238,14 +4971,131 @@ func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEnt
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                                         `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond struct {
+	Atom1 ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -4266,32 +5116,56 @@ func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBon
 
 // ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1Union
 // contains all possible properties and values from
-// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse],
-// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse].
+// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse],
+// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse],
+// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse],
+// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse() (v ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) {
+func (u ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse() (v ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse() (v ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse) {
+func (u ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse() (v ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse() (v ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse() (v ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -4302,33 +5176,6 @@ func (u ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBond
 }
 
 func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -4359,52 +5206,67 @@ func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBon
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union
-// contains all possible properties and values from
-// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse],
-// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse() (v ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse() (v ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -4420,10 +5282,75 @@ type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAto
 }
 
 // Returns the unmodified JSON received from the API
-func (r ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) RawJSON() string {
+func (r ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union
+// contains all possible properties and values from
+// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse],
+// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse],
+// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse],
+// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse() (v ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse() (v ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse() (v ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse() (v ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -4451,6 +5378,89 @@ func (r ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBond
 	return r.JSON.raw
 }
 func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -4541,16 +5551,14 @@ func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseCon
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Contact constraint between two tokens. Atom-level ligand references currently
-// support ligand_ccd entities only; ligand_smiles is unsupported.
+// Maximum-distance contact constraint between two polymer residues or ligand
+// atoms.
 type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponse struct {
 	// Maximum distance in Angstroms
 	MaxDistanceAngstrom float64 `json:"max_distance_angstrom" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token1 ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken1Union `json:"token1" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token2 ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken2Union `json:"token2" api:"required"`
 	Type   constant.Contact                                                                                                   `json:"type" default:"contact"`
 	// Whether to force the constraint
@@ -4642,11 +5650,12 @@ func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseCon
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken1LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -4736,11 +5745,12 @@ func (r *ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseCon
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type ProteinLibraryScreenStartResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken2LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -5190,11 +6200,11 @@ type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponse struct 
 	// Entities (proteins, RNA, DNA, ligands) defining the target complex.
 	Entities []ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityUnion `json:"entities" api:"required"`
 	Type     constant.NoTemplate                                                              `json:"type" default:"no_template"`
-	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
-	// references currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Covalent bond constraints between atoms in the target complex. Ligand atom
+	// references support CCD atom names and explicitly atom-mapped SMILES atoms.
 	Bonds []ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBond `json:"bonds"`
-	// Structural constraints (pocket and contact). Atom-level ligand references
-	// currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Structural constraints (pocket and contact). Ligand atom references support CCD
+	// atom names and explicitly atom-mapped SMILES atoms.
 	Constraints []ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseConstraintUnion `json:"constraints"`
 	// Chain IDs of ligand entities that are part of the binding epitope. Ligands are
 	// marked as epitope in full (no residue-level selection).
@@ -5235,7 +6245,8 @@ func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponse) Un
 // [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponse],
 // [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponse],
 // [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityLigandCcdEntityResponse],
-// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse].
+// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse],
+// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityUnion struct {
@@ -5248,12 +6259,20 @@ type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityUn
 	// [[]ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponseModification],
 	// [[]ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponseModification]
 	Modifications ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
+	Bonds []ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
+	Residues []ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -5279,6 +6298,11 @@ func (u ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntit
 }
 
 func (u ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityUnion) AsProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse() (v ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityUnion) AsProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse() (v ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -5512,7 +6536,8 @@ type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityLi
 	// Chain IDs for this ligand
 	ChainIDs []string           `json:"chain_ids" api:"required"`
 	Type     constant.LigandCcd `json:"type" default:"ligand_ccd"`
-	// CCD code (e.g., ATP, ADP)
+	// One CCD code (for example ATP or ADP). This field remains a string; use a glycan
+	// entity for multiple connected CCD residues.
 	Value string `json:"value" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -5556,14 +6581,131 @@ func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEnti
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                                        `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond struct {
+	Atom1 ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -5584,32 +6726,56 @@ func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBond
 
 // ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1Union
 // contains all possible properties and values from
-// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse],
-// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse].
+// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse],
+// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse],
+// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse],
+// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse() (v ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) {
+func (u ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse() (v ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse() (v ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse) {
+func (u ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse() (v ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse() (v ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse() (v ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -5620,33 +6786,6 @@ func (u ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondA
 }
 
 func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -5677,52 +6816,67 @@ func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBond
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union
-// contains all possible properties and values from
-// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse],
-// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse() (v ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse() (v ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -5738,10 +6892,75 @@ type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom
 }
 
 // Returns the unmodified JSON received from the API
-func (r ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) RawJSON() string {
+func (r ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union
+// contains all possible properties and values from
+// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse],
+// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse],
+// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse],
+// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse() (v ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse() (v ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse() (v ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse() (v ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -5769,6 +6988,89 @@ func (r ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondA
 	return r.JSON.raw
 }
 func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -5859,16 +7161,14 @@ func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseCons
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Contact constraint between two tokens. Atom-level ligand references currently
-// support ligand_ccd entities only; ligand_smiles is unsupported.
+// Maximum-distance contact constraint between two polymer residues or ligand
+// atoms.
 type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponse struct {
 	// Maximum distance in Angstroms
 	MaxDistanceAngstrom float64 `json:"max_distance_angstrom" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token1 ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken1Union `json:"token1" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token2 ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken2Union `json:"token2" api:"required"`
 	Type   constant.Contact                                                                                                  `json:"type" default:"contact"`
 	// Whether to force the constraint
@@ -5960,11 +7260,12 @@ func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseCons
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken1LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -6054,11 +7355,12 @@ func (r *ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseCons
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type ProteinLibraryScreenStopResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken2LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -6204,6 +7506,7 @@ type ProteinLibraryScreenEstimateCostParamsProteinEntityUnion struct {
 	OfProteinLibraryScreenEstimateCostsProteinEntityDnaEntity          *ProteinLibraryScreenEstimateCostParamsProteinEntityDnaEntity          `json:",omitzero,inline"`
 	OfProteinLibraryScreenEstimateCostsProteinEntityLigandCcdEntity    *ProteinLibraryScreenEstimateCostParamsProteinEntityLigandCcdEntity    `json:",omitzero,inline"`
 	OfProteinLibraryScreenEstimateCostsProteinEntityLigandSmilesEntity *ProteinLibraryScreenEstimateCostParamsProteinEntityLigandSmilesEntity `json:",omitzero,inline"`
+	OfProteinLibraryScreenEstimateCostsProteinEntityGlycanEntity       *ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntity       `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -6212,7 +7515,8 @@ func (u ProteinLibraryScreenEstimateCostParamsProteinEntityUnion) MarshalJSON() 
 		u.OfProteinLibraryScreenEstimateCostsProteinEntityRnaEntity,
 		u.OfProteinLibraryScreenEstimateCostsProteinEntityDnaEntity,
 		u.OfProteinLibraryScreenEstimateCostsProteinEntityLigandCcdEntity,
-		u.OfProteinLibraryScreenEstimateCostsProteinEntityLigandSmilesEntity)
+		u.OfProteinLibraryScreenEstimateCostsProteinEntityLigandSmilesEntity,
+		u.OfProteinLibraryScreenEstimateCostsProteinEntityGlycanEntity)
 }
 func (u *ProteinLibraryScreenEstimateCostParamsProteinEntityUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -6369,7 +7673,8 @@ func (r *ProteinLibraryScreenEstimateCostParamsProteinEntityDnaEntityModificatio
 type ProteinLibraryScreenEstimateCostParamsProteinEntityLigandCcdEntity struct {
 	// Chain IDs for this ligand
 	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
-	// CCD code (e.g., ATP, ADP)
+	// One CCD code (for example ATP or ADP). This field remains a string; use a glycan
+	// entity for multiple connected CCD residues.
 	Value string `json:"value" api:"required"`
 	// This field can be elided, and will marshal its zero value as "ligand_ccd".
 	Type constant.LigandCcd `json:"type" default:"ligand_ccd"`
@@ -6400,6 +7705,101 @@ func (r ProteinLibraryScreenEstimateCostParamsProteinEntityLigandSmilesEntity) M
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *ProteinLibraryScreenEstimateCostParamsProteinEntityLigandSmilesEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+//
+// The properties Bonds, ChainIDs, Residues, Type are required.
+type ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntity struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntityBond `json:"bonds,omitzero" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntityResidue `json:"residues,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "glycan".
+	Type constant.Glycan `json:"type" default:"glycan"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+//
+// The properties Atom1, Atom2 are required.
+type ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntityBond struct {
+	Atom1 ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntityBondAtom1 `json:"atom1,omitzero" api:"required"`
+	Atom2 ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntityBondAtom2 `json:"atom2,omitzero" api:"required"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntityBond) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntityBond
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntityBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntityBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntityBondAtom1) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntityBondAtom1
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntityBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntityBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntityBondAtom2) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntityBondAtom2
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntityBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ID, Ccd are required.
+type ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntityResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntityResidue) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntityResidue
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenEstimateCostParamsProteinEntityGlycanEntityResidue) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -6593,11 +7993,11 @@ func (r *ProteinLibraryScreenEstimateCostParamsTargetStructureTemplateTargetStru
 type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTarget struct {
 	// Entities (proteins, RNA, DNA, ligands) defining the target complex.
 	Entities []ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityUnion `json:"entities,omitzero" api:"required"`
-	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
-	// references currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Covalent bond constraints between atoms in the target complex. Ligand atom
+	// references support CCD atom names and explicitly atom-mapped SMILES atoms.
 	Bonds []ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBond `json:"bonds,omitzero"`
-	// Structural constraints (pocket and contact). Atom-level ligand references
-	// currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Structural constraints (pocket and contact). Ligand atom references support CCD
+	// atom names and explicitly atom-mapped SMILES atoms.
 	Constraints []ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetConstraintUnion `json:"constraints,omitzero"`
 	// Chain IDs of ligand entities that are part of the binding epitope. Ligands are
 	// marked as epitope in full (no residue-level selection).
@@ -6632,6 +8032,7 @@ type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityUnion str
 	OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetEntityDnaEntity          *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityDnaEntity          `json:",omitzero,inline"`
 	OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetEntityLigandCcdEntity    *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityLigandCcdEntity    `json:",omitzero,inline"`
 	OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetEntityLigandSmilesEntity *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityLigandSmilesEntity `json:",omitzero,inline"`
+	OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetEntityGlycanEntity       *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntity       `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -6640,7 +8041,8 @@ func (u ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityUnion)
 		u.OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetEntityRnaEntity,
 		u.OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetEntityDnaEntity,
 		u.OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetEntityLigandCcdEntity,
-		u.OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetEntityLigandSmilesEntity)
+		u.OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetEntityLigandSmilesEntity,
+		u.OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetEntityGlycanEntity)
 }
 func (u *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -6797,7 +8199,8 @@ func (r *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityDnaEn
 type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityLigandCcdEntity struct {
 	// Chain IDs for this ligand
 	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
-	// CCD code (e.g., ATP, ADP)
+	// One CCD code (for example ATP or ADP). This field remains a string; use a glycan
+	// entity for multiple connected CCD residues.
 	Value string `json:"value" api:"required"`
 	// This field can be elided, and will marshal its zero value as "ligand_ccd".
 	Type constant.LigandCcd `json:"type" default:"ligand_ccd"`
@@ -6831,16 +8234,109 @@ func (r *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityLigan
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+//
+// The properties Bonds, ChainIDs, Residues, Type are required.
+type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntity struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBond `json:"bonds,omitzero" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityResidue `json:"residues,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "glycan".
+	Type constant.Glycan `json:"type" default:"glycan"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+//
+// The properties Atom1, Atom2 are required.
+type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBond struct {
+	Atom1 ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom1 `json:"atom1,omitzero" api:"required"`
+	Atom2 ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom2 `json:"atom2,omitzero" api:"required"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBond) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBond
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom1) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom1
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom2) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom2
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ID, Ccd are required.
+type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityResidue) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityResidue
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 //
 // The properties Atom1, Atom2 are required.
 type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1Union `json:"atom1,omitzero" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2Union `json:"atom2,omitzero" api:"required"`
 	paramObj
 }
@@ -6857,39 +8353,18 @@ func (r *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBond) Unmar
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1Union struct {
-	OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom1LigandAtom  *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1LigandAtom  `json:",omitzero,inline"`
 	OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom1PolymerAtom *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1PolymerAtom `json:",omitzero,inline"`
+	OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom1CcdAtom     *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1CcdAtom     `json:",omitzero,inline"`
+	OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom1SmilesAtom  *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1SmilesAtom  `json:",omitzero,inline"`
+	OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom1LigandAtom  *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1LigandAtom  `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1Union) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom1LigandAtom, u.OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom1PolymerAtom)
+	return param.MarshalUnion(u, u.OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom1PolymerAtom, u.OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom1CcdAtom, u.OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom1SmilesAtom, u.OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom1LigandAtom)
 }
 func (u *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-//
-// The properties AtomName, ChainID, Type are required.
-type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string `json:"chain_id" api:"required"`
-	// This field can be elided, and will marshal its zero value as "ligand_atom".
-	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
-	paramObj
-}
-
-func (r ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
-	type shadow ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1LigandAtom
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties AtomName, ChainID, ResidueIndex, Type are required.
@@ -6913,29 +8388,60 @@ func (r *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1Po
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
+// Atom reference for a specific CCD residue in a glycan graph.
 //
-// Use [param.IsOmitted] to confirm if a field is set.
-type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2Union struct {
-	OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom2LigandAtom  *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2LigandAtom  `json:",omitzero,inline"`
-	OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom2PolymerAtom *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2PolymerAtom `json:",omitzero,inline"`
-	paramUnion
+// The properties AtomID, ChainID, ResidueID, Type are required.
+type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string `json:"residue_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ccd_atom".
+	Type constant.CcdAtom `json:"type" default:"ccd_atom"`
+	paramObj
 }
 
-func (u ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2Union) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom2LigandAtom, u.OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom2PolymerAtom)
+func (r ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1CcdAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1CcdAtom
+	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (u *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
+func (r *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+//
+// The properties AtomMap, ChainID, Type are required.
+type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "smiles_atom".
+	Type constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1SmilesAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1SmilesAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
 //
 // The properties AtomName, ChainID, Type are required.
-type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string `json:"chain_id" api:"required"`
@@ -6944,12 +8450,30 @@ type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2Ligand
 	paramObj
 }
 
-func (r ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
-	type shadow ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2LigandAtom
+func (r ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1LigandAtom
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
+func (r *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2Union struct {
+	OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom2PolymerAtom *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2PolymerAtom `json:",omitzero,inline"`
+	OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom2CcdAtom     *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2CcdAtom     `json:",omitzero,inline"`
+	OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom2SmilesAtom  *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2SmilesAtom  `json:",omitzero,inline"`
+	OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom2LigandAtom  *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2LigandAtom  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2Union) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom2PolymerAtom, u.OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom2CcdAtom, u.OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom2SmilesAtom, u.OfProteinLibraryScreenEstimateCostsTargetNoTemplateTargetBondAtom2LigandAtom)
+}
+func (u *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 // The properties AtomName, ChainID, ResidueIndex, Type are required.
@@ -6970,6 +8494,76 @@ func (r ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2Pol
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2PolymerAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+//
+// The properties AtomID, ChainID, ResidueID, Type are required.
+type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string `json:"residue_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ccd_atom".
+	Type constant.CcdAtom `json:"type" default:"ccd_atom"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2CcdAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2CcdAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+//
+// The properties AtomMap, ChainID, Type are required.
+type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "smiles_atom".
+	Type constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2SmilesAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2SmilesAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+//
+// The properties AtomName, ChainID, Type are required.
+type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ligand_atom".
+	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2LigandAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -7018,18 +8612,16 @@ func (r *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetConstraintP
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Contact constraint between two tokens. Atom-level ligand references currently
-// support ligand_ccd entities only; ligand_smiles is unsupported.
+// Maximum-distance contact constraint between two polymer residues or ligand
+// atoms.
 //
 // The properties MaxDistanceAngstrom, Token1, Token2, Type are required.
 type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetConstraintContactConstraint struct {
 	// Maximum distance in Angstroms
 	MaxDistanceAngstrom float64 `json:"max_distance_angstrom" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token1 ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetConstraintContactConstraintToken1Union `json:"token1,omitzero" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token2 ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetConstraintContactConstraintToken2Union `json:"token2,omitzero" api:"required"`
 	// Whether to force the constraint
 	Force param.Opt[bool] `json:"force,omitzero"`
@@ -7081,13 +8673,14 @@ func (r *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetConstraintC
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 //
 // The properties AtomName, ChainID, Type are required.
 type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetConstraintContactConstraintToken1LigandContactToken struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string `json:"chain_id" api:"required"`
@@ -7139,13 +8732,14 @@ func (r *ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetConstraintC
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 //
 // The properties AtomName, ChainID, Type are required.
 type ProteinLibraryScreenEstimateCostParamsTargetNoTemplateTargetConstraintContactConstraintToken2LigandContactToken struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string `json:"chain_id" api:"required"`
@@ -7237,6 +8831,7 @@ type ProteinLibraryScreenStartParamsProteinEntityUnion struct {
 	OfProteinLibraryScreenStartsProteinEntityDnaEntity          *ProteinLibraryScreenStartParamsProteinEntityDnaEntity          `json:",omitzero,inline"`
 	OfProteinLibraryScreenStartsProteinEntityLigandCcdEntity    *ProteinLibraryScreenStartParamsProteinEntityLigandCcdEntity    `json:",omitzero,inline"`
 	OfProteinLibraryScreenStartsProteinEntityLigandSmilesEntity *ProteinLibraryScreenStartParamsProteinEntityLigandSmilesEntity `json:",omitzero,inline"`
+	OfProteinLibraryScreenStartsProteinEntityGlycanEntity       *ProteinLibraryScreenStartParamsProteinEntityGlycanEntity       `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -7245,7 +8840,8 @@ func (u ProteinLibraryScreenStartParamsProteinEntityUnion) MarshalJSON() ([]byte
 		u.OfProteinLibraryScreenStartsProteinEntityRnaEntity,
 		u.OfProteinLibraryScreenStartsProteinEntityDnaEntity,
 		u.OfProteinLibraryScreenStartsProteinEntityLigandCcdEntity,
-		u.OfProteinLibraryScreenStartsProteinEntityLigandSmilesEntity)
+		u.OfProteinLibraryScreenStartsProteinEntityLigandSmilesEntity,
+		u.OfProteinLibraryScreenStartsProteinEntityGlycanEntity)
 }
 func (u *ProteinLibraryScreenStartParamsProteinEntityUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -7402,7 +8998,8 @@ func (r *ProteinLibraryScreenStartParamsProteinEntityDnaEntityModification) Unma
 type ProteinLibraryScreenStartParamsProteinEntityLigandCcdEntity struct {
 	// Chain IDs for this ligand
 	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
-	// CCD code (e.g., ATP, ADP)
+	// One CCD code (for example ATP or ADP). This field remains a string; use a glycan
+	// entity for multiple connected CCD residues.
 	Value string `json:"value" api:"required"`
 	// This field can be elided, and will marshal its zero value as "ligand_ccd".
 	Type constant.LigandCcd `json:"type" default:"ligand_ccd"`
@@ -7433,6 +9030,101 @@ func (r ProteinLibraryScreenStartParamsProteinEntityLigandSmilesEntity) MarshalJ
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *ProteinLibraryScreenStartParamsProteinEntityLigandSmilesEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+//
+// The properties Bonds, ChainIDs, Residues, Type are required.
+type ProteinLibraryScreenStartParamsProteinEntityGlycanEntity struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinLibraryScreenStartParamsProteinEntityGlycanEntityBond `json:"bonds,omitzero" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinLibraryScreenStartParamsProteinEntityGlycanEntityResidue `json:"residues,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "glycan".
+	Type constant.Glycan `json:"type" default:"glycan"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenStartParamsProteinEntityGlycanEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenStartParamsProteinEntityGlycanEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenStartParamsProteinEntityGlycanEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+//
+// The properties Atom1, Atom2 are required.
+type ProteinLibraryScreenStartParamsProteinEntityGlycanEntityBond struct {
+	Atom1 ProteinLibraryScreenStartParamsProteinEntityGlycanEntityBondAtom1 `json:"atom1,omitzero" api:"required"`
+	Atom2 ProteinLibraryScreenStartParamsProteinEntityGlycanEntityBondAtom2 `json:"atom2,omitzero" api:"required"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenStartParamsProteinEntityGlycanEntityBond) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenStartParamsProteinEntityGlycanEntityBond
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenStartParamsProteinEntityGlycanEntityBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type ProteinLibraryScreenStartParamsProteinEntityGlycanEntityBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenStartParamsProteinEntityGlycanEntityBondAtom1) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenStartParamsProteinEntityGlycanEntityBondAtom1
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenStartParamsProteinEntityGlycanEntityBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type ProteinLibraryScreenStartParamsProteinEntityGlycanEntityBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenStartParamsProteinEntityGlycanEntityBondAtom2) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenStartParamsProteinEntityGlycanEntityBondAtom2
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenStartParamsProteinEntityGlycanEntityBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ID, Ccd are required.
+type ProteinLibraryScreenStartParamsProteinEntityGlycanEntityResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenStartParamsProteinEntityGlycanEntityResidue) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenStartParamsProteinEntityGlycanEntityResidue
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenStartParamsProteinEntityGlycanEntityResidue) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -7626,11 +9318,11 @@ func (r *ProteinLibraryScreenStartParamsTargetStructureTemplateTargetStructureCi
 type ProteinLibraryScreenStartParamsTargetNoTemplateTarget struct {
 	// Entities (proteins, RNA, DNA, ligands) defining the target complex.
 	Entities []ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityUnion `json:"entities,omitzero" api:"required"`
-	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
-	// references currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Covalent bond constraints between atoms in the target complex. Ligand atom
+	// references support CCD atom names and explicitly atom-mapped SMILES atoms.
 	Bonds []ProteinLibraryScreenStartParamsTargetNoTemplateTargetBond `json:"bonds,omitzero"`
-	// Structural constraints (pocket and contact). Atom-level ligand references
-	// currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Structural constraints (pocket and contact). Ligand atom references support CCD
+	// atom names and explicitly atom-mapped SMILES atoms.
 	Constraints []ProteinLibraryScreenStartParamsTargetNoTemplateTargetConstraintUnion `json:"constraints,omitzero"`
 	// Chain IDs of ligand entities that are part of the binding epitope. Ligands are
 	// marked as epitope in full (no residue-level selection).
@@ -7665,6 +9357,7 @@ type ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityUnion struct {
 	OfProteinLibraryScreenStartsTargetNoTemplateTargetEntityDnaEntity          *ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityDnaEntity          `json:",omitzero,inline"`
 	OfProteinLibraryScreenStartsTargetNoTemplateTargetEntityLigandCcdEntity    *ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityLigandCcdEntity    `json:",omitzero,inline"`
 	OfProteinLibraryScreenStartsTargetNoTemplateTargetEntityLigandSmilesEntity *ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityLigandSmilesEntity `json:",omitzero,inline"`
+	OfProteinLibraryScreenStartsTargetNoTemplateTargetEntityGlycanEntity       *ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntity       `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -7673,7 +9366,8 @@ func (u ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityUnion) Marsha
 		u.OfProteinLibraryScreenStartsTargetNoTemplateTargetEntityRnaEntity,
 		u.OfProteinLibraryScreenStartsTargetNoTemplateTargetEntityDnaEntity,
 		u.OfProteinLibraryScreenStartsTargetNoTemplateTargetEntityLigandCcdEntity,
-		u.OfProteinLibraryScreenStartsTargetNoTemplateTargetEntityLigandSmilesEntity)
+		u.OfProteinLibraryScreenStartsTargetNoTemplateTargetEntityLigandSmilesEntity,
+		u.OfProteinLibraryScreenStartsTargetNoTemplateTargetEntityGlycanEntity)
 }
 func (u *ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -7830,7 +9524,8 @@ func (r *ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityDnaEntityMod
 type ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityLigandCcdEntity struct {
 	// Chain IDs for this ligand
 	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
-	// CCD code (e.g., ATP, ADP)
+	// One CCD code (for example ATP or ADP). This field remains a string; use a glycan
+	// entity for multiple connected CCD residues.
 	Value string `json:"value" api:"required"`
 	// This field can be elided, and will marshal its zero value as "ligand_ccd".
 	Type constant.LigandCcd `json:"type" default:"ligand_ccd"`
@@ -7864,16 +9559,109 @@ func (r *ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityLigandSmiles
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+//
+// The properties Bonds, ChainIDs, Residues, Type are required.
+type ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntity struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntityBond `json:"bonds,omitzero" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntityResidue `json:"residues,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "glycan".
+	Type constant.Glycan `json:"type" default:"glycan"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+//
+// The properties Atom1, Atom2 are required.
+type ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntityBond struct {
+	Atom1 ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom1 `json:"atom1,omitzero" api:"required"`
+	Atom2 ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom2 `json:"atom2,omitzero" api:"required"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntityBond) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntityBond
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntityBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom1) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom1
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom2) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom2
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ID, Ccd are required.
+type ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntityResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntityResidue) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntityResidue
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenStartParamsTargetNoTemplateTargetEntityGlycanEntityResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 //
 // The properties Atom1, Atom2 are required.
 type ProteinLibraryScreenStartParamsTargetNoTemplateTargetBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1Union `json:"atom1,omitzero" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2Union `json:"atom2,omitzero" api:"required"`
 	paramObj
 }
@@ -7890,39 +9678,18 @@ func (r *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBond) UnmarshalJSO
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1Union struct {
-	OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom1LigandAtom  *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1LigandAtom  `json:",omitzero,inline"`
 	OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom1PolymerAtom *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1PolymerAtom `json:",omitzero,inline"`
+	OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom1CcdAtom     *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1CcdAtom     `json:",omitzero,inline"`
+	OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom1SmilesAtom  *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1SmilesAtom  `json:",omitzero,inline"`
+	OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom1LigandAtom  *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1LigandAtom  `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1Union) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom1LigandAtom, u.OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom1PolymerAtom)
+	return param.MarshalUnion(u, u.OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom1PolymerAtom, u.OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom1CcdAtom, u.OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom1SmilesAtom, u.OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom1LigandAtom)
 }
 func (u *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-//
-// The properties AtomName, ChainID, Type are required.
-type ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string `json:"chain_id" api:"required"`
-	// This field can be elided, and will marshal its zero value as "ligand_atom".
-	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
-	paramObj
-}
-
-func (r ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
-	type shadow ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1LigandAtom
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties AtomName, ChainID, ResidueIndex, Type are required.
@@ -7946,29 +9713,60 @@ func (r *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1PolymerAt
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
+// Atom reference for a specific CCD residue in a glycan graph.
 //
-// Use [param.IsOmitted] to confirm if a field is set.
-type ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2Union struct {
-	OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom2LigandAtom  *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2LigandAtom  `json:",omitzero,inline"`
-	OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom2PolymerAtom *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2PolymerAtom `json:",omitzero,inline"`
-	paramUnion
+// The properties AtomID, ChainID, ResidueID, Type are required.
+type ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string `json:"residue_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ccd_atom".
+	Type constant.CcdAtom `json:"type" default:"ccd_atom"`
+	paramObj
 }
 
-func (u ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2Union) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom2LigandAtom, u.OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom2PolymerAtom)
+func (r ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1CcdAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1CcdAtom
+	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (u *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
+func (r *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+//
+// The properties AtomMap, ChainID, Type are required.
+type ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "smiles_atom".
+	Type constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1SmilesAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1SmilesAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
 //
 // The properties AtomName, ChainID, Type are required.
-type ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+type ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string `json:"chain_id" api:"required"`
@@ -7977,12 +9775,30 @@ type ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2LigandAtom st
 	paramObj
 }
 
-func (r ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
-	type shadow ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2LigandAtom
+func (r ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1LigandAtom
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
+func (r *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2Union struct {
+	OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom2PolymerAtom *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2PolymerAtom `json:",omitzero,inline"`
+	OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom2CcdAtom     *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2CcdAtom     `json:",omitzero,inline"`
+	OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom2SmilesAtom  *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2SmilesAtom  `json:",omitzero,inline"`
+	OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom2LigandAtom  *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2LigandAtom  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2Union) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom2PolymerAtom, u.OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom2CcdAtom, u.OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom2SmilesAtom, u.OfProteinLibraryScreenStartsTargetNoTemplateTargetBondAtom2LigandAtom)
+}
+func (u *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 // The properties AtomName, ChainID, ResidueIndex, Type are required.
@@ -8003,6 +9819,76 @@ func (r ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2PolymerAto
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2PolymerAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+//
+// The properties AtomID, ChainID, ResidueID, Type are required.
+type ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string `json:"residue_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ccd_atom".
+	Type constant.CcdAtom `json:"type" default:"ccd_atom"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2CcdAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2CcdAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+//
+// The properties AtomMap, ChainID, Type are required.
+type ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "smiles_atom".
+	Type constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2SmilesAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2SmilesAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+//
+// The properties AtomName, ChainID, Type are required.
+type ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ligand_atom".
+	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
+	paramObj
+}
+
+func (r ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2LigandAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinLibraryScreenStartParamsTargetNoTemplateTargetBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -8051,18 +9937,16 @@ func (r *ProteinLibraryScreenStartParamsTargetNoTemplateTargetConstraintPocketCo
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Contact constraint between two tokens. Atom-level ligand references currently
-// support ligand_ccd entities only; ligand_smiles is unsupported.
+// Maximum-distance contact constraint between two polymer residues or ligand
+// atoms.
 //
 // The properties MaxDistanceAngstrom, Token1, Token2, Type are required.
 type ProteinLibraryScreenStartParamsTargetNoTemplateTargetConstraintContactConstraint struct {
 	// Maximum distance in Angstroms
 	MaxDistanceAngstrom float64 `json:"max_distance_angstrom" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token1 ProteinLibraryScreenStartParamsTargetNoTemplateTargetConstraintContactConstraintToken1Union `json:"token1,omitzero" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token2 ProteinLibraryScreenStartParamsTargetNoTemplateTargetConstraintContactConstraintToken2Union `json:"token2,omitzero" api:"required"`
 	// Whether to force the constraint
 	Force param.Opt[bool] `json:"force,omitzero"`
@@ -8114,13 +9998,14 @@ func (r *ProteinLibraryScreenStartParamsTargetNoTemplateTargetConstraintContactC
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 //
 // The properties AtomName, ChainID, Type are required.
 type ProteinLibraryScreenStartParamsTargetNoTemplateTargetConstraintContactConstraintToken1LigandContactToken struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string `json:"chain_id" api:"required"`
@@ -8172,13 +10057,14 @@ func (r *ProteinLibraryScreenStartParamsTargetNoTemplateTargetConstraintContactC
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 //
 // The properties AtomName, ChainID, Type are required.
 type ProteinLibraryScreenStartParamsTargetNoTemplateTargetConstraintContactConstraintToken2LigandContactToken struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string `json:"chain_id" api:"required"`

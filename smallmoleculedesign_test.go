@@ -109,26 +109,30 @@ func TestSmallMoleculeDesignEstimateCostWithOptionalParams(t *testing.T) {
 	_, err := client.SmallMolecule.Design.EstimateCost(context.TODO(), boltzapi.SmallMoleculeDesignEstimateCostParams{
 		NumMolecules: 10,
 		Target: boltzapi.SmallMoleculeDesignEstimateCostParamsTarget{
-			Entities: []boltzapi.SmallMoleculeDesignEstimateCostParamsTargetEntity{{
-				ChainIDs: []string{"string"},
-				Value:    "value",
-				Cyclic:   boltzapi.Bool(true),
-				Modifications: []boltzapi.SmallMoleculeDesignEstimateCostParamsTargetEntityModification{{
-					ResidueIndex: 0,
-					Value:        "value",
-				}},
+			Entities: []boltzapi.SmallMoleculeDesignEstimateCostParamsTargetEntityUnion{{
+				OfSmallMoleculeDesignEstimateCostsTargetEntityProteinEntity: &boltzapi.SmallMoleculeDesignEstimateCostParamsTargetEntityProteinEntity{
+					ChainIDs: []string{"string"},
+					Value:    "value",
+					Cyclic:   boltzapi.Bool(true),
+					Modifications: []boltzapi.SmallMoleculeDesignEstimateCostParamsTargetEntityProteinEntityModification{{
+						ResidueIndex: 0,
+						Value:        "value",
+					}},
+				},
 			}},
 			Bonds: []boltzapi.SmallMoleculeDesignEstimateCostParamsTargetBond{{
 				Atom1: boltzapi.SmallMoleculeDesignEstimateCostParamsTargetBondAtom1Union{
-					OfSmallMoleculeDesignEstimateCostsTargetBondAtom1LigandAtom: &boltzapi.SmallMoleculeDesignEstimateCostParamsTargetBondAtom1LigandAtom{
-						AtomName: "atom_name",
-						ChainID:  "chain_id",
+					OfSmallMoleculeDesignEstimateCostsTargetBondAtom1PolymerAtom: &boltzapi.SmallMoleculeDesignEstimateCostParamsTargetBondAtom1PolymerAtom{
+						AtomName:     "atom_name",
+						ChainID:      "chain_id",
+						ResidueIndex: 0,
 					},
 				},
 				Atom2: boltzapi.SmallMoleculeDesignEstimateCostParamsTargetBondAtom2Union{
-					OfSmallMoleculeDesignEstimateCostsTargetBondAtom2LigandAtom: &boltzapi.SmallMoleculeDesignEstimateCostParamsTargetBondAtom2LigandAtom{
-						AtomName: "atom_name",
-						ChainID:  "chain_id",
+					OfSmallMoleculeDesignEstimateCostsTargetBondAtom2PolymerAtom: &boltzapi.SmallMoleculeDesignEstimateCostParamsTargetBondAtom2PolymerAtom{
+						AtomName:     "atom_name",
+						ChainID:      "chain_id",
+						ResidueIndex: 0,
 					},
 				},
 			}},
@@ -245,26 +249,30 @@ func TestSmallMoleculeDesignStartWithOptionalParams(t *testing.T) {
 	_, err := client.SmallMolecule.Design.Start(context.TODO(), boltzapi.SmallMoleculeDesignStartParams{
 		NumMolecules: 10,
 		Target: boltzapi.SmallMoleculeDesignStartParamsTarget{
-			Entities: []boltzapi.SmallMoleculeDesignStartParamsTargetEntity{{
-				ChainIDs: []string{"string"},
-				Value:    "value",
-				Cyclic:   boltzapi.Bool(true),
-				Modifications: []boltzapi.SmallMoleculeDesignStartParamsTargetEntityModification{{
-					ResidueIndex: 0,
-					Value:        "value",
-				}},
+			Entities: []boltzapi.SmallMoleculeDesignStartParamsTargetEntityUnion{{
+				OfSmallMoleculeDesignStartsTargetEntityProteinEntity: &boltzapi.SmallMoleculeDesignStartParamsTargetEntityProteinEntity{
+					ChainIDs: []string{"string"},
+					Value:    "value",
+					Cyclic:   boltzapi.Bool(true),
+					Modifications: []boltzapi.SmallMoleculeDesignStartParamsTargetEntityProteinEntityModification{{
+						ResidueIndex: 0,
+						Value:        "value",
+					}},
+				},
 			}},
 			Bonds: []boltzapi.SmallMoleculeDesignStartParamsTargetBond{{
 				Atom1: boltzapi.SmallMoleculeDesignStartParamsTargetBondAtom1Union{
-					OfSmallMoleculeDesignStartsTargetBondAtom1LigandAtom: &boltzapi.SmallMoleculeDesignStartParamsTargetBondAtom1LigandAtom{
-						AtomName: "atom_name",
-						ChainID:  "chain_id",
+					OfSmallMoleculeDesignStartsTargetBondAtom1PolymerAtom: &boltzapi.SmallMoleculeDesignStartParamsTargetBondAtom1PolymerAtom{
+						AtomName:     "atom_name",
+						ChainID:      "chain_id",
+						ResidueIndex: 0,
 					},
 				},
 				Atom2: boltzapi.SmallMoleculeDesignStartParamsTargetBondAtom2Union{
-					OfSmallMoleculeDesignStartsTargetBondAtom2LigandAtom: &boltzapi.SmallMoleculeDesignStartParamsTargetBondAtom2LigandAtom{
-						AtomName: "atom_name",
-						ChainID:  "chain_id",
+					OfSmallMoleculeDesignStartsTargetBondAtom2PolymerAtom: &boltzapi.SmallMoleculeDesignStartParamsTargetBondAtom2PolymerAtom{
+						AtomName:     "atom_name",
+						ChainID:      "chain_id",
+						ResidueIndex: 0,
 					},
 				},
 			}},

@@ -136,15 +136,17 @@ func TestPredictionStructureAndBindingEstimateCostWithOptionalParams(t *testing.
 			},
 			Bonds: []boltzapi.PredictionStructureAndBindingEstimateCostParamsInputBond{{
 				Atom1: boltzapi.PredictionStructureAndBindingEstimateCostParamsInputBondAtom1Union{
-					OfPredictionStructureAndBindingEstimateCostsInputBondAtom1LigandAtom: &boltzapi.PredictionStructureAndBindingEstimateCostParamsInputBondAtom1LigandAtom{
-						AtomName: "atom_name",
-						ChainID:  "chain_id",
+					OfPredictionStructureAndBindingEstimateCostsInputBondAtom1PolymerAtom: &boltzapi.PredictionStructureAndBindingEstimateCostParamsInputBondAtom1PolymerAtom{
+						AtomName:     "atom_name",
+						ChainID:      "chain_id",
+						ResidueIndex: 0,
 					},
 				},
 				Atom2: boltzapi.PredictionStructureAndBindingEstimateCostParamsInputBondAtom2Union{
-					OfPredictionStructureAndBindingEstimateCostsInputBondAtom2LigandAtom: &boltzapi.PredictionStructureAndBindingEstimateCostParamsInputBondAtom2LigandAtom{
-						AtomName: "atom_name",
-						ChainID:  "chain_id",
+					OfPredictionStructureAndBindingEstimateCostsInputBondAtom2PolymerAtom: &boltzapi.PredictionStructureAndBindingEstimateCostParamsInputBondAtom2PolymerAtom{
+						AtomName:     "atom_name",
+						ChainID:      "chain_id",
+						ResidueIndex: 0,
 					},
 				},
 			}},
@@ -233,15 +235,17 @@ func TestPredictionStructureAndBindingStartWithOptionalParams(t *testing.T) {
 			},
 			Bonds: []boltzapi.PredictionStructureAndBindingStartParamsInputBond{{
 				Atom1: boltzapi.PredictionStructureAndBindingStartParamsInputBondAtom1Union{
-					OfPredictionStructureAndBindingStartsInputBondAtom1LigandAtom: &boltzapi.PredictionStructureAndBindingStartParamsInputBondAtom1LigandAtom{
-						AtomName: "atom_name",
-						ChainID:  "chain_id",
+					OfPredictionStructureAndBindingStartsInputBondAtom1PolymerAtom: &boltzapi.PredictionStructureAndBindingStartParamsInputBondAtom1PolymerAtom{
+						AtomName:     "atom_name",
+						ChainID:      "chain_id",
+						ResidueIndex: 0,
 					},
 				},
 				Atom2: boltzapi.PredictionStructureAndBindingStartParamsInputBondAtom2Union{
-					OfPredictionStructureAndBindingStartsInputBondAtom2LigandAtom: &boltzapi.PredictionStructureAndBindingStartParamsInputBondAtom2LigandAtom{
-						AtomName: "atom_name",
-						ChainID:  "chain_id",
+					OfPredictionStructureAndBindingStartsInputBondAtom2PolymerAtom: &boltzapi.PredictionStructureAndBindingStartParamsInputBondAtom2PolymerAtom{
+						AtomName:     "atom_name",
+						ChainID:      "chain_id",
+						ResidueIndex: 0,
 					},
 				},
 			}},

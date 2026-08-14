@@ -839,7 +839,8 @@ func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecRes
 // [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse],
 // [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse],
 // [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse],
-// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse].
+// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityUnion struct {
@@ -853,12 +854,20 @@ type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecRespons
 	// [[]ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification],
 	// [[]ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification]
 	Modifications ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
+	Bonds []ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
+	Residues []ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -889,6 +898,11 @@ func (u ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResp
 }
 
 func (u ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse() (v ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse() (v ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1237,6 +1251,125 @@ func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecRes
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                                                 `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond struct {
+	Atom1 ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseModality string
 
 const (
@@ -1246,14 +1379,12 @@ const (
 	ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseModalityCustomProtein ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseModality = "custom_protein"
 )
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1274,32 +1405,56 @@ func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecRes
 
 // ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union
 // contains all possible properties and values from
-// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse],
-// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
+// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) {
+func (u ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) {
+func (u ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1310,33 +1465,6 @@ func (u ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResp
 }
 
 func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1367,52 +1495,67 @@ func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecRes
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union
-// contains all possible properties and values from
-// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse],
-// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -1428,10 +1571,75 @@ type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecRespons
 }
 
 // Returns the unmodified JSON received from the API
-func (r ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) RawJSON() string {
+func (r ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union
+// contains all possible properties and values from
+// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1459,6 +1667,89 @@ func (r ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResp
 	return r.JSON.raw
 }
 func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -2127,7 +2418,8 @@ func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderS
 // [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse],
 // [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse],
 // [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse],
-// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse].
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion struct {
@@ -2141,12 +2433,20 @@ type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecR
 	// [[]ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification],
 	// [[]ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification]
 	Modifications ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
+	Bonds []ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
+	Residues []ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -2177,6 +2477,11 @@ func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSp
 }
 
 func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2525,6 +2830,125 @@ func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderS
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                                                                                                      `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond struct {
+	Atom1 ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality string
 
 const (
@@ -2534,14 +2958,12 @@ const (
 	ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModalityCustomProtein ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality = "custom_protein"
 )
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -2562,32 +2984,56 @@ func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderS
 
 // ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union
 // contains all possible properties and values from
-// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse],
-// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) {
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) {
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2598,33 +3044,6 @@ func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSp
 }
 
 func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -2655,52 +3074,67 @@ func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderS
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union
-// contains all possible properties and values from
-// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse],
-// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -2716,10 +3150,75 @@ type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecR
 }
 
 // Returns the unmodified JSON received from the API
-func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) RawJSON() string {
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union
+// contains all possible properties and values from
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse],
+// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse() (v ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -2747,6 +3246,89 @@ func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSp
 	return r.JSON.raw
 }
 func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -3151,11 +3733,11 @@ type ProteinDesignGetResponseInputTargetNoTemplateTargetResponse struct {
 	// Entities (proteins, RNA, DNA, ligands) defining the target complex.
 	Entities []ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityUnion `json:"entities" api:"required"`
 	Type     constant.NoTemplate                                                      `json:"type" default:"no_template"`
-	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
-	// references currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Covalent bond constraints between atoms in the target complex. Ligand atom
+	// references support CCD atom names and explicitly atom-mapped SMILES atoms.
 	Bonds []ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBond `json:"bonds"`
-	// Structural constraints (pocket and contact). Atom-level ligand references
-	// currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Structural constraints (pocket and contact). Ligand atom references support CCD
+	// atom names and explicitly atom-mapped SMILES atoms.
 	Constraints []ProteinDesignGetResponseInputTargetNoTemplateTargetResponseConstraintUnion `json:"constraints"`
 	// Chain IDs of ligand entities that are part of the binding epitope. Ligands are
 	// marked as epitope in full (no residue-level selection).
@@ -3196,7 +3778,8 @@ func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponse) UnmarshalJ
 // [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponse],
 // [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponse],
 // [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityLigandCcdEntityResponse],
-// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse].
+// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse],
+// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityUnion struct {
@@ -3209,12 +3792,20 @@ type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityUnion stru
 	// [[]ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponseModification],
 	// [[]ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponseModification]
 	Modifications ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
+	Bonds []ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
+	Residues []ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -3240,6 +3831,11 @@ func (u ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityUnion) 
 }
 
 func (u ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityUnion) AsProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse() (v ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityUnion) AsProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse() (v ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -3473,7 +4069,8 @@ type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityLigandCcdE
 	// Chain IDs for this ligand
 	ChainIDs []string           `json:"chain_ids" api:"required"`
 	Type     constant.LigandCcd `json:"type" default:"ligand_ccd"`
-	// CCD code (e.g., ATP, ADP)
+	// One CCD code (for example ATP or ADP). This field remains a string; use a glycan
+	// entity for multiple connected CCD residues.
 	Value string `json:"value" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -3517,14 +4114,131 @@ func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityLigand
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                                `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond struct {
+	Atom1 ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -3545,32 +4259,56 @@ func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBond) Unmars
 
 // ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1Union
 // contains all possible properties and values from
-// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse],
-// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse].
+// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse],
+// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse],
+// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse],
+// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse() (v ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) {
+func (u ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse() (v ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse() (v ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse) {
+func (u ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse() (v ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse() (v ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse() (v ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -3581,33 +4319,6 @@ func (u ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1Unio
 }
 
 func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -3638,52 +4349,67 @@ func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1Pol
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union
-// contains all possible properties and values from
-// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse],
-// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse() (v ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse() (v ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -3699,10 +4425,75 @@ type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandA
 }
 
 // Returns the unmodified JSON received from the API
-func (r ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) RawJSON() string {
+func (r ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union
+// contains all possible properties and values from
+// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse],
+// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse],
+// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse],
+// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse() (v ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse() (v ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse() (v ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse() (v ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -3730,6 +4521,89 @@ func (r ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2Poly
 	return r.JSON.raw
 }
 func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -3820,16 +4694,14 @@ func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseConstraintPo
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Contact constraint between two tokens. Atom-level ligand references currently
-// support ligand_ccd entities only; ligand_smiles is unsupported.
+// Maximum-distance contact constraint between two polymer residues or ligand
+// atoms.
 type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponse struct {
 	// Maximum distance in Angstroms
 	MaxDistanceAngstrom float64 `json:"max_distance_angstrom" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token1 ProteinDesignGetResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken1Union `json:"token1" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token2 ProteinDesignGetResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken2Union `json:"token2" api:"required"`
 	Type   constant.Contact                                                                                          `json:"type" default:"contact"`
 	// Whether to force the constraint
@@ -3921,11 +4793,12 @@ func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseConstraintCo
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken1LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -4015,11 +4888,12 @@ func (r *ProteinDesignGetResponseInputTargetNoTemplateTargetResponseConstraintCo
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type ProteinDesignGetResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken2LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -4937,7 +5811,8 @@ func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNo
 // [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity],
 // [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity],
 // [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity],
-// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity].
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnion struct {
@@ -4951,12 +5826,20 @@ type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemp
 	// [[]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification],
 	// [[]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification]
 	Modifications ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity].
+	Bonds []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity].
+	Residues []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -4987,6 +5870,11 @@ func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoT
 }
 
 func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -5335,6 +6223,125 @@ func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNo
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                                                      `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond struct {
+	Atom1 ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecModality string
 
 const (
@@ -5344,14 +6351,12 @@ const (
 	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecModalityCustomProtein ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecModality = "custom_protein"
 )
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -5372,32 +6377,56 @@ func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNo
 
 // ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1Union
 // contains all possible properties and values from
-// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom],
-// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom].
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) {
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom) {
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -5408,33 +6437,6 @@ func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoT
 }
 
 func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -5465,52 +6467,67 @@ func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNo
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union
-// contains all possible properties and values from
-// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom],
-// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -5526,10 +6543,75 @@ type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemp
 }
 
 // Returns the unmodified JSON received from the API
-func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) RawJSON() string {
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union
+// contains all possible properties and values from
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -5557,6 +6639,89 @@ func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoT
 	return r.JSON.raw
 }
 func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -6294,7 +7459,8 @@ func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUn
 // [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity],
 // [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity],
 // [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity],
-// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity].
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion struct {
@@ -6308,12 +7474,20 @@ type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUnifor
 	// [[]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntityModification],
 	// [[]ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntityModification]
 	Modifications ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity].
+	Bonds []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity].
+	Residues []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -6344,6 +7518,11 @@ func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUni
 }
 
 func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -6692,6 +7871,125 @@ func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUn
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                                                                                                   `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond struct {
+	Atom1 ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality string
 
 const (
@@ -6701,14 +7999,12 @@ const (
 	ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModalityCustomProtein ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality = "custom_protein"
 )
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -6729,32 +8025,56 @@ func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUn
 
 // ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union
 // contains all possible properties and values from
-// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom],
-// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom].
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) {
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom) {
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -6765,33 +8085,6 @@ func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUni
 }
 
 func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -6822,52 +8115,67 @@ func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUn
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union
-// contains all possible properties and values from
-// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom],
-// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -6883,10 +8191,75 @@ type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUnifor
 }
 
 // Returns the unmodified JSON received from the API
-func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) RawJSON() string {
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union
+// contains all possible properties and values from
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom],
+// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) AsProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom() (v ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -6914,6 +8287,89 @@ func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUni
 	return r.JSON.raw
 }
 func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListCuratedSpecificationsResponseDataBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -7149,7 +8605,8 @@ func (r *ProteinDesignListResultsResponseArtifactsStructure) UnmarshalJSON(data 
 // [ProteinDesignListResultsResponseEntityRnaEntity],
 // [ProteinDesignListResultsResponseEntityDnaEntity],
 // [ProteinDesignListResultsResponseEntityLigandCcdEntity],
-// [ProteinDesignListResultsResponseEntityLigandSmilesEntity].
+// [ProteinDesignListResultsResponseEntityLigandSmilesEntity],
+// [ProteinDesignListResultsResponseEntityGlycanEntity].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignListResultsResponseEntityUnion struct {
@@ -7162,12 +8619,18 @@ type ProteinDesignListResultsResponseEntityUnion struct {
 	// [[]ProteinDesignListResultsResponseEntityRnaEntityModification],
 	// [[]ProteinDesignListResultsResponseEntityDnaEntityModification]
 	Modifications ProteinDesignListResultsResponseEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant [ProteinDesignListResultsResponseEntityGlycanEntity].
+	Bonds []ProteinDesignListResultsResponseEntityGlycanEntityBond `json:"bonds"`
+	// This field is from variant [ProteinDesignListResultsResponseEntityGlycanEntity].
+	Residues []ProteinDesignListResultsResponseEntityGlycanEntityResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -7193,6 +8656,11 @@ func (u ProteinDesignListResultsResponseEntityUnion) AsProteinDesignListResultsR
 }
 
 func (u ProteinDesignListResultsResponseEntityUnion) AsProteinDesignListResultsResponseEntityLigandSmilesEntity() (v ProteinDesignListResultsResponseEntityLigandSmilesEntity) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignListResultsResponseEntityUnion) AsProteinDesignListResultsResponseEntityGlycanEntity() (v ProteinDesignListResultsResponseEntityGlycanEntity) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -7417,7 +8885,8 @@ type ProteinDesignListResultsResponseEntityLigandCcdEntity struct {
 	// Chain IDs for this ligand
 	ChainIDs []string           `json:"chain_ids" api:"required"`
 	Type     constant.LigandCcd `json:"type" default:"ligand_ccd"`
-	// CCD code (e.g., ATP, ADP)
+	// One CCD code (for example ATP or ADP). This field remains a string; use a glycan
+	// entity for multiple connected CCD residues.
 	Value string `json:"value" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -7454,6 +8923,121 @@ type ProteinDesignListResultsResponseEntityLigandSmilesEntity struct {
 // Returns the unmodified JSON received from the API
 func (r ProteinDesignListResultsResponseEntityLigandSmilesEntity) RawJSON() string { return r.JSON.raw }
 func (r *ProteinDesignListResultsResponseEntityLigandSmilesEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinDesignListResultsResponseEntityGlycanEntity struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinDesignListResultsResponseEntityGlycanEntityBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinDesignListResultsResponseEntityGlycanEntityResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                             `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListResultsResponseEntityGlycanEntity) RawJSON() string { return r.JSON.raw }
+func (r *ProteinDesignListResultsResponseEntityGlycanEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinDesignListResultsResponseEntityGlycanEntityBond struct {
+	Atom1 ProteinDesignListResultsResponseEntityGlycanEntityBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinDesignListResultsResponseEntityGlycanEntityBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListResultsResponseEntityGlycanEntityBond) RawJSON() string { return r.JSON.raw }
+func (r *ProteinDesignListResultsResponseEntityGlycanEntityBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListResultsResponseEntityGlycanEntityBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListResultsResponseEntityGlycanEntityBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListResultsResponseEntityGlycanEntityBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListResultsResponseEntityGlycanEntityBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListResultsResponseEntityGlycanEntityBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListResultsResponseEntityGlycanEntityBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignListResultsResponseEntityGlycanEntityResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignListResultsResponseEntityGlycanEntityResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignListResultsResponseEntityGlycanEntityResidue) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -8182,7 +9766,8 @@ func (r *ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpec
 // [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse],
 // [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse],
 // [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse],
-// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse].
+// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityUnion struct {
@@ -8196,12 +9781,20 @@ type ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResp
 	// [[]ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification],
 	// [[]ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification]
 	Modifications ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
+	Bonds []ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
+	Residues []ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -8232,6 +9825,11 @@ func (u ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecR
 }
 
 func (u ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse() (v ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse() (v ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -8580,6 +10178,125 @@ func (r *ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpec
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                                                    `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond struct {
+	Atom1 ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseModality string
 
 const (
@@ -8589,14 +10306,12 @@ const (
 	ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseModalityCustomProtein ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseModality = "custom_protein"
 )
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -8617,32 +10332,56 @@ func (r *ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpec
 
 // ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union
 // contains all possible properties and values from
-// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse],
-// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
+// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) {
+func (u ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) {
+func (u ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -8653,33 +10392,6 @@ func (u ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecR
 }
 
 func (r *ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -8710,52 +10422,67 @@ func (r *ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpec
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union
-// contains all possible properties and values from
-// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse],
-// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -8771,10 +10498,75 @@ type ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResp
 }
 
 // Returns the unmodified JSON received from the API
-func (r ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) RawJSON() string {
+func (r ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union
+// contains all possible properties and values from
+// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -8802,6 +10594,89 @@ func (r ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecR
 	return r.JSON.raw
 }
 func (r *ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -9470,7 +11345,8 @@ func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBind
 // [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse],
 // [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse],
 // [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse],
-// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse].
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion struct {
@@ -9484,12 +11360,20 @@ type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSp
 	// [[]ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification],
 	// [[]ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification]
 	Modifications ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
+	Bonds []ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
+	Residues []ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -9520,6 +11404,11 @@ func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinde
 }
 
 func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -9868,6 +11757,125 @@ func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBind
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                                                                                                         `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond struct {
+	Atom1 ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality string
 
 const (
@@ -9877,14 +11885,12 @@ const (
 	ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModalityCustomProtein ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality = "custom_protein"
 )
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -9905,32 +11911,56 @@ func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBind
 
 // ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union
 // contains all possible properties and values from
-// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse],
-// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) {
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) {
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -9941,33 +11971,6 @@ func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinde
 }
 
 func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -9998,52 +12001,67 @@ func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBind
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union
-// contains all possible properties and values from
-// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse],
-// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -10059,10 +12077,75 @@ type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSp
 }
 
 // Returns the unmodified JSON received from the API
-func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) RawJSON() string {
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union
+// contains all possible properties and values from
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse],
+// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse() (v ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -10090,6 +12173,89 @@ func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinde
 	return r.JSON.raw
 }
 func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -10494,11 +12660,11 @@ type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponse struct {
 	// Entities (proteins, RNA, DNA, ligands) defining the target complex.
 	Entities []ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityUnion `json:"entities" api:"required"`
 	Type     constant.NoTemplate                                                         `json:"type" default:"no_template"`
-	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
-	// references currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Covalent bond constraints between atoms in the target complex. Ligand atom
+	// references support CCD atom names and explicitly atom-mapped SMILES atoms.
 	Bonds []ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBond `json:"bonds"`
-	// Structural constraints (pocket and contact). Atom-level ligand references
-	// currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Structural constraints (pocket and contact). Ligand atom references support CCD
+	// atom names and explicitly atom-mapped SMILES atoms.
 	Constraints []ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseConstraintUnion `json:"constraints"`
 	// Chain IDs of ligand entities that are part of the binding epitope. Ligands are
 	// marked as epitope in full (no residue-level selection).
@@ -10539,7 +12705,8 @@ func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponse) Unmarsh
 // [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponse],
 // [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponse],
 // [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityLigandCcdEntityResponse],
-// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse].
+// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse],
+// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityUnion struct {
@@ -10552,12 +12719,20 @@ type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityUnion s
 	// [[]ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponseModification],
 	// [[]ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponseModification]
 	Modifications ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
+	Bonds []ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
+	Residues []ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -10583,6 +12758,11 @@ func (u ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityUnio
 }
 
 func (u ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityUnion) AsProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse() (v ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityUnion) AsProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse() (v ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -10816,7 +12996,8 @@ type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityLigandC
 	// Chain IDs for this ligand
 	ChainIDs []string           `json:"chain_ids" api:"required"`
 	Type     constant.LigandCcd `json:"type" default:"ligand_ccd"`
-	// CCD code (e.g., ATP, ADP)
+	// One CCD code (for example ATP or ADP). This field remains a string; use a glycan
+	// entity for multiple connected CCD residues.
 	Value string `json:"value" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -10860,14 +13041,131 @@ func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityLig
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                                   `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond struct {
+	Atom1 ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -10888,32 +13186,56 @@ func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBond) Unm
 
 // ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1Union
 // contains all possible properties and values from
-// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse],
-// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse].
+// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse],
+// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse],
+// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse],
+// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse() (v ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) {
+func (u ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse() (v ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse() (v ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse) {
+func (u ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse() (v ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse() (v ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse() (v ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -10924,33 +13246,6 @@ func (u ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1U
 }
 
 func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -10981,52 +13276,67 @@ func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union
-// contains all possible properties and values from
-// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse],
-// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse() (v ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse() (v ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -11042,10 +13352,75 @@ type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Liga
 }
 
 // Returns the unmodified JSON received from the API
-func (r ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) RawJSON() string {
+func (r ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union
+// contains all possible properties and values from
+// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse],
+// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse],
+// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse],
+// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse() (v ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse() (v ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse() (v ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse() (v ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -11073,6 +13448,89 @@ func (r ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2P
 	return r.JSON.raw
 }
 func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -11163,16 +13621,14 @@ func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseConstrain
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Contact constraint between two tokens. Atom-level ligand references currently
-// support ligand_ccd entities only; ligand_smiles is unsupported.
+// Maximum-distance contact constraint between two polymer residues or ligand
+// atoms.
 type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponse struct {
 	// Maximum distance in Angstroms
 	MaxDistanceAngstrom float64 `json:"max_distance_angstrom" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token1 ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken1Union `json:"token1" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token2 ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken2Union `json:"token2" api:"required"`
 	Type   constant.Contact                                                                                             `json:"type" default:"contact"`
 	// Whether to force the constraint
@@ -11264,11 +13720,12 @@ func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseConstrain
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken1LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -11358,11 +13815,12 @@ func (r *ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseConstrain
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type ProteinDesignResumeResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken2LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -12084,7 +14542,8 @@ func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecR
 // [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse],
 // [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse],
 // [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse],
-// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse].
+// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityUnion struct {
@@ -12098,12 +14557,20 @@ type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecRespo
 	// [[]ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification],
 	// [[]ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification]
 	Modifications ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
+	Bonds []ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
+	Residues []ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -12134,6 +14601,11 @@ func (u ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecRe
 }
 
 func (u ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse() (v ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse() (v ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -12482,6 +14954,125 @@ func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecR
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                                                   `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond struct {
+	Atom1 ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseModality string
 
 const (
@@ -12491,14 +15082,12 @@ const (
 	ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseModalityCustomProtein ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseModality = "custom_protein"
 )
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -12519,32 +15108,56 @@ func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecR
 
 // ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union
 // contains all possible properties and values from
-// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse],
-// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
+// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) {
+func (u ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) {
+func (u ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -12555,33 +15168,6 @@ func (u ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecRe
 }
 
 func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -12612,52 +15198,67 @@ func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecR
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union
-// contains all possible properties and values from
-// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse],
-// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -12673,10 +15274,75 @@ type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecRespo
 }
 
 // Returns the unmodified JSON received from the API
-func (r ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) RawJSON() string {
+func (r ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union
+// contains all possible properties and values from
+// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -12704,6 +15370,89 @@ func (r ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecRe
 	return r.JSON.raw
 }
 func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -13372,7 +16121,8 @@ func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinde
 // [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse],
 // [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse],
 // [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse],
-// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse].
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion struct {
@@ -13386,12 +16136,20 @@ type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpe
 	// [[]ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification],
 	// [[]ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification]
 	Modifications ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
+	Bonds []ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
+	Residues []ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -13422,6 +16180,11 @@ func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinder
 }
 
 func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -13770,6 +16533,125 @@ func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinde
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                                                                                                        `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond struct {
+	Atom1 ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality string
 
 const (
@@ -13779,14 +16661,12 @@ const (
 	ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModalityCustomProtein ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality = "custom_protein"
 )
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -13807,32 +16687,56 @@ func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinde
 
 // ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union
 // contains all possible properties and values from
-// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse],
-// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) {
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) {
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -13843,33 +16747,6 @@ func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinder
 }
 
 func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -13900,52 +16777,67 @@ func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinde
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union
-// contains all possible properties and values from
-// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse],
-// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -13961,10 +16853,75 @@ type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpe
 }
 
 // Returns the unmodified JSON received from the API
-func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) RawJSON() string {
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union
+// contains all possible properties and values from
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse],
+// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse() (v ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -13992,6 +16949,89 @@ func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinder
 	return r.JSON.raw
 }
 func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -14396,11 +17436,11 @@ type ProteinDesignStartResponseInputTargetNoTemplateTargetResponse struct {
 	// Entities (proteins, RNA, DNA, ligands) defining the target complex.
 	Entities []ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityUnion `json:"entities" api:"required"`
 	Type     constant.NoTemplate                                                        `json:"type" default:"no_template"`
-	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
-	// references currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Covalent bond constraints between atoms in the target complex. Ligand atom
+	// references support CCD atom names and explicitly atom-mapped SMILES atoms.
 	Bonds []ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBond `json:"bonds"`
-	// Structural constraints (pocket and contact). Atom-level ligand references
-	// currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Structural constraints (pocket and contact). Ligand atom references support CCD
+	// atom names and explicitly atom-mapped SMILES atoms.
 	Constraints []ProteinDesignStartResponseInputTargetNoTemplateTargetResponseConstraintUnion `json:"constraints"`
 	// Chain IDs of ligand entities that are part of the binding epitope. Ligands are
 	// marked as epitope in full (no residue-level selection).
@@ -14441,7 +17481,8 @@ func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponse) Unmarsha
 // [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponse],
 // [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponse],
 // [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityLigandCcdEntityResponse],
-// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse].
+// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse],
+// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityUnion struct {
@@ -14454,12 +17495,20 @@ type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityUnion st
 	// [[]ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponseModification],
 	// [[]ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponseModification]
 	Modifications ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
+	Bonds []ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
+	Residues []ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -14485,6 +17534,11 @@ func (u ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityUnion
 }
 
 func (u ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityUnion) AsProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse() (v ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityUnion) AsProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse() (v ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -14718,7 +17772,8 @@ type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityLigandCc
 	// Chain IDs for this ligand
 	ChainIDs []string           `json:"chain_ids" api:"required"`
 	Type     constant.LigandCcd `json:"type" default:"ligand_ccd"`
-	// CCD code (e.g., ATP, ADP)
+	// One CCD code (for example ATP or ADP). This field remains a string; use a glycan
+	// entity for multiple connected CCD residues.
 	Value string `json:"value" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -14762,14 +17817,131 @@ func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityLiga
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                                  `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond struct {
+	Atom1 ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -14790,32 +17962,56 @@ func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBond) Unma
 
 // ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1Union
 // contains all possible properties and values from
-// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse],
-// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse].
+// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse],
+// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse],
+// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse],
+// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse() (v ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) {
+func (u ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse() (v ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse() (v ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse) {
+func (u ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse() (v ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse() (v ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse() (v ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -14826,33 +18022,6 @@ func (u ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1Un
 }
 
 func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -14883,52 +18052,67 @@ func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1P
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union
-// contains all possible properties and values from
-// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse],
-// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse() (v ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse() (v ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -14944,10 +18128,75 @@ type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2Ligan
 }
 
 // Returns the unmodified JSON received from the API
-func (r ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) RawJSON() string {
+func (r ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union
+// contains all possible properties and values from
+// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse],
+// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse],
+// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse],
+// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse() (v ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse() (v ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse() (v ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse() (v ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -14975,6 +18224,89 @@ func (r ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2Po
 	return r.JSON.raw
 }
 func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -15065,16 +18397,14 @@ func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseConstraint
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Contact constraint between two tokens. Atom-level ligand references currently
-// support ligand_ccd entities only; ligand_smiles is unsupported.
+// Maximum-distance contact constraint between two polymer residues or ligand
+// atoms.
 type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponse struct {
 	// Maximum distance in Angstroms
 	MaxDistanceAngstrom float64 `json:"max_distance_angstrom" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token1 ProteinDesignStartResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken1Union `json:"token1" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token2 ProteinDesignStartResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken2Union `json:"token2" api:"required"`
 	Type   constant.Contact                                                                                            `json:"type" default:"contact"`
 	// Whether to force the constraint
@@ -15166,11 +18496,12 @@ func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseConstraint
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken1LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -15260,11 +18591,12 @@ func (r *ProteinDesignStartResponseInputTargetNoTemplateTargetResponseConstraint
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type ProteinDesignStartResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken2LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -15986,7 +19318,8 @@ func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecRe
 // [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse],
 // [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse],
 // [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse],
-// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse].
+// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityUnion struct {
@@ -16000,12 +19333,20 @@ type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecRespon
 	// [[]ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification],
 	// [[]ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification]
 	Modifications ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
+	Bonds []ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
+	Residues []ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -16036,6 +19377,11 @@ func (u ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecRes
 }
 
 func (u ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse() (v ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse() (v ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -16384,6 +19730,125 @@ func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecRe
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                                                  `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond struct {
+	Atom1 ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseModality string
 
 const (
@@ -16393,14 +19858,12 @@ const (
 	ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseModalityCustomProtein ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseModality = "custom_protein"
 )
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -16421,32 +19884,56 @@ func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecRe
 
 // ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union
 // contains all possible properties and values from
-// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse],
-// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
+// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) {
+func (u ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) {
+func (u ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -16457,33 +19944,6 @@ func (u ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecRes
 }
 
 func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -16514,52 +19974,67 @@ func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecRe
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union
-// contains all possible properties and values from
-// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse],
-// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -16575,10 +20050,75 @@ type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecRespon
 }
 
 // Returns the unmodified JSON received from the API
-func (r ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) RawJSON() string {
+func (r ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union
+// contains all possible properties and values from
+// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -16606,6 +20146,89 @@ func (r ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecRes
 	return r.JSON.raw
 }
 func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -17274,7 +20897,8 @@ func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinder
 // [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponse],
 // [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponse],
 // [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandSmilesEntityResponse],
-// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse].
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion struct {
@@ -17288,12 +20912,20 @@ type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpec
 	// [[]ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedRnaEntityResponseModification],
 	// [[]ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedDnaEntityResponseModification]
 	Modifications ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
+	Bonds []ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse].
+	Residues []ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -17324,6 +20956,11 @@ func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderS
 }
 
 func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityFixedLigandCcdEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityUnion) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -17672,6 +21309,125 @@ func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinder
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                                                                                                       `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond struct {
+	Atom1 ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseEntityGlycanEntityResponseResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality string
 
 const (
@@ -17681,14 +21437,12 @@ const (
 	ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModalityCustomProtein ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseModality = "custom_protein"
 )
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -17709,32 +21463,56 @@ func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinder
 
 // ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union
 // contains all possible properties and values from
-// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse],
-// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) {
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1PolymerAtomResponse) {
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -17745,33 +21523,6 @@ func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderS
 }
 
 func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -17802,52 +21553,67 @@ func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinder
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union
-// contains all possible properties and values from
-// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse],
-// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1CcdAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -17863,10 +21629,75 @@ type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpec
 }
 
 // Returns the unmodified JSON received from the API
-func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) RawJSON() string {
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union
+// contains all possible properties and values from
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse],
+// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) AsProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse() (v ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -17894,6 +21725,89 @@ func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderS
 	return r.JSON.raw
 }
 func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputBinderSpecificationUniformlySampledBinderSpecResponseBinderSpecificationNoTemplateBinderSpecResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -18298,11 +22212,11 @@ type ProteinDesignStopResponseInputTargetNoTemplateTargetResponse struct {
 	// Entities (proteins, RNA, DNA, ligands) defining the target complex.
 	Entities []ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityUnion `json:"entities" api:"required"`
 	Type     constant.NoTemplate                                                       `json:"type" default:"no_template"`
-	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
-	// references currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Covalent bond constraints between atoms in the target complex. Ligand atom
+	// references support CCD atom names and explicitly atom-mapped SMILES atoms.
 	Bonds []ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBond `json:"bonds"`
-	// Structural constraints (pocket and contact). Atom-level ligand references
-	// currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Structural constraints (pocket and contact). Ligand atom references support CCD
+	// atom names and explicitly atom-mapped SMILES atoms.
 	Constraints []ProteinDesignStopResponseInputTargetNoTemplateTargetResponseConstraintUnion `json:"constraints"`
 	// Chain IDs of ligand entities that are part of the binding epitope. Ligands are
 	// marked as epitope in full (no residue-level selection).
@@ -18343,7 +22257,8 @@ func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponse) Unmarshal
 // [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponse],
 // [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponse],
 // [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityLigandCcdEntityResponse],
-// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse].
+// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse],
+// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityUnion struct {
@@ -18356,12 +22271,20 @@ type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityUnion str
 	// [[]ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityRnaEntityResponseModification],
 	// [[]ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityDnaEntityResponseModification]
 	Modifications ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityUnionModifications `json:"modifications"`
-	JSON          struct {
+	// This field is from variant
+	// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
+	Bonds []ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond `json:"bonds"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse].
+	Residues []ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue `json:"residues"`
+	JSON     struct {
 		ChainIDs      respjson.Field
 		Type          respjson.Field
 		Value         respjson.Field
 		Cyclic        respjson.Field
 		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -18387,6 +22310,11 @@ func (u ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityUnion)
 }
 
 func (u ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityUnion) AsProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse() (v ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityLigandSmilesEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityUnion) AsProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse() (v ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -18620,7 +22548,8 @@ type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityLigandCcd
 	// Chain IDs for this ligand
 	ChainIDs []string           `json:"chain_ids" api:"required"`
 	Type     constant.LigandCcd `json:"type" default:"ligand_ccd"`
-	// CCD code (e.g., ATP, ADP)
+	// One CCD code (for example ATP or ADP). This field remains a string; use a glycan
+	// entity for multiple connected CCD residues.
 	Value string `json:"value" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -18664,14 +22593,131 @@ func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityLigan
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                                 `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond struct {
+	Atom1 ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseEntityGlycanEntityResponseResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1Union `json:"atom1" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union `json:"atom2" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -18692,32 +22738,56 @@ func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBond) Unmar
 
 // ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1Union
 // contains all possible properties and values from
-// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse],
-// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse].
+// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse],
+// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse],
+// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse],
+// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1Union struct {
 	AtomName string `json:"atom_name"`
 	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
 	// This field is from variant
 	// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
 		AtomName     respjson.Field
 		ChainID      respjson.Field
-		Type         respjson.Field
 		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
-func (u ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse() (v ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) {
+func (u ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse() (v ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse() (v ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1PolymerAtomResponse) {
+func (u ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse() (v ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse() (v ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1Union) AsProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse() (v ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -18728,33 +22798,6 @@ func (u ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1Uni
 }
 
 func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string              `json:"chain_id" api:"required"`
-	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AtomName    respjson.Field
-		ChainID     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -18785,52 +22828,67 @@ func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1Po
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union
-// contains all possible properties and values from
-// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse],
-// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union struct {
-	AtomName string `json:"atom_name"`
-	ChainID  string `json:"chain_id"`
-	Type     string `json:"type"`
-	// This field is from variant
-	// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
-	ResidueIndex int64 `json:"residue_index"`
-	JSON         struct {
-		AtomName     respjson.Field
-		ChainID      respjson.Field
-		Type         respjson.Field
-		ResidueIndex respjson.Field
-		raw          string
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
-func (u ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse() (v ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse() (v ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
-func (u ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union) RawJSON() string {
-	return u.JSON.raw
+func (r ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
 }
-
-func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1CcdAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string              `json:"chain_id" api:"required"`
@@ -18846,10 +22904,75 @@ type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2Ligand
 }
 
 // Returns the unmodified JSON received from the API
-func (r ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) RawJSON() string {
+func (r ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union
+// contains all possible properties and values from
+// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse],
+// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse],
+// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse],
+// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse() (v ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse() (v ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse() (v ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union) AsProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse() (v ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -18877,6 +23000,89 @@ func (r ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2Pol
 	return r.JSON.raw
 }
 func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -18967,16 +23173,14 @@ func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseConstraintP
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Contact constraint between two tokens. Atom-level ligand references currently
-// support ligand_ccd entities only; ligand_smiles is unsupported.
+// Maximum-distance contact constraint between two polymer residues or ligand
+// atoms.
 type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponse struct {
 	// Maximum distance in Angstroms
 	MaxDistanceAngstrom float64 `json:"max_distance_angstrom" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token1 ProteinDesignStopResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken1Union `json:"token1" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token2 ProteinDesignStopResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken2Union `json:"token2" api:"required"`
 	Type   constant.Contact                                                                                           `json:"type" default:"contact"`
 	// Whether to force the constraint
@@ -19068,11 +23272,12 @@ func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseConstraintC
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken1LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -19162,11 +23367,12 @@ func (r *ProteinDesignStopResponseInputTargetNoTemplateTargetResponseConstraintC
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 type ProteinDesignStopResponseInputTargetNoTemplateTargetResponseConstraintContactConstraintResponseToken2LigandContactTokenResponse struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string                 `json:"chain_id" api:"required"`
@@ -19648,6 +23854,7 @@ type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntit
 	OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity          *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity          `json:",omitzero,inline"`
 	OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity `json:",omitzero,inline"`
 	OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity    *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity    `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity            *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity            `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -19657,7 +23864,8 @@ func (u ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEn
 		u.OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity,
 		u.OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity,
 		u.OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity,
-		u.OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity)
+		u.OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity,
+		u.OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity)
 }
 func (u *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -19905,6 +24113,101 @@ func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecE
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+//
+// The properties Bonds, ChainIDs, Residues, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond `json:"bonds,omitzero" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue `json:"residues,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "glycan".
+	Type constant.Glycan `json:"type" default:"glycan"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+//
+// The properties Atom1, Atom2 are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond struct {
+	Atom1 ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1 `json:"atom1,omitzero" api:"required"`
+	Atom2 ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2 `json:"atom2,omitzero" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ID, Ccd are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecModality string
 
 const (
@@ -19914,16 +24217,14 @@ const (
 	ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecModalityCustomProtein ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecModality = "custom_protein"
 )
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 //
 // The properties Atom1, Atom2 are required.
 type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1Union `json:"atom1,omitzero" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2Union `json:"atom2,omitzero" api:"required"`
 	paramObj
 }
@@ -19940,39 +24241,18 @@ func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecB
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1Union struct {
-	OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom  *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom  `json:",omitzero,inline"`
 	OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom     *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom     `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom  *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom  `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom  *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom  `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1Union) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom, u.OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom)
+	return param.MarshalUnion(u, u.OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom, u.OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom, u.OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom, u.OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom)
 }
 func (u *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-//
-// The properties AtomName, ChainID, Type are required.
-type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string `json:"chain_id" api:"required"`
-	// This field can be elided, and will marshal its zero value as "ligand_atom".
-	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
-	paramObj
-}
-
-func (r ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
-	type shadow ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties AtomName, ChainID, ResidueIndex, Type are required.
@@ -19996,29 +24276,60 @@ func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecB
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
+// Atom reference for a specific CCD residue in a glycan graph.
 //
-// Use [param.IsOmitted] to confirm if a field is set.
-type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2Union struct {
-	OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom  *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom  `json:",omitzero,inline"`
-	OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom `json:",omitzero,inline"`
-	paramUnion
+// The properties AtomID, ChainID, ResidueID, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string `json:"residue_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ccd_atom".
+	Type constant.CcdAtom `json:"type" default:"ccd_atom"`
+	paramObj
 }
 
-func (u ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2Union) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom, u.OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom)
+func (r ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom
+	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (u *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+//
+// The properties AtomMap, ChainID, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "smiles_atom".
+	Type constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
 //
 // The properties AtomName, ChainID, Type are required.
-type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string `json:"chain_id" api:"required"`
@@ -20027,12 +24338,30 @@ type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondA
 	paramObj
 }
 
-func (r ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
-	type shadow ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom
+func (r ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2Union struct {
+	OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom     *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom     `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom  *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom  `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom  *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2Union) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom, u.OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom, u.OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom, u.OfProteinDesignEstimateCostsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom)
+}
+func (u *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 // The properties AtomName, ChainID, ResidueIndex, Type are required.
@@ -20053,6 +24382,76 @@ func (r ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBo
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+//
+// The properties AtomID, ChainID, ResidueID, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string `json:"residue_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ccd_atom".
+	Type constant.CcdAtom `json:"type" default:"ccd_atom"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+//
+// The properties AtomMap, ChainID, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "smiles_atom".
+	Type constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+//
+// The properties AtomName, ChainID, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ligand_atom".
+	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -20525,6 +24924,7 @@ type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpe
 	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity          *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity          `json:",omitzero,inline"`
 	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity `json:",omitzero,inline"`
 	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity    *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity    `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity            *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity            `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -20534,7 +24934,8 @@ func (u ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinder
 		u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity,
 		u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity,
 		u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity,
-		u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity)
+		u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity,
+		u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity)
 }
 func (u *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -20782,6 +25183,101 @@ func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinde
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+//
+// The properties Bonds, ChainIDs, Residues, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond `json:"bonds,omitzero" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue `json:"residues,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "glycan".
+	Type constant.Glycan `json:"type" default:"glycan"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+//
+// The properties Atom1, Atom2 are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond struct {
+	Atom1 ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1 `json:"atom1,omitzero" api:"required"`
+	Atom2 ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2 `json:"atom2,omitzero" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ID, Ccd are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality string
 
 const (
@@ -20791,16 +25287,14 @@ const (
 	ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModalityCustomProtein ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality = "custom_protein"
 )
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 //
 // The properties Atom1, Atom2 are required.
 type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union `json:"atom1,omitzero" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union `json:"atom2,omitzero" api:"required"`
 	paramObj
 }
@@ -20817,39 +25311,18 @@ func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinde
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union struct {
-	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom  *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom  `json:",omitzero,inline"`
 	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom     *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom     `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom  *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom  `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom  *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom  `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom)
+	return param.MarshalUnion(u, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom)
 }
 func (u *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-//
-// The properties AtomName, ChainID, Type are required.
-type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string `json:"chain_id" api:"required"`
-	// This field can be elided, and will marshal its zero value as "ligand_atom".
-	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
-	paramObj
-}
-
-func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
-	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties AtomName, ChainID, ResidueIndex, Type are required.
@@ -20873,29 +25346,60 @@ func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinde
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
+// Atom reference for a specific CCD residue in a glycan graph.
 //
-// Use [param.IsOmitted] to confirm if a field is set.
-type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union struct {
-	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom  *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom  `json:",omitzero,inline"`
-	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom `json:",omitzero,inline"`
-	paramUnion
+// The properties AtomID, ChainID, ResidueID, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string `json:"residue_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ccd_atom".
+	Type constant.CcdAtom `json:"type" default:"ccd_atom"`
+	paramObj
 }
 
-func (u ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom)
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom
+	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (u *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+//
+// The properties AtomMap, ChainID, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "smiles_atom".
+	Type constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
 //
 // The properties AtomName, ChainID, Type are required.
-type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string `json:"chain_id" api:"required"`
@@ -20904,12 +25408,30 @@ type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpe
 	paramObj
 }
 
-func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
-	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union struct {
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom     *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom     `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom  *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom  `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom  *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom, u.OfProteinDesignEstimateCostsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom)
+}
+func (u *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 // The properties AtomName, ChainID, ResidueIndex, Type are required.
@@ -20930,6 +25452,76 @@ func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinder
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+//
+// The properties AtomID, ChainID, ResidueID, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string `json:"residue_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ccd_atom".
+	Type constant.CcdAtom `json:"type" default:"ccd_atom"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+//
+// The properties AtomMap, ChainID, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "smiles_atom".
+	Type constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+//
+// The properties AtomName, ChainID, Type are required.
+type ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ligand_atom".
+	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -21207,11 +25799,11 @@ func (r *ProteinDesignEstimateCostParamsTargetStructureTemplateTargetStructureCi
 type ProteinDesignEstimateCostParamsTargetNoTemplateTarget struct {
 	// Entities (proteins, RNA, DNA, ligands) defining the target complex.
 	Entities []ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityUnion `json:"entities,omitzero" api:"required"`
-	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
-	// references currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Covalent bond constraints between atoms in the target complex. Ligand atom
+	// references support CCD atom names and explicitly atom-mapped SMILES atoms.
 	Bonds []ProteinDesignEstimateCostParamsTargetNoTemplateTargetBond `json:"bonds,omitzero"`
-	// Structural constraints (pocket and contact). Atom-level ligand references
-	// currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Structural constraints (pocket and contact). Ligand atom references support CCD
+	// atom names and explicitly atom-mapped SMILES atoms.
 	Constraints []ProteinDesignEstimateCostParamsTargetNoTemplateTargetConstraintUnion `json:"constraints,omitzero"`
 	// Chain IDs of ligand entities that are part of the binding epitope. Ligands are
 	// marked as epitope in full (no residue-level selection).
@@ -21246,6 +25838,7 @@ type ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityUnion struct {
 	OfProteinDesignEstimateCostsTargetNoTemplateTargetEntityDnaEntity          *ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityDnaEntity          `json:",omitzero,inline"`
 	OfProteinDesignEstimateCostsTargetNoTemplateTargetEntityLigandCcdEntity    *ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityLigandCcdEntity    `json:",omitzero,inline"`
 	OfProteinDesignEstimateCostsTargetNoTemplateTargetEntityLigandSmilesEntity *ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityLigandSmilesEntity `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsTargetNoTemplateTargetEntityGlycanEntity       *ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntity       `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -21254,7 +25847,8 @@ func (u ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityUnion) Marsha
 		u.OfProteinDesignEstimateCostsTargetNoTemplateTargetEntityRnaEntity,
 		u.OfProteinDesignEstimateCostsTargetNoTemplateTargetEntityDnaEntity,
 		u.OfProteinDesignEstimateCostsTargetNoTemplateTargetEntityLigandCcdEntity,
-		u.OfProteinDesignEstimateCostsTargetNoTemplateTargetEntityLigandSmilesEntity)
+		u.OfProteinDesignEstimateCostsTargetNoTemplateTargetEntityLigandSmilesEntity,
+		u.OfProteinDesignEstimateCostsTargetNoTemplateTargetEntityGlycanEntity)
 }
 func (u *ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -21411,7 +26005,8 @@ func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityDnaEntityMod
 type ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityLigandCcdEntity struct {
 	// Chain IDs for this ligand
 	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
-	// CCD code (e.g., ATP, ADP)
+	// One CCD code (for example ATP or ADP). This field remains a string; use a glycan
+	// entity for multiple connected CCD residues.
 	Value string `json:"value" api:"required"`
 	// This field can be elided, and will marshal its zero value as "ligand_ccd".
 	Type constant.LigandCcd `json:"type" default:"ligand_ccd"`
@@ -21445,16 +26040,109 @@ func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityLigandSmiles
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+//
+// The properties Bonds, ChainIDs, Residues, Type are required.
+type ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntity struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBond `json:"bonds,omitzero" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityResidue `json:"residues,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "glycan".
+	Type constant.Glycan `json:"type" default:"glycan"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+//
+// The properties Atom1, Atom2 are required.
+type ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBond struct {
+	Atom1 ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom1 `json:"atom1,omitzero" api:"required"`
+	Atom2 ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom2 `json:"atom2,omitzero" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBond) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBond
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom1) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom1
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom2) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom2
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ID, Ccd are required.
+type ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityResidue) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityResidue
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetEntityGlycanEntityResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 //
 // The properties Atom1, Atom2 are required.
 type ProteinDesignEstimateCostParamsTargetNoTemplateTargetBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1Union `json:"atom1,omitzero" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2Union `json:"atom2,omitzero" api:"required"`
 	paramObj
 }
@@ -21471,39 +26159,18 @@ func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBond) UnmarshalJSO
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1Union struct {
-	OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom1LigandAtom  *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1LigandAtom  `json:",omitzero,inline"`
 	OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom1PolymerAtom *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1PolymerAtom `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom1CcdAtom     *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1CcdAtom     `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom1SmilesAtom  *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1SmilesAtom  `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom1LigandAtom  *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1LigandAtom  `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1Union) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom1LigandAtom, u.OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom1PolymerAtom)
+	return param.MarshalUnion(u, u.OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom1PolymerAtom, u.OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom1CcdAtom, u.OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom1SmilesAtom, u.OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom1LigandAtom)
 }
 func (u *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-//
-// The properties AtomName, ChainID, Type are required.
-type ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string `json:"chain_id" api:"required"`
-	// This field can be elided, and will marshal its zero value as "ligand_atom".
-	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
-	paramObj
-}
-
-func (r ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
-	type shadow ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1LigandAtom
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties AtomName, ChainID, ResidueIndex, Type are required.
@@ -21527,29 +26194,60 @@ func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1PolymerAt
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
+// Atom reference for a specific CCD residue in a glycan graph.
 //
-// Use [param.IsOmitted] to confirm if a field is set.
-type ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2Union struct {
-	OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom2LigandAtom  *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2LigandAtom  `json:",omitzero,inline"`
-	OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom2PolymerAtom *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2PolymerAtom `json:",omitzero,inline"`
-	paramUnion
+// The properties AtomID, ChainID, ResidueID, Type are required.
+type ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string `json:"residue_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ccd_atom".
+	Type constant.CcdAtom `json:"type" default:"ccd_atom"`
+	paramObj
 }
 
-func (u ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2Union) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom2LigandAtom, u.OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom2PolymerAtom)
+func (r ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1CcdAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1CcdAtom
+	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (u *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
+func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+//
+// The properties AtomMap, ChainID, Type are required.
+type ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "smiles_atom".
+	Type constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1SmilesAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1SmilesAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
 //
 // The properties AtomName, ChainID, Type are required.
-type ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+type ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string `json:"chain_id" api:"required"`
@@ -21558,12 +26256,30 @@ type ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2LigandAtom st
 	paramObj
 }
 
-func (r ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
-	type shadow ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2LigandAtom
+func (r ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1LigandAtom
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2Union struct {
+	OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom2PolymerAtom *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2PolymerAtom `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom2CcdAtom     *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2CcdAtom     `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom2SmilesAtom  *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2SmilesAtom  `json:",omitzero,inline"`
+	OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom2LigandAtom  *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2LigandAtom  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2Union) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom2PolymerAtom, u.OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom2CcdAtom, u.OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom2SmilesAtom, u.OfProteinDesignEstimateCostsTargetNoTemplateTargetBondAtom2LigandAtom)
+}
+func (u *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 // The properties AtomName, ChainID, ResidueIndex, Type are required.
@@ -21584,6 +26300,76 @@ func (r ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2PolymerAto
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2PolymerAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+//
+// The properties AtomID, ChainID, ResidueID, Type are required.
+type ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string `json:"residue_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ccd_atom".
+	Type constant.CcdAtom `json:"type" default:"ccd_atom"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2CcdAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2CcdAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+//
+// The properties AtomMap, ChainID, Type are required.
+type ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "smiles_atom".
+	Type constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2SmilesAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2SmilesAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+//
+// The properties AtomName, ChainID, Type are required.
+type ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ligand_atom".
+	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
+	paramObj
+}
+
+func (r ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2LigandAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -21632,18 +26418,16 @@ func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetConstraintPocketCo
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Contact constraint between two tokens. Atom-level ligand references currently
-// support ligand_ccd entities only; ligand_smiles is unsupported.
+// Maximum-distance contact constraint between two polymer residues or ligand
+// atoms.
 //
 // The properties MaxDistanceAngstrom, Token1, Token2, Type are required.
 type ProteinDesignEstimateCostParamsTargetNoTemplateTargetConstraintContactConstraint struct {
 	// Maximum distance in Angstroms
 	MaxDistanceAngstrom float64 `json:"max_distance_angstrom" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token1 ProteinDesignEstimateCostParamsTargetNoTemplateTargetConstraintContactConstraintToken1Union `json:"token1,omitzero" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token2 ProteinDesignEstimateCostParamsTargetNoTemplateTargetConstraintContactConstraintToken2Union `json:"token2,omitzero" api:"required"`
 	// Whether to force the constraint
 	Force param.Opt[bool] `json:"force,omitzero"`
@@ -21695,13 +26479,14 @@ func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetConstraintContactC
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 //
 // The properties AtomName, ChainID, Type are required.
 type ProteinDesignEstimateCostParamsTargetNoTemplateTargetConstraintContactConstraintToken1LigandContactToken struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string `json:"chain_id" api:"required"`
@@ -21753,13 +26538,14 @@ func (r *ProteinDesignEstimateCostParamsTargetNoTemplateTargetConstraintContactC
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 //
 // The properties AtomName, ChainID, Type are required.
 type ProteinDesignEstimateCostParamsTargetNoTemplateTargetConstraintContactConstraintToken2LigandContactToken struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string `json:"chain_id" api:"required"`
@@ -22216,6 +27002,7 @@ type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityUnion 
 	OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity          *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity          `json:",omitzero,inline"`
 	OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity `json:",omitzero,inline"`
 	OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity    *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity    `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity            *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity            `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -22225,7 +27012,8 @@ func (u ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityUni
 		u.OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity,
 		u.OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity,
 		u.OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity,
-		u.OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity)
+		u.OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity,
+		u.OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity)
 }
 func (u *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -22473,6 +27261,101 @@ func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityFi
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+//
+// The properties Bonds, ChainIDs, Residues, Type are required.
+type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond `json:"bonds,omitzero" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue `json:"residues,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "glycan".
+	Type constant.Glycan `json:"type" default:"glycan"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+//
+// The properties Atom1, Atom2 are required.
+type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond struct {
+	Atom1 ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1 `json:"atom1,omitzero" api:"required"`
+	Atom2 ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2 `json:"atom2,omitzero" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ID, Ccd are required.
+type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecModality string
 
 const (
@@ -22482,16 +27365,14 @@ const (
 	ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecModalityCustomProtein ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecModality = "custom_protein"
 )
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 //
 // The properties Atom1, Atom2 are required.
 type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1Union `json:"atom1,omitzero" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2Union `json:"atom2,omitzero" api:"required"`
 	paramObj
 }
@@ -22508,39 +27389,18 @@ func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBond) Un
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1Union struct {
-	OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom  *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom  `json:",omitzero,inline"`
 	OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom     *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom     `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom  *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom  `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom  *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom  `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1Union) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom, u.OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom)
+	return param.MarshalUnion(u, u.OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom, u.OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom, u.OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom, u.OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom)
 }
 func (u *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-//
-// The properties AtomName, ChainID, Type are required.
-type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string `json:"chain_id" api:"required"`
-	// This field can be elided, and will marshal its zero value as "ligand_atom".
-	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
-	paramObj
-}
-
-func (r ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
-	type shadow ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties AtomName, ChainID, ResidueIndex, Type are required.
@@ -22564,29 +27424,60 @@ func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
+// Atom reference for a specific CCD residue in a glycan graph.
 //
-// Use [param.IsOmitted] to confirm if a field is set.
-type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2Union struct {
-	OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom  *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom  `json:",omitzero,inline"`
-	OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom `json:",omitzero,inline"`
-	paramUnion
+// The properties AtomID, ChainID, ResidueID, Type are required.
+type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string `json:"residue_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ccd_atom".
+	Type constant.CcdAtom `json:"type" default:"ccd_atom"`
+	paramObj
 }
 
-func (u ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2Union) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom, u.OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom)
+func (r ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom
+	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (u *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
+func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+//
+// The properties AtomMap, ChainID, Type are required.
+type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "smiles_atom".
+	Type constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
 //
 // The properties AtomName, ChainID, Type are required.
-type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string `json:"chain_id" api:"required"`
@@ -22595,12 +27486,30 @@ type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2Lig
 	paramObj
 }
 
-func (r ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
-	type shadow ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom
+func (r ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2Union struct {
+	OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom     *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom     `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom  *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom  `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom  *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2Union) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom, u.OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom, u.OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom, u.OfProteinDesignStartsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom)
+}
+func (u *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 // The properties AtomName, ChainID, ResidueIndex, Type are required.
@@ -22621,6 +27530,76 @@ func (r ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+//
+// The properties AtomID, ChainID, ResidueID, Type are required.
+type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string `json:"residue_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ccd_atom".
+	Type constant.CcdAtom `json:"type" default:"ccd_atom"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+//
+// The properties AtomMap, ChainID, Type are required.
+type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "smiles_atom".
+	Type constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+//
+// The properties AtomName, ChainID, Type are required.
+type ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ligand_atom".
+	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -23093,6 +28072,7 @@ type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinder
 	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity          *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity          `json:",omitzero,inline"`
 	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity `json:",omitzero,inline"`
 	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity    *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity    `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity            *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity            `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -23102,7 +28082,8 @@ func (u ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBin
 		u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedRnaEntity,
 		u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedDnaEntity,
 		u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandSmilesEntity,
-		u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity)
+		u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityFixedLigandCcdEntity,
+		u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity)
 }
 func (u *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -23350,6 +28331,101 @@ func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBi
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+//
+// The properties Bonds, ChainIDs, Residues, Type are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond `json:"bonds,omitzero" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue `json:"residues,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "glycan".
+	Type constant.Glycan `json:"type" default:"glycan"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+//
+// The properties Atom1, Atom2 are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond struct {
+	Atom1 ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1 `json:"atom1,omitzero" api:"required"`
+	Atom2 ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2 `json:"atom2,omitzero" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ID, Ccd are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecEntityGlycanEntityResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality string
 
 const (
@@ -23359,16 +28435,14 @@ const (
 	ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModalityCustomProtein ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecModality = "custom_protein"
 )
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 //
 // The properties Atom1, Atom2 are required.
 type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union `json:"atom1,omitzero" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union `json:"atom2,omitzero" api:"required"`
 	paramObj
 }
@@ -23385,39 +28459,18 @@ func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBi
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union struct {
-	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom  *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom  `json:",omitzero,inline"`
 	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom     *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom     `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom  *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom  `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom  *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom  `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom)
+	return param.MarshalUnion(u, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1PolymerAtom, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom)
 }
 func (u *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-//
-// The properties AtomName, ChainID, Type are required.
-type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string `json:"chain_id" api:"required"`
-	// This field can be elided, and will marshal its zero value as "ligand_atom".
-	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
-	paramObj
-}
-
-func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
-	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties AtomName, ChainID, ResidueIndex, Type are required.
@@ -23441,29 +28494,60 @@ func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBi
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
+// Atom reference for a specific CCD residue in a glycan graph.
 //
-// Use [param.IsOmitted] to confirm if a field is set.
-type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union struct {
-	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom  *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom  `json:",omitzero,inline"`
-	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom `json:",omitzero,inline"`
-	paramUnion
+// The properties AtomID, ChainID, ResidueID, Type are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string `json:"residue_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ccd_atom".
+	Type constant.CcdAtom `json:"type" default:"ccd_atom"`
+	paramObj
 }
 
-func (u ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom)
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom
+	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (u *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+//
+// The properties AtomMap, ChainID, Type are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "smiles_atom".
+	Type constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
 //
 // The properties AtomName, ChainID, Type are required.
-type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string `json:"chain_id" api:"required"`
@@ -23472,12 +28556,30 @@ type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinder
 	paramObj
 }
 
-func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
-	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union struct {
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom     *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom     `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom  *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom  `json:",omitzero,inline"`
+	OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom  *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom, u.OfProteinDesignStartsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom)
+}
+func (u *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 // The properties AtomName, ChainID, ResidueIndex, Type are required.
@@ -23498,6 +28600,76 @@ func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBin
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2PolymerAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+//
+// The properties AtomID, ChainID, ResidueID, Type are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string `json:"residue_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ccd_atom".
+	Type constant.CcdAtom `json:"type" default:"ccd_atom"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+//
+// The properties AtomMap, ChainID, Type are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "smiles_atom".
+	Type constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+//
+// The properties AtomName, ChainID, Type are required.
+type ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ligand_atom".
+	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsBinderSpecificationUniformlySampledBinderSpecBinderSpecificationNoTemplateBinderSpecBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -23775,11 +28947,11 @@ func (r *ProteinDesignStartParamsTargetStructureTemplateTargetStructureCifBase64
 type ProteinDesignStartParamsTargetNoTemplateTarget struct {
 	// Entities (proteins, RNA, DNA, ligands) defining the target complex.
 	Entities []ProteinDesignStartParamsTargetNoTemplateTargetEntityUnion `json:"entities,omitzero" api:"required"`
-	// Covalent bond constraints between atoms in the target complex. Atom-level ligand
-	// references currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Covalent bond constraints between atoms in the target complex. Ligand atom
+	// references support CCD atom names and explicitly atom-mapped SMILES atoms.
 	Bonds []ProteinDesignStartParamsTargetNoTemplateTargetBond `json:"bonds,omitzero"`
-	// Structural constraints (pocket and contact). Atom-level ligand references
-	// currently support ligand_ccd only; ligand_smiles is unsupported.
+	// Structural constraints (pocket and contact). Ligand atom references support CCD
+	// atom names and explicitly atom-mapped SMILES atoms.
 	Constraints []ProteinDesignStartParamsTargetNoTemplateTargetConstraintUnion `json:"constraints,omitzero"`
 	// Chain IDs of ligand entities that are part of the binding epitope. Ligands are
 	// marked as epitope in full (no residue-level selection).
@@ -23814,6 +28986,7 @@ type ProteinDesignStartParamsTargetNoTemplateTargetEntityUnion struct {
 	OfProteinDesignStartsTargetNoTemplateTargetEntityDnaEntity          *ProteinDesignStartParamsTargetNoTemplateTargetEntityDnaEntity          `json:",omitzero,inline"`
 	OfProteinDesignStartsTargetNoTemplateTargetEntityLigandCcdEntity    *ProteinDesignStartParamsTargetNoTemplateTargetEntityLigandCcdEntity    `json:",omitzero,inline"`
 	OfProteinDesignStartsTargetNoTemplateTargetEntityLigandSmilesEntity *ProteinDesignStartParamsTargetNoTemplateTargetEntityLigandSmilesEntity `json:",omitzero,inline"`
+	OfProteinDesignStartsTargetNoTemplateTargetEntityGlycanEntity       *ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntity       `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -23822,7 +28995,8 @@ func (u ProteinDesignStartParamsTargetNoTemplateTargetEntityUnion) MarshalJSON()
 		u.OfProteinDesignStartsTargetNoTemplateTargetEntityRnaEntity,
 		u.OfProteinDesignStartsTargetNoTemplateTargetEntityDnaEntity,
 		u.OfProteinDesignStartsTargetNoTemplateTargetEntityLigandCcdEntity,
-		u.OfProteinDesignStartsTargetNoTemplateTargetEntityLigandSmilesEntity)
+		u.OfProteinDesignStartsTargetNoTemplateTargetEntityLigandSmilesEntity,
+		u.OfProteinDesignStartsTargetNoTemplateTargetEntityGlycanEntity)
 }
 func (u *ProteinDesignStartParamsTargetNoTemplateTargetEntityUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -23979,7 +29153,8 @@ func (r *ProteinDesignStartParamsTargetNoTemplateTargetEntityDnaEntityModificati
 type ProteinDesignStartParamsTargetNoTemplateTargetEntityLigandCcdEntity struct {
 	// Chain IDs for this ligand
 	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
-	// CCD code (e.g., ATP, ADP)
+	// One CCD code (for example ATP or ADP). This field remains a string; use a glycan
+	// entity for multiple connected CCD residues.
 	Value string `json:"value" api:"required"`
 	// This field can be elided, and will marshal its zero value as "ligand_ccd".
 	Type constant.LigandCcd `json:"type" default:"ligand_ccd"`
@@ -24013,16 +29188,109 @@ func (r *ProteinDesignStartParamsTargetNoTemplateTargetEntityLigandSmilesEntity)
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Bond between two atoms. Atom-level ligand references currently support
-// ligand_ccd entities only; ligand_smiles is unsupported.
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+//
+// The properties Bonds, ChainIDs, Residues, Type are required.
+type ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntity struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntityBond `json:"bonds,omitzero" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids,omitzero" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntityResidue `json:"residues,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "glycan".
+	Type constant.Glycan `json:"type" default:"glycan"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntity) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntity
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+//
+// The properties Atom1, Atom2 are required.
+type ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntityBond struct {
+	Atom1 ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom1 `json:"atom1,omitzero" api:"required"`
+	Atom2 ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom2 `json:"atom2,omitzero" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntityBond) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntityBond
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntityBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom1) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom1
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AtomID, ResidueID are required.
+type ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom2) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom2
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntityBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ID, Ccd are required.
+type ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntityResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntityResidue) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntityResidue
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsTargetNoTemplateTargetEntityGlycanEntityResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
 //
 // The properties Atom1, Atom2 are required.
 type ProteinDesignStartParamsTargetNoTemplateTargetBond struct {
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom1 ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1Union `json:"atom1,omitzero" api:"required"`
-	// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Atom reference for a specific CCD residue in a glycan graph.
 	Atom2 ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2Union `json:"atom2,omitzero" api:"required"`
 	paramObj
 }
@@ -24039,39 +29307,18 @@ func (r *ProteinDesignStartParamsTargetNoTemplateTargetBond) UnmarshalJSON(data 
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1Union struct {
-	OfProteinDesignStartsTargetNoTemplateTargetBondAtom1LigandAtom  *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1LigandAtom  `json:",omitzero,inline"`
 	OfProteinDesignStartsTargetNoTemplateTargetBondAtom1PolymerAtom *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1PolymerAtom `json:",omitzero,inline"`
+	OfProteinDesignStartsTargetNoTemplateTargetBondAtom1CcdAtom     *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1CcdAtom     `json:",omitzero,inline"`
+	OfProteinDesignStartsTargetNoTemplateTargetBondAtom1SmilesAtom  *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1SmilesAtom  `json:",omitzero,inline"`
+	OfProteinDesignStartsTargetNoTemplateTargetBondAtom1LigandAtom  *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1LigandAtom  `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1Union) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfProteinDesignStartsTargetNoTemplateTargetBondAtom1LigandAtom, u.OfProteinDesignStartsTargetNoTemplateTargetBondAtom1PolymerAtom)
+	return param.MarshalUnion(u, u.OfProteinDesignStartsTargetNoTemplateTargetBondAtom1PolymerAtom, u.OfProteinDesignStartsTargetNoTemplateTargetBondAtom1CcdAtom, u.OfProteinDesignStartsTargetNoTemplateTargetBondAtom1SmilesAtom, u.OfProteinDesignStartsTargetNoTemplateTargetBondAtom1LigandAtom)
 }
 func (u *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1Union) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
-}
-
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
-//
-// The properties AtomName, ChainID, Type are required.
-type ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
-	AtomName string `json:"atom_name" api:"required"`
-	// Chain ID containing the atom
-	ChainID string `json:"chain_id" api:"required"`
-	// This field can be elided, and will marshal its zero value as "ligand_atom".
-	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
-	paramObj
-}
-
-func (r ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
-	type shadow ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1LigandAtom
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties AtomName, ChainID, ResidueIndex, Type are required.
@@ -24095,29 +29342,60 @@ func (r *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1PolymerAtom) Unm
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Only one field can be non-zero.
+// Atom reference for a specific CCD residue in a glycan graph.
 //
-// Use [param.IsOmitted] to confirm if a field is set.
-type ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2Union struct {
-	OfProteinDesignStartsTargetNoTemplateTargetBondAtom2LigandAtom  *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2LigandAtom  `json:",omitzero,inline"`
-	OfProteinDesignStartsTargetNoTemplateTargetBondAtom2PolymerAtom *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2PolymerAtom `json:",omitzero,inline"`
-	paramUnion
+// The properties AtomID, ChainID, ResidueID, Type are required.
+type ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string `json:"residue_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ccd_atom".
+	Type constant.CcdAtom `json:"type" default:"ccd_atom"`
+	paramObj
 }
 
-func (u ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2Union) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfProteinDesignStartsTargetNoTemplateTargetBondAtom2LigandAtom, u.OfProteinDesignStartsTargetNoTemplateTargetBondAtom2PolymerAtom)
+func (r ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1CcdAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1CcdAtom
+	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (u *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2Union) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
+func (r *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand atom reference. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+//
+// The properties AtomMap, ChainID, Type are required.
+type ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "smiles_atom".
+	Type constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1SmilesAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1SmilesAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
 //
 // The properties AtomName, ChainID, Type are required.
-type ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2LigandAtom struct {
-	// Standardized atom name (verifiable in CIF file on RCSB). Atom-level references
-	// to ligand_smiles entities are currently unsupported; use ligand_ccd instead.
+type ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID containing the atom
 	ChainID string `json:"chain_id" api:"required"`
@@ -24126,12 +29404,30 @@ type ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2LigandAtom struct {
 	paramObj
 }
 
-func (r ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
-	type shadow ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2LigandAtom
+func (r ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1LigandAtom
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
+func (r *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom1LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2Union struct {
+	OfProteinDesignStartsTargetNoTemplateTargetBondAtom2PolymerAtom *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2PolymerAtom `json:",omitzero,inline"`
+	OfProteinDesignStartsTargetNoTemplateTargetBondAtom2CcdAtom     *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2CcdAtom     `json:",omitzero,inline"`
+	OfProteinDesignStartsTargetNoTemplateTargetBondAtom2SmilesAtom  *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2SmilesAtom  `json:",omitzero,inline"`
+	OfProteinDesignStartsTargetNoTemplateTargetBondAtom2LigandAtom  *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2LigandAtom  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2Union) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfProteinDesignStartsTargetNoTemplateTargetBondAtom2PolymerAtom, u.OfProteinDesignStartsTargetNoTemplateTargetBondAtom2CcdAtom, u.OfProteinDesignStartsTargetNoTemplateTargetBondAtom2SmilesAtom, u.OfProteinDesignStartsTargetNoTemplateTargetBondAtom2LigandAtom)
+}
+func (u *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 // The properties AtomName, ChainID, ResidueIndex, Type are required.
@@ -24152,6 +29448,76 @@ func (r ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2PolymerAtom) Mars
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2PolymerAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+//
+// The properties AtomID, ChainID, ResidueID, Type are required.
+type ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2CcdAtom struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string `json:"residue_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ccd_atom".
+	Type constant.CcdAtom `json:"type" default:"ccd_atom"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2CcdAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2CcdAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2CcdAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+//
+// The properties AtomMap, ChainID, Type are required.
+type ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2SmilesAtom struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "smiles_atom".
+	Type constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2SmilesAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2SmilesAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2SmilesAtom) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+//
+// The properties AtomName, ChainID, Type are required.
+type ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2LigandAtom struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "ligand_atom".
+	Type constant.LigandAtom `json:"type" default:"ligand_atom"`
+	paramObj
+}
+
+func (r ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2LigandAtom) MarshalJSON() (data []byte, err error) {
+	type shadow ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2LigandAtom
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ProteinDesignStartParamsTargetNoTemplateTargetBondAtom2LigandAtom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -24200,18 +29566,16 @@ func (r *ProteinDesignStartParamsTargetNoTemplateTargetConstraintPocketConstrain
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Contact constraint between two tokens. Atom-level ligand references currently
-// support ligand_ccd entities only; ligand_smiles is unsupported.
+// Maximum-distance contact constraint between two polymer residues or ligand
+// atoms.
 //
 // The properties MaxDistanceAngstrom, Token1, Token2, Type are required.
 type ProteinDesignStartParamsTargetNoTemplateTargetConstraintContactConstraint struct {
 	// Maximum distance in Angstroms
 	MaxDistanceAngstrom float64 `json:"max_distance_angstrom" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token1 ProteinDesignStartParamsTargetNoTemplateTargetConstraintContactConstraintToken1Union `json:"token1,omitzero" api:"required"`
-	// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-	// entities only; ligand_smiles is unsupported.
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 	Token2 ProteinDesignStartParamsTargetNoTemplateTargetConstraintContactConstraintToken2Union `json:"token2,omitzero" api:"required"`
 	// Whether to force the constraint
 	Force param.Opt[bool] `json:"force,omitzero"`
@@ -24263,13 +29627,14 @@ func (r *ProteinDesignStartParamsTargetNoTemplateTargetConstraintContactConstrai
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 //
 // The properties AtomName, ChainID, Type are required.
 type ProteinDesignStartParamsTargetNoTemplateTargetConstraintContactConstraintToken1LigandContactToken struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string `json:"chain_id" api:"required"`
@@ -24321,13 +29686,14 @@ func (r *ProteinDesignStartParamsTargetNoTemplateTargetConstraintContactConstrai
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Ligand contact token. Atom-level ligand references currently support ligand_ccd
-// entities only; ligand_smiles is unsupported.
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
 //
 // The properties AtomName, ChainID, Type are required.
 type ProteinDesignStartParamsTargetNoTemplateTargetConstraintContactConstraintToken2LigandContactToken struct {
-	// Atom name. Atom-level references to ligand_smiles entities are currently
-	// unsupported; use ligand_ccd instead.
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
 	AtomName string `json:"atom_name" api:"required"`
 	// Chain ID
 	ChainID string `json:"chain_id" api:"required"`
