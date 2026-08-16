@@ -1323,12 +1323,16 @@ type ShareLinkReadResponsePipelineUnionInputTargetChainSelection struct {
 	EpitopeResidues    []int64                                                                 `json:"epitope_residues"`
 	FlexibleResidues   []int64                                                                 `json:"flexible_residues"`
 	NonBindingResidues []int64                                                                 `json:"non_binding_residues"`
+	Ccd                string                                                                  `json:"ccd"`
+	Smiles             string                                                                  `json:"smiles"`
 	JSON               struct {
 		ChainType          respjson.Field
 		CropResidues       respjson.Field
 		EpitopeResidues    respjson.Field
 		FlexibleResidues   respjson.Field
 		NonBindingResidues respjson.Field
+		Ccd                respjson.Field
+		Smiles             respjson.Field
 		raw                string
 	} `json:"-"`
 }
@@ -5122,12 +5126,20 @@ type ShareLinkReadResponsePipelineProteinDesignRunInputTargetStructureTemplateTa
 	// This field is from variant
 	// [ShareLinkReadResponsePipelineProteinDesignRunInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpec].
 	NonBindingResidues []int64 `json:"non_binding_residues"`
-	JSON               struct {
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineProteinDesignRunInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetLigandChainSpec].
+	Ccd string `json:"ccd"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineProteinDesignRunInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetLigandChainSpec].
+	Smiles string `json:"smiles"`
+	JSON   struct {
 		ChainType          respjson.Field
 		CropResidues       respjson.Field
 		EpitopeResidues    respjson.Field
 		FlexibleResidues   respjson.Field
 		NonBindingResidues respjson.Field
+		Ccd                respjson.Field
+		Smiles             respjson.Field
 		raw                string
 	} `json:"-"`
 }
@@ -5228,12 +5240,23 @@ func (r *ShareLinkReadResponsePipelineProteinDesignRunInputTargetStructureTempla
 }
 
 // Per-chain specification for a ligand chain in a structure template target. The
-// full ligand is always included.
+// full ligand is always included. An optional CCD or SMILES override preserves the
+// ligand chemistry while retaining its coordinates.
 type ShareLinkReadResponsePipelineProteinDesignRunInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetLigandChainSpec struct {
 	ChainType constant.Ligand `json:"chain_type" default:"ligand"`
+	// Original CCD identity for this ligand. Use when the structure stores the
+	// coordinates under a generic component ID such as LIG. Mutually exclusive with
+	// smiles.
+	Ccd string `json:"ccd"`
+	// Original SMILES identity for this ligand. Use when the structure stores the
+	// coordinates under a generic component ID such as LIG. Mutually exclusive with
+	// ccd.
+	Smiles string `json:"smiles"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainType   respjson.Field
+		Ccd         respjson.Field
+		Smiles      respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -8085,12 +8108,20 @@ type ShareLinkReadResponsePipelineProteinLibraryScreenInputTargetStructureTempla
 	// This field is from variant
 	// [ShareLinkReadResponsePipelineProteinLibraryScreenInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpec].
 	NonBindingResidues []int64 `json:"non_binding_residues"`
-	JSON               struct {
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineProteinLibraryScreenInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetLigandChainSpec].
+	Ccd string `json:"ccd"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineProteinLibraryScreenInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetLigandChainSpec].
+	Smiles string `json:"smiles"`
+	JSON   struct {
 		ChainType          respjson.Field
 		CropResidues       respjson.Field
 		EpitopeResidues    respjson.Field
 		FlexibleResidues   respjson.Field
 		NonBindingResidues respjson.Field
+		Ccd                respjson.Field
+		Smiles             respjson.Field
 		raw                string
 	} `json:"-"`
 }
@@ -8191,12 +8222,23 @@ func (r *ShareLinkReadResponsePipelineProteinLibraryScreenInputTargetStructureTe
 }
 
 // Per-chain specification for a ligand chain in a structure template target. The
-// full ligand is always included.
+// full ligand is always included. An optional CCD or SMILES override preserves the
+// ligand chemistry while retaining its coordinates.
 type ShareLinkReadResponsePipelineProteinLibraryScreenInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetLigandChainSpec struct {
 	ChainType constant.Ligand `json:"chain_type" default:"ligand"`
+	// Original CCD identity for this ligand. Use when the structure stores the
+	// coordinates under a generic component ID such as LIG. Mutually exclusive with
+	// smiles.
+	Ccd string `json:"ccd"`
+	// Original SMILES identity for this ligand. Use when the structure stores the
+	// coordinates under a generic component ID such as LIG. Mutually exclusive with
+	// ccd.
+	Smiles string `json:"smiles"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainType   respjson.Field
+		Ccd         respjson.Field
+		Smiles      respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
