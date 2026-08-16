@@ -401,12 +401,20 @@ type ProteinLibraryScreenGetResponseInputTargetStructureTemplateTargetResponseCh
 	// This field is from variant
 	// [ProteinLibraryScreenGetResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpec].
 	NonBindingResidues []int64 `json:"non_binding_residues"`
-	JSON               struct {
+	// This field is from variant
+	// [ProteinLibraryScreenGetResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetLigandChainSpec].
+	Ccd string `json:"ccd"`
+	// This field is from variant
+	// [ProteinLibraryScreenGetResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetLigandChainSpec].
+	Smiles string `json:"smiles"`
+	JSON   struct {
 		ChainType          respjson.Field
 		CropResidues       respjson.Field
 		EpitopeResidues    respjson.Field
 		FlexibleResidues   respjson.Field
 		NonBindingResidues respjson.Field
+		Ccd                respjson.Field
+		Smiles             respjson.Field
 		raw                string
 	} `json:"-"`
 }
@@ -507,12 +515,23 @@ func (r *ProteinLibraryScreenGetResponseInputTargetStructureTemplateTargetRespon
 }
 
 // Per-chain specification for a ligand chain in a structure template target. The
-// full ligand is always included.
+// full ligand is always included. An optional CCD or SMILES override preserves the
+// ligand chemistry while retaining its coordinates.
 type ProteinLibraryScreenGetResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetLigandChainSpec struct {
 	ChainType constant.Ligand `json:"chain_type" default:"ligand"`
+	// Original CCD identity for this ligand. Use when the structure stores the
+	// coordinates under a generic component ID such as LIG. Mutually exclusive with
+	// smiles.
+	Ccd string `json:"ccd"`
+	// Original SMILES identity for this ligand. Use when the structure stores the
+	// coordinates under a generic component ID such as LIG. Mutually exclusive with
+	// ccd.
+	Smiles string `json:"smiles"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainType   respjson.Field
+		Ccd         respjson.Field
+		Smiles      respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -2828,12 +2847,20 @@ type ProteinLibraryScreenResumeResponseInputTargetStructureTemplateTargetRespons
 	// This field is from variant
 	// [ProteinLibraryScreenResumeResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpec].
 	NonBindingResidues []int64 `json:"non_binding_residues"`
-	JSON               struct {
+	// This field is from variant
+	// [ProteinLibraryScreenResumeResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetLigandChainSpec].
+	Ccd string `json:"ccd"`
+	// This field is from variant
+	// [ProteinLibraryScreenResumeResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetLigandChainSpec].
+	Smiles string `json:"smiles"`
+	JSON   struct {
 		ChainType          respjson.Field
 		CropResidues       respjson.Field
 		EpitopeResidues    respjson.Field
 		FlexibleResidues   respjson.Field
 		NonBindingResidues respjson.Field
+		Ccd                respjson.Field
+		Smiles             respjson.Field
 		raw                string
 	} `json:"-"`
 }
@@ -2934,12 +2961,23 @@ func (r *ProteinLibraryScreenResumeResponseInputTargetStructureTemplateTargetRes
 }
 
 // Per-chain specification for a ligand chain in a structure template target. The
-// full ligand is always included.
+// full ligand is always included. An optional CCD or SMILES override preserves the
+// ligand chemistry while retaining its coordinates.
 type ProteinLibraryScreenResumeResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetLigandChainSpec struct {
 	ChainType constant.Ligand `json:"chain_type" default:"ligand"`
+	// Original CCD identity for this ligand. Use when the structure stores the
+	// coordinates under a generic component ID such as LIG. Mutually exclusive with
+	// smiles.
+	Ccd string `json:"ccd"`
+	// Original SMILES identity for this ligand. Use when the structure stores the
+	// coordinates under a generic component ID such as LIG. Mutually exclusive with
+	// ccd.
+	Smiles string `json:"smiles"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainType   respjson.Field
+		Ccd         respjson.Field
+		Smiles      respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -4438,12 +4476,20 @@ type ProteinLibraryScreenStartResponseInputTargetStructureTemplateTargetResponse
 	// This field is from variant
 	// [ProteinLibraryScreenStartResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpec].
 	NonBindingResidues []int64 `json:"non_binding_residues"`
-	JSON               struct {
+	// This field is from variant
+	// [ProteinLibraryScreenStartResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetLigandChainSpec].
+	Ccd string `json:"ccd"`
+	// This field is from variant
+	// [ProteinLibraryScreenStartResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetLigandChainSpec].
+	Smiles string `json:"smiles"`
+	JSON   struct {
 		ChainType          respjson.Field
 		CropResidues       respjson.Field
 		EpitopeResidues    respjson.Field
 		FlexibleResidues   respjson.Field
 		NonBindingResidues respjson.Field
+		Ccd                respjson.Field
+		Smiles             respjson.Field
 		raw                string
 	} `json:"-"`
 }
@@ -4544,12 +4590,23 @@ func (r *ProteinLibraryScreenStartResponseInputTargetStructureTemplateTargetResp
 }
 
 // Per-chain specification for a ligand chain in a structure template target. The
-// full ligand is always included.
+// full ligand is always included. An optional CCD or SMILES override preserves the
+// ligand chemistry while retaining its coordinates.
 type ProteinLibraryScreenStartResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetLigandChainSpec struct {
 	ChainType constant.Ligand `json:"chain_type" default:"ligand"`
+	// Original CCD identity for this ligand. Use when the structure stores the
+	// coordinates under a generic component ID such as LIG. Mutually exclusive with
+	// smiles.
+	Ccd string `json:"ccd"`
+	// Original SMILES identity for this ligand. Use when the structure stores the
+	// coordinates under a generic component ID such as LIG. Mutually exclusive with
+	// ccd.
+	Smiles string `json:"smiles"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainType   respjson.Field
+		Ccd         respjson.Field
+		Smiles      respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -6048,12 +6105,20 @@ type ProteinLibraryScreenStopResponseInputTargetStructureTemplateTargetResponseC
 	// This field is from variant
 	// [ProteinLibraryScreenStopResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetPolymerChainSpec].
 	NonBindingResidues []int64 `json:"non_binding_residues"`
-	JSON               struct {
+	// This field is from variant
+	// [ProteinLibraryScreenStopResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetLigandChainSpec].
+	Ccd string `json:"ccd"`
+	// This field is from variant
+	// [ProteinLibraryScreenStopResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetLigandChainSpec].
+	Smiles string `json:"smiles"`
+	JSON   struct {
 		ChainType          respjson.Field
 		CropResidues       respjson.Field
 		EpitopeResidues    respjson.Field
 		FlexibleResidues   respjson.Field
 		NonBindingResidues respjson.Field
+		Ccd                respjson.Field
+		Smiles             respjson.Field
 		raw                string
 	} `json:"-"`
 }
@@ -6154,12 +6219,23 @@ func (r *ProteinLibraryScreenStopResponseInputTargetStructureTemplateTargetRespo
 }
 
 // Per-chain specification for a ligand chain in a structure template target. The
-// full ligand is always included.
+// full ligand is always included. An optional CCD or SMILES override preserves the
+// ligand chemistry while retaining its coordinates.
 type ProteinLibraryScreenStopResponseInputTargetStructureTemplateTargetResponseChainSelectionStructureTemplateTargetLigandChainSpec struct {
 	ChainType constant.Ligand `json:"chain_type" default:"ligand"`
+	// Original CCD identity for this ligand. Use when the structure stores the
+	// coordinates under a generic component ID such as LIG. Mutually exclusive with
+	// smiles.
+	Ccd string `json:"ccd"`
+	// Original SMILES identity for this ligand. Use when the structure stores the
+	// coordinates under a generic component ID such as LIG. Mutually exclusive with
+	// ccd.
+	Smiles string `json:"smiles"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChainType   respjson.Field
+		Ccd         respjson.Field
+		Smiles      respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -7910,18 +7986,21 @@ func (u *ProteinLibraryScreenEstimateCostParamsTargetStructureTemplateTargetChai
 	return apijson.UnmarshalRoot(data, u)
 }
 
-func NewProteinLibraryScreenEstimateCostParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetLigandChainSpec() ProteinLibraryScreenEstimateCostParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetLigandChainSpec {
-	return ProteinLibraryScreenEstimateCostParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetLigandChainSpec{
-		ChainType: "ligand",
-	}
-}
-
 // Per-chain specification for a ligand chain in a structure template target. The
-// full ligand is always included.
+// full ligand is always included. An optional CCD or SMILES override preserves the
+// ligand chemistry while retaining its coordinates.
 //
-// This struct has a constant value, construct it with
-// [NewProteinLibraryScreenEstimateCostParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetLigandChainSpec].
+// The property ChainType is required.
 type ProteinLibraryScreenEstimateCostParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetLigandChainSpec struct {
+	// Original CCD identity for this ligand. Use when the structure stores the
+	// coordinates under a generic component ID such as LIG. Mutually exclusive with
+	// smiles.
+	Ccd param.Opt[string] `json:"ccd,omitzero"`
+	// Original SMILES identity for this ligand. Use when the structure stores the
+	// coordinates under a generic component ID such as LIG. Mutually exclusive with
+	// ccd.
+	Smiles param.Opt[string] `json:"smiles,omitzero"`
+	// This field can be elided, and will marshal its zero value as "ligand".
 	ChainType constant.Ligand `json:"chain_type" default:"ligand"`
 	paramObj
 }
@@ -9235,18 +9314,21 @@ func (u *ProteinLibraryScreenStartParamsTargetStructureTemplateTargetChainSelect
 	return apijson.UnmarshalRoot(data, u)
 }
 
-func NewProteinLibraryScreenStartParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetLigandChainSpec() ProteinLibraryScreenStartParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetLigandChainSpec {
-	return ProteinLibraryScreenStartParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetLigandChainSpec{
-		ChainType: "ligand",
-	}
-}
-
 // Per-chain specification for a ligand chain in a structure template target. The
-// full ligand is always included.
+// full ligand is always included. An optional CCD or SMILES override preserves the
+// ligand chemistry while retaining its coordinates.
 //
-// This struct has a constant value, construct it with
-// [NewProteinLibraryScreenStartParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetLigandChainSpec].
+// The property ChainType is required.
 type ProteinLibraryScreenStartParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetLigandChainSpec struct {
+	// Original CCD identity for this ligand. Use when the structure stores the
+	// coordinates under a generic component ID such as LIG. Mutually exclusive with
+	// smiles.
+	Ccd param.Opt[string] `json:"ccd,omitzero"`
+	// Original SMILES identity for this ligand. Use when the structure stores the
+	// coordinates under a generic component ID such as LIG. Mutually exclusive with
+	// ccd.
+	Smiles param.Opt[string] `json:"smiles,omitzero"`
+	// This field can be elided, and will marshal its zero value as "ligand".
 	ChainType constant.Ligand `json:"chain_type" default:"ligand"`
 	paramObj
 }
