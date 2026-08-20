@@ -107,64 +107,66 @@ func TestProteinDesignEstimateCostWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Protein.Design.EstimateCost(context.TODO(), boltzapi.ProteinDesignEstimateCostParams{
-		BinderSpecification: boltzapi.ProteinDesignEstimateCostParamsBinderSpecificationUnion{
-			OfProteinDesignEstimateCostsBinderSpecificationStructureTemplateBinderSpec: &boltzapi.ProteinDesignEstimateCostParamsBinderSpecificationStructureTemplateBinderSpec{
-				ChainSelection: map[string]boltzapi.ProteinDesignEstimateCostParamsBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion{
-					"B": {
-						OfProteinDesignEstimateCostsBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec: &boltzapi.ProteinDesignEstimateCostParamsBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec{
-							CropResidues: boltzapi.ProteinDesignEstimateCostParamsBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion{
-								OfIntArray: []int64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
-							},
-							DesignMotifs: []boltzapi.ProteinDesignEstimateCostParamsBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion{{
-								OfProteinDesignEstimateCostsBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif: &boltzapi.ProteinDesignEstimateCostParamsBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif{
-									DesignLengthRange: boltzapi.ProteinDesignEstimateCostParamsBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange{
-										Max: 8,
-										Min: 4,
-									},
-									EndIndex:   5,
-									StartIndex: 0,
+		OfProteinDesignRunInput: &boltzapi.ProteinDesignEstimateCostParamsBodyProteinDesignRunInput{
+			BinderSpecification: boltzapi.ProteinDesignEstimateCostParamsBodyProteinDesignRunInputBinderSpecificationUnion{
+				OfProteinDesignEstimateCostsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpec: &boltzapi.ProteinDesignEstimateCostParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpec{
+					ChainSelection: map[string]boltzapi.ProteinDesignEstimateCostParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion{
+						"B": {
+							OfProteinDesignEstimateCostsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec: &boltzapi.ProteinDesignEstimateCostParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec{
+								CropResidues: boltzapi.ProteinDesignEstimateCostParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion{
+									OfIntArray: []int64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
 								},
-							}},
-						},
-					},
-				},
-				Modality: boltzapi.ProteinDesignEstimateCostParamsBinderSpecificationStructureTemplateBinderSpecModalityPeptide,
-				Structure: boltzapi.ProteinDesignEstimateCostParamsBinderSpecificationStructureTemplateBinderSpecStructureUnion{
-					OfProteinDesignEstimateCostsBinderSpecificationStructureTemplateBinderSpecStructureURLSource: &boltzapi.ProteinDesignEstimateCostParamsBinderSpecificationStructureTemplateBinderSpecStructureURLSource{
-						URL: "https://example.com",
-					},
-				},
-				Rules: boltzapi.ProteinDesignEstimateCostParamsBinderSpecificationStructureTemplateBinderSpecRules{
-					ExcludedAminoAcids:     []string{"x"},
-					ExcludedSequenceMotifs: []string{"string"},
-					MaxHydrophobicFraction: boltzapi.Float(0),
-				},
-			},
-		},
-		NumProteins: 10,
-		Target: boltzapi.ProteinDesignEstimateCostParamsTargetUnion{
-			OfProteinDesignEstimateCostsTargetStructureTemplateTarget: &boltzapi.ProteinDesignEstimateCostParamsTargetStructureTemplateTarget{
-				ChainSelection: map[string]boltzapi.ProteinDesignEstimateCostParamsTargetStructureTemplateTargetChainSelectionUnion{
-					"A": {
-						OfProteinDesignEstimateCostsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpec: &boltzapi.ProteinDesignEstimateCostParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpec{
-							CropResidues: boltzapi.ProteinDesignEstimateCostParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpecCropResiduesUnion{
-								OfIntArray: []int64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+								DesignMotifs: []boltzapi.ProteinDesignEstimateCostParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion{{
+									OfProteinDesignEstimateCostsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif: &boltzapi.ProteinDesignEstimateCostParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif{
+										DesignLengthRange: boltzapi.ProteinDesignEstimateCostParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange{
+											Max: 8,
+											Min: 4,
+										},
+										EndIndex:   5,
+										StartIndex: 0,
+									},
+								}},
 							},
-							EpitopeResidues:    []int64{10, 11, 12},
-							FlexibleResidues:   []int64{5, 6, 7},
-							NonBindingResidues: []int64{0, 1, 2},
 						},
 					},
-				},
-				Structure: boltzapi.ProteinDesignEstimateCostParamsTargetStructureTemplateTargetStructureUnion{
-					OfProteinDesignEstimateCostsTargetStructureTemplateTargetStructureURLSource: &boltzapi.ProteinDesignEstimateCostParamsTargetStructureTemplateTargetStructureURLSource{
-						URL: "https://example.com",
+					Modality: boltzapi.ProteinDesignEstimateCostParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecModalityPeptide,
+					Structure: boltzapi.ProteinDesignEstimateCostParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecStructureUnion{
+						OfProteinDesignEstimateCostsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecStructureURLSource: &boltzapi.ProteinDesignEstimateCostParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecStructureURLSource{
+							URL: "https://example.com",
+						},
+					},
+					Rules: boltzapi.ProteinDesignEstimateCostParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecRules{
+						ExcludedAminoAcids:     []string{"x"},
+						ExcludedSequenceMotifs: []string{"string"},
+						MaxHydrophobicFraction: boltzapi.Float(0),
 					},
 				},
 			},
+			NumProteins: 10,
+			Target: boltzapi.ProteinDesignEstimateCostParamsBodyProteinDesignRunInputTargetUnion{
+				OfProteinDesignEstimateCostsBodyProteinDesignRunInputTargetStructureTemplateTarget: &boltzapi.ProteinDesignEstimateCostParamsBodyProteinDesignRunInputTargetStructureTemplateTarget{
+					ChainSelection: map[string]boltzapi.ProteinDesignEstimateCostParamsBodyProteinDesignRunInputTargetStructureTemplateTargetChainSelectionUnion{
+						"A": {
+							OfProteinDesignEstimateCostsBodyProteinDesignRunInputTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpec: &boltzapi.ProteinDesignEstimateCostParamsBodyProteinDesignRunInputTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpec{
+								CropResidues: boltzapi.ProteinDesignEstimateCostParamsBodyProteinDesignRunInputTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpecCropResiduesUnion{
+									OfIntArray: []int64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+								},
+								EpitopeResidues:    []int64{10, 11, 12},
+								FlexibleResidues:   []int64{5, 6, 7},
+								NonBindingResidues: []int64{0, 1, 2},
+							},
+						},
+					},
+					Structure: boltzapi.ProteinDesignEstimateCostParamsBodyProteinDesignRunInputTargetStructureTemplateTargetStructureUnion{
+						OfProteinDesignEstimateCostsBodyProteinDesignRunInputTargetStructureTemplateTargetStructureURLSource: &boltzapi.ProteinDesignEstimateCostParamsBodyProteinDesignRunInputTargetStructureTemplateTargetStructureURLSource{
+							URL: "https://example.com",
+						},
+					},
+				},
+			},
+			IdempotencyKey: boltzapi.String("idempotency_key"),
+			WorkspaceID:    boltzapi.String("workspace_id"),
 		},
-		IdempotencyKey: boltzapi.String("idempotency_key"),
-		WorkspaceID:    boltzapi.String("workspace_id"),
 	})
 	if err != nil {
 		var apierr *boltzapi.Error
@@ -270,64 +272,66 @@ func TestProteinDesignStartWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Protein.Design.Start(context.TODO(), boltzapi.ProteinDesignStartParams{
-		BinderSpecification: boltzapi.ProteinDesignStartParamsBinderSpecificationUnion{
-			OfProteinDesignStartsBinderSpecificationStructureTemplateBinderSpec: &boltzapi.ProteinDesignStartParamsBinderSpecificationStructureTemplateBinderSpec{
-				ChainSelection: map[string]boltzapi.ProteinDesignStartParamsBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion{
-					"B": {
-						OfProteinDesignStartsBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec: &boltzapi.ProteinDesignStartParamsBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec{
-							CropResidues: boltzapi.ProteinDesignStartParamsBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion{
-								OfIntArray: []int64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
-							},
-							DesignMotifs: []boltzapi.ProteinDesignStartParamsBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion{{
-								OfProteinDesignStartsBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif: &boltzapi.ProteinDesignStartParamsBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif{
-									DesignLengthRange: boltzapi.ProteinDesignStartParamsBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange{
-										Max: 8,
-										Min: 4,
-									},
-									EndIndex:   5,
-									StartIndex: 0,
+		OfProteinDesignRunInput: &boltzapi.ProteinDesignStartParamsBodyProteinDesignRunInput{
+			BinderSpecification: boltzapi.ProteinDesignStartParamsBodyProteinDesignRunInputBinderSpecificationUnion{
+				OfProteinDesignStartsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpec: &boltzapi.ProteinDesignStartParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpec{
+					ChainSelection: map[string]boltzapi.ProteinDesignStartParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecChainSelectionUnion{
+						"B": {
+							OfProteinDesignStartsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec: &boltzapi.ProteinDesignStartParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpec{
+								CropResidues: boltzapi.ProteinDesignStartParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecCropResiduesUnion{
+									OfIntArray: []int64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
 								},
-							}},
-						},
-					},
-				},
-				Modality: boltzapi.ProteinDesignStartParamsBinderSpecificationStructureTemplateBinderSpecModalityPeptide,
-				Structure: boltzapi.ProteinDesignStartParamsBinderSpecificationStructureTemplateBinderSpecStructureUnion{
-					OfProteinDesignStartsBinderSpecificationStructureTemplateBinderSpecStructureURLSource: &boltzapi.ProteinDesignStartParamsBinderSpecificationStructureTemplateBinderSpecStructureURLSource{
-						URL: "https://example.com",
-					},
-				},
-				Rules: boltzapi.ProteinDesignStartParamsBinderSpecificationStructureTemplateBinderSpecRules{
-					ExcludedAminoAcids:     []string{"x"},
-					ExcludedSequenceMotifs: []string{"string"},
-					MaxHydrophobicFraction: boltzapi.Float(0),
-				},
-			},
-		},
-		NumProteins: 10,
-		Target: boltzapi.ProteinDesignStartParamsTargetUnion{
-			OfProteinDesignStartsTargetStructureTemplateTarget: &boltzapi.ProteinDesignStartParamsTargetStructureTemplateTarget{
-				ChainSelection: map[string]boltzapi.ProteinDesignStartParamsTargetStructureTemplateTargetChainSelectionUnion{
-					"A": {
-						OfProteinDesignStartsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpec: &boltzapi.ProteinDesignStartParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpec{
-							CropResidues: boltzapi.ProteinDesignStartParamsTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpecCropResiduesUnion{
-								OfIntArray: []int64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+								DesignMotifs: []boltzapi.ProteinDesignStartParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifUnion{{
+									OfProteinDesignStartsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif: &boltzapi.ProteinDesignStartParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotif{
+										DesignLengthRange: boltzapi.ProteinDesignStartParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecChainSelectionStructureTemplatePolymerChainSpecDesignMotifReplacementMotifDesignLengthRange{
+											Max: 8,
+											Min: 4,
+										},
+										EndIndex:   5,
+										StartIndex: 0,
+									},
+								}},
 							},
-							EpitopeResidues:    []int64{10, 11, 12},
-							FlexibleResidues:   []int64{5, 6, 7},
-							NonBindingResidues: []int64{0, 1, 2},
 						},
 					},
-				},
-				Structure: boltzapi.ProteinDesignStartParamsTargetStructureTemplateTargetStructureUnion{
-					OfProteinDesignStartsTargetStructureTemplateTargetStructureURLSource: &boltzapi.ProteinDesignStartParamsTargetStructureTemplateTargetStructureURLSource{
-						URL: "https://example.com",
+					Modality: boltzapi.ProteinDesignStartParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecModalityPeptide,
+					Structure: boltzapi.ProteinDesignStartParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecStructureUnion{
+						OfProteinDesignStartsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecStructureURLSource: &boltzapi.ProteinDesignStartParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecStructureURLSource{
+							URL: "https://example.com",
+						},
+					},
+					Rules: boltzapi.ProteinDesignStartParamsBodyProteinDesignRunInputBinderSpecificationStructureTemplateBinderSpecRules{
+						ExcludedAminoAcids:     []string{"x"},
+						ExcludedSequenceMotifs: []string{"string"},
+						MaxHydrophobicFraction: boltzapi.Float(0),
 					},
 				},
 			},
+			NumProteins: 10,
+			Target: boltzapi.ProteinDesignStartParamsBodyProteinDesignRunInputTargetUnion{
+				OfProteinDesignStartsBodyProteinDesignRunInputTargetStructureTemplateTarget: &boltzapi.ProteinDesignStartParamsBodyProteinDesignRunInputTargetStructureTemplateTarget{
+					ChainSelection: map[string]boltzapi.ProteinDesignStartParamsBodyProteinDesignRunInputTargetStructureTemplateTargetChainSelectionUnion{
+						"A": {
+							OfProteinDesignStartsBodyProteinDesignRunInputTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpec: &boltzapi.ProteinDesignStartParamsBodyProteinDesignRunInputTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpec{
+								CropResidues: boltzapi.ProteinDesignStartParamsBodyProteinDesignRunInputTargetStructureTemplateTargetChainSelectionStructureTemplateTargetPolymerChainSpecCropResiduesUnion{
+									OfIntArray: []int64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+								},
+								EpitopeResidues:    []int64{10, 11, 12},
+								FlexibleResidues:   []int64{5, 6, 7},
+								NonBindingResidues: []int64{0, 1, 2},
+							},
+						},
+					},
+					Structure: boltzapi.ProteinDesignStartParamsBodyProteinDesignRunInputTargetStructureTemplateTargetStructureUnion{
+						OfProteinDesignStartsBodyProteinDesignRunInputTargetStructureTemplateTargetStructureURLSource: &boltzapi.ProteinDesignStartParamsBodyProteinDesignRunInputTargetStructureTemplateTargetStructureURLSource{
+							URL: "https://example.com",
+						},
+					},
+				},
+			},
+			IdempotencyKey: boltzapi.String("idempotency_key"),
+			WorkspaceID:    boltzapi.String("workspace_id"),
 		},
-		IdempotencyKey: boltzapi.String("idempotency_key"),
-		WorkspaceID:    boltzapi.String("workspace_id"),
 	})
 	if err != nil {
 		var apierr *boltzapi.Error

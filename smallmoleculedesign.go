@@ -260,7 +260,9 @@ type SmallMoleculeDesignGetResponseInput struct {
 	// Target protein sequences for small molecule design or screening.
 	Target SmallMoleculeDesignGetResponseInputTarget `json:"target" api:"required"`
 	// Chemical space to constrain generated molecules. Use 'enamine_real' for the
-	// Enamine REAL chemical space or 'none' to disable chemical-space filtering.
+	// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
+	// when enabled for your organization, or 'none' to disable chemical-space
+	// filtering.
 	//
 	// Any of "enamine_real", "none".
 	ChemicalSpace SmallMoleculeDesignGetResponseInputChemicalSpace `json:"chemical_space"`
@@ -1243,7 +1245,9 @@ func (r *SmallMoleculeDesignGetResponseInputTargetConstraintContactConstraintRes
 }
 
 // Chemical space to constrain generated molecules. Use 'enamine_real' for the
-// Enamine REAL chemical space or 'none' to disable chemical-space filtering.
+// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
+// when enabled for your organization, or 'none' to disable chemical-space
+// filtering.
 type SmallMoleculeDesignGetResponseInputChemicalSpace string
 
 const (
@@ -2351,7 +2355,9 @@ type SmallMoleculeDesignResumeResponseInput struct {
 	// Target protein sequences for small molecule design or screening.
 	Target SmallMoleculeDesignResumeResponseInputTarget `json:"target" api:"required"`
 	// Chemical space to constrain generated molecules. Use 'enamine_real' for the
-	// Enamine REAL chemical space or 'none' to disable chemical-space filtering.
+	// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
+	// when enabled for your organization, or 'none' to disable chemical-space
+	// filtering.
 	//
 	// Any of "enamine_real", "none".
 	ChemicalSpace SmallMoleculeDesignResumeResponseInputChemicalSpace `json:"chemical_space"`
@@ -3340,7 +3346,9 @@ func (r *SmallMoleculeDesignResumeResponseInputTargetConstraintContactConstraint
 }
 
 // Chemical space to constrain generated molecules. Use 'enamine_real' for the
-// Enamine REAL chemical space or 'none' to disable chemical-space filtering.
+// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
+// when enabled for your organization, or 'none' to disable chemical-space
+// filtering.
 type SmallMoleculeDesignResumeResponseInputChemicalSpace string
 
 const (
@@ -4030,7 +4038,9 @@ type SmallMoleculeDesignStartResponseInput struct {
 	// Target protein sequences for small molecule design or screening.
 	Target SmallMoleculeDesignStartResponseInputTarget `json:"target" api:"required"`
 	// Chemical space to constrain generated molecules. Use 'enamine_real' for the
-	// Enamine REAL chemical space or 'none' to disable chemical-space filtering.
+	// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
+	// when enabled for your organization, or 'none' to disable chemical-space
+	// filtering.
 	//
 	// Any of "enamine_real", "none".
 	ChemicalSpace SmallMoleculeDesignStartResponseInputChemicalSpace `json:"chemical_space"`
@@ -5019,7 +5029,9 @@ func (r *SmallMoleculeDesignStartResponseInputTargetConstraintContactConstraintR
 }
 
 // Chemical space to constrain generated molecules. Use 'enamine_real' for the
-// Enamine REAL chemical space or 'none' to disable chemical-space filtering.
+// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
+// when enabled for your organization, or 'none' to disable chemical-space
+// filtering.
 type SmallMoleculeDesignStartResponseInputChemicalSpace string
 
 const (
@@ -5709,7 +5721,9 @@ type SmallMoleculeDesignStopResponseInput struct {
 	// Target protein sequences for small molecule design or screening.
 	Target SmallMoleculeDesignStopResponseInputTarget `json:"target" api:"required"`
 	// Chemical space to constrain generated molecules. Use 'enamine_real' for the
-	// Enamine REAL chemical space or 'none' to disable chemical-space filtering.
+	// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
+	// when enabled for your organization, or 'none' to disable chemical-space
+	// filtering.
 	//
 	// Any of "enamine_real", "none".
 	ChemicalSpace SmallMoleculeDesignStopResponseInputChemicalSpace `json:"chemical_space"`
@@ -6694,7 +6708,9 @@ func (r *SmallMoleculeDesignStopResponseInputTargetConstraintContactConstraintRe
 }
 
 // Chemical space to constrain generated molecules. Use 'enamine_real' for the
-// Enamine REAL chemical space or 'none' to disable chemical-space filtering.
+// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
+// when enabled for your organization, or 'none' to disable chemical-space
+// filtering.
 type SmallMoleculeDesignStopResponseInputChemicalSpace string
 
 const (
@@ -7338,7 +7354,9 @@ type SmallMoleculeDesignEstimateCostParams struct {
 	// Target workspace ID (admin keys only; ignored for workspace keys)
 	WorkspaceID param.Opt[string] `json:"workspace_id,omitzero"`
 	// Chemical space to constrain generated molecules. Use 'enamine_real' for the
-	// Enamine REAL chemical space or 'none' to disable chemical-space filtering.
+	// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
+	// when enabled for your organization, or 'none' to disable chemical-space
+	// filtering.
 	//
 	// Any of "enamine_real", "none".
 	ChemicalSpace SmallMoleculeDesignEstimateCostParamsChemicalSpace `json:"chemical_space,omitzero"`
@@ -7990,7 +8008,9 @@ func (r *SmallMoleculeDesignEstimateCostParamsTargetConstraintContactConstraintT
 }
 
 // Chemical space to constrain generated molecules. Use 'enamine_real' for the
-// Enamine REAL chemical space or 'none' to disable chemical-space filtering.
+// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
+// when enabled for your organization, or 'none' to disable chemical-space
+// filtering.
 type SmallMoleculeDesignEstimateCostParamsChemicalSpace string
 
 const (
@@ -8413,7 +8433,9 @@ type SmallMoleculeDesignStartParams struct {
 	// Target workspace ID (admin keys only; ignored for workspace keys)
 	WorkspaceID param.Opt[string] `json:"workspace_id,omitzero"`
 	// Chemical space to constrain generated molecules. Use 'enamine_real' for the
-	// Enamine REAL chemical space or 'none' to disable chemical-space filtering.
+	// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
+	// when enabled for your organization, or 'none' to disable chemical-space
+	// filtering.
 	//
 	// Any of "enamine_real", "none".
 	ChemicalSpace SmallMoleculeDesignStartParamsChemicalSpace `json:"chemical_space,omitzero"`
@@ -9065,7 +9087,9 @@ func (r *SmallMoleculeDesignStartParamsTargetConstraintContactConstraintToken2Li
 }
 
 // Chemical space to constrain generated molecules. Use 'enamine_real' for the
-// Enamine REAL chemical space or 'none' to disable chemical-space filtering.
+// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
+// when enabled for your organization, or 'none' to disable chemical-space
+// filtering.
 type SmallMoleculeDesignStartParamsChemicalSpace string
 
 const (

@@ -17,11 +17,15 @@ import (
 // the [NewProteinService] method instead.
 type ProteinService struct {
 	Options []option.RequestOption
-	// Generate novel protein binders optimized for binding to a target structure.
-	// Binder specifications can be provided directly, uploaded as structure templates,
-	// or selected from Boltz-managed curated nanobody and antibody defaults. Results
-	// are scored by binding confidence (likelihood of protein-protein interaction) and
-	// structure confidence.
+	// Generate binder or generic protein designs. New requests use the top-level type
+	// discriminator (`binder` or `generic`), while the legacy target plus
+	// binder_specification body remains accepted for migration. Binder requests can
+	// share one CIF across target and binder, sample uniformly across multiple
+	// specifications, or use Boltz-managed curated antibody and nanobody defaults.
+	// Results are discriminated by type: binder runs include binding metrics, while
+	// generic runs return structure and secondary-structure metrics only. A generic
+	// request can use a `fusion_protein` entity to concatenate two or more ordered
+	// fixed, designed, or template-backed protein segments into one output chain.
 	Design ProteinDesignService
 	// Redesign selected protein residues in one fixed CIF structure. Use the top-level
 	// type discriminator to choose binder redesign, with target and binder chain
