@@ -1050,7 +1050,8 @@ func (r *ShareLinkReadResponse) UnmarshalJSON(data []byte) error {
 // [ShareLinkReadResponsePipelineProteinSequenceRedesignRun],
 // [ShareLinkReadResponsePipelineProteinLibraryScreen],
 // [ShareLinkReadResponsePipelineSmDesignRun],
-// [ShareLinkReadResponsePipelineSmScreen].
+// [ShareLinkReadResponsePipelineSmScreen],
+// [ShareLinkReadResponsePipelineSmExplore].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ShareLinkReadResponsePipelineUnion struct {
@@ -1066,7 +1067,8 @@ type ShareLinkReadResponsePipelineUnion struct {
 	// [ShareLinkReadResponsePipelineProteinSequenceRedesignRunError],
 	// [ShareLinkReadResponsePipelineProteinLibraryScreenError],
 	// [ShareLinkReadResponsePipelineSmDesignRunError],
-	// [ShareLinkReadResponsePipelineSmScreenError]
+	// [ShareLinkReadResponsePipelineSmScreenError],
+	// [ShareLinkReadResponsePipelineSmExploreError]
 	Error ShareLinkReadResponsePipelineUnionError `json:"error"`
 	// This field is a union of
 	// [ShareLinkReadResponsePipelineProteinDesignRunResponseInputUnion],
@@ -1074,7 +1076,8 @@ type ShareLinkReadResponsePipelineUnion struct {
 	// [ShareLinkReadResponsePipelineProteinSequenceRedesignRunInputUnion],
 	// [ShareLinkReadResponsePipelineProteinLibraryScreenInput],
 	// [ShareLinkReadResponsePipelineSmDesignRunInput],
-	// [ShareLinkReadResponsePipelineSmScreenInput]
+	// [ShareLinkReadResponsePipelineSmScreenInput],
+	// [ShareLinkReadResponsePipelineSmExploreInput]
 	Input           ShareLinkReadResponsePipelineUnionInput `json:"input"`
 	Livemode        bool                                    `json:"livemode"`
 	Pipeline        string                                  `json:"pipeline"`
@@ -1085,7 +1088,8 @@ type ShareLinkReadResponsePipelineUnion struct {
 	// [ShareLinkReadResponsePipelineProteinSequenceRedesignRunProgress],
 	// [ShareLinkReadResponsePipelineProteinLibraryScreenProgress],
 	// [ShareLinkReadResponsePipelineSmDesignRunProgress],
-	// [ShareLinkReadResponsePipelineSmScreenProgress]
+	// [ShareLinkReadResponsePipelineSmScreenProgress],
+	// [ShareLinkReadResponsePipelineSmExploreProgress]
 	Progress       ShareLinkReadResponsePipelineUnionProgress `json:"progress"`
 	StartedAt      time.Time                                  `json:"started_at"`
 	Status         string                                     `json:"status"`
@@ -1144,6 +1148,11 @@ func (u ShareLinkReadResponsePipelineUnion) AsShareLinkReadResponsePipelineSmScr
 	return
 }
 
+func (u ShareLinkReadResponsePipelineUnion) AsShareLinkReadResponsePipelineSmExplore() (v ShareLinkReadResponsePipelineSmExplore) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 // Returns the unmodified JSON received from the API
 func (u ShareLinkReadResponsePipelineUnion) RawJSON() string { return u.JSON.raw }
 
@@ -1189,7 +1198,8 @@ type ShareLinkReadResponsePipelineUnionInput struct {
 	// [ShareLinkReadResponsePipelineProteinDesignRunResponseInputBinderProteinDesignRunInputResponseTarget],
 	// [ShareLinkReadResponsePipelineProteinLibraryScreenInputTargetUnion],
 	// [ShareLinkReadResponsePipelineSmDesignRunInputTarget],
-	// [ShareLinkReadResponsePipelineSmScreenInputTarget]
+	// [ShareLinkReadResponsePipelineSmScreenInputTarget],
+	// [ShareLinkReadResponsePipelineSmExploreInputTarget]
 	Target         ShareLinkReadResponsePipelineUnionInputTarget `json:"target"`
 	IdempotencyKey string                                        `json:"idempotency_key"`
 	WorkspaceID    string                                        `json:"workspace_id"`
@@ -1235,11 +1245,16 @@ type ShareLinkReadResponsePipelineUnionInput struct {
 	ChemicalSpace ShareLinkReadResponsePipelineSmDesignRunInputChemicalSpace `json:"chemical_space"`
 	// This field is a union of
 	// [ShareLinkReadResponsePipelineSmDesignRunInputMoleculeFilters],
-	// [ShareLinkReadResponsePipelineSmScreenInputMoleculeFilters]
+	// [ShareLinkReadResponsePipelineSmScreenInputMoleculeFilters],
+	// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFilters]
 	MoleculeFilters ShareLinkReadResponsePipelineUnionInputMoleculeFilters `json:"molecule_filters"`
 	// This field is from variant [ShareLinkReadResponsePipelineSmScreenInput].
 	Molecules ShareLinkReadResponsePipelineSmScreenInputMolecules `json:"molecules"`
-	JSON      struct {
+	// This field is from variant [ShareLinkReadResponsePipelineSmExploreInput].
+	Budget int64 `json:"budget"`
+	// This field is from variant [ShareLinkReadResponsePipelineSmExploreInput].
+	Library ShareLinkReadResponsePipelineSmExploreInputLibrary `json:"library"`
+	JSON    struct {
 		BinderSpecification respjson.Field
 		NumProteins         respjson.Field
 		Target              respjson.Field
@@ -1259,6 +1274,8 @@ type ShareLinkReadResponsePipelineUnionInput struct {
 		ChemicalSpace       respjson.Field
 		MoleculeFilters     respjson.Field
 		Molecules           respjson.Field
+		Budget              respjson.Field
+		Library             respjson.Field
 		raw                 string
 	} `json:"-"`
 }
@@ -1289,20 +1306,23 @@ type ShareLinkReadResponsePipelineUnionInputTarget struct {
 	// [[]ShareLinkReadResponsePipelineProteinDesignRunResponseInputBinderProteinDesignRunInputResponseTargetEntityUnion],
 	// [[]ShareLinkReadResponsePipelineProteinLibraryScreenInputTargetNoTemplateTargetResponseEntityUnion],
 	// [[]ShareLinkReadResponsePipelineSmDesignRunInputTargetEntityUnion],
-	// [[]ShareLinkReadResponsePipelineSmScreenInputTargetEntityUnion]
+	// [[]ShareLinkReadResponsePipelineSmScreenInputTargetEntityUnion],
+	// [[]ShareLinkReadResponsePipelineSmExploreInputTargetEntityUnion]
 	Entities ShareLinkReadResponsePipelineUnionInputTargetEntities `json:"entities"`
 	// This field is a union of
 	// [[]ShareLinkReadResponsePipelineProteinDesignRunResponseInputProteinDesignRunInputResponseTargetNoTemplateTargetResponseBond],
 	// [[]ShareLinkReadResponsePipelineProteinDesignRunResponseInputBinderProteinDesignRunInputResponseTargetBond],
 	// [[]ShareLinkReadResponsePipelineProteinLibraryScreenInputTargetNoTemplateTargetResponseBond],
 	// [[]ShareLinkReadResponsePipelineSmDesignRunInputTargetBond],
-	// [[]ShareLinkReadResponsePipelineSmScreenInputTargetBond]
+	// [[]ShareLinkReadResponsePipelineSmScreenInputTargetBond],
+	// [[]ShareLinkReadResponsePipelineSmExploreInputTargetBond]
 	Bonds ShareLinkReadResponsePipelineUnionInputTargetBonds `json:"bonds"`
 	// This field is a union of
 	// [[]ShareLinkReadResponsePipelineProteinDesignRunResponseInputProteinDesignRunInputResponseTargetNoTemplateTargetResponseConstraintUnion],
 	// [[]ShareLinkReadResponsePipelineProteinLibraryScreenInputTargetNoTemplateTargetResponseConstraintUnion],
 	// [[]ShareLinkReadResponsePipelineSmDesignRunInputTargetConstraintUnion],
-	// [[]ShareLinkReadResponsePipelineSmScreenInputTargetConstraintUnion]
+	// [[]ShareLinkReadResponsePipelineSmScreenInputTargetConstraintUnion],
+	// [[]ShareLinkReadResponsePipelineSmExploreInputTargetConstraintUnion]
 	Constraints         ShareLinkReadResponsePipelineUnionInputTargetConstraints `json:"constraints"`
 	EpitopeLigandChains []string                                                 `json:"epitope_ligand_chains"`
 	EpitopeResidues     []int64                                                  `json:"epitope_residues"`
@@ -1421,7 +1441,8 @@ func (r *ShareLinkReadResponsePipelineUnionInputTargetStructure) UnmarshalJSON(d
 // OfShareLinkReadResponsePipelineProteinDesignRunResponseInputBinderProteinDesignRunInputResponseTargetEntities
 // OfShareLinkReadResponsePipelineProteinLibraryScreenInputTargetNoTemplateTargetResponseEntities
 // OfShareLinkReadResponsePipelineSmDesignRunInputTargetEntities
-// OfShareLinkReadResponsePipelineSmScreenInputTargetEntities]
+// OfShareLinkReadResponsePipelineSmScreenInputTargetEntities
+// OfShareLinkReadResponsePipelineSmExploreInputTargetEntities]
 type ShareLinkReadResponsePipelineUnionInputTargetEntities struct {
 	// This field will be present if the value is a
 	// [[]ShareLinkReadResponsePipelineProteinDesignRunResponseInputProteinDesignRunInputResponseTargetNoTemplateTargetResponseEntityUnion]
@@ -1443,12 +1464,17 @@ type ShareLinkReadResponsePipelineUnionInputTargetEntities struct {
 	// [[]ShareLinkReadResponsePipelineSmScreenInputTargetEntityUnion] instead of an
 	// object.
 	OfShareLinkReadResponsePipelineSmScreenInputTargetEntities []ShareLinkReadResponsePipelineSmScreenInputTargetEntityUnion `json:",inline"`
-	JSON                                                       struct {
+	// This field will be present if the value is a
+	// [[]ShareLinkReadResponsePipelineSmExploreInputTargetEntityUnion] instead of an
+	// object.
+	OfShareLinkReadResponsePipelineSmExploreInputTargetEntities []ShareLinkReadResponsePipelineSmExploreInputTargetEntityUnion `json:",inline"`
+	JSON                                                        struct {
 		OfShareLinkReadResponsePipelineProteinDesignRunResponseInputProteinDesignRunInputResponseTargetNoTemplateTargetResponseEntities respjson.Field
 		OfShareLinkReadResponsePipelineProteinDesignRunResponseInputBinderProteinDesignRunInputResponseTargetEntities                   respjson.Field
 		OfShareLinkReadResponsePipelineProteinLibraryScreenInputTargetNoTemplateTargetResponseEntities                                  respjson.Field
 		OfShareLinkReadResponsePipelineSmDesignRunInputTargetEntities                                                                   respjson.Field
 		OfShareLinkReadResponsePipelineSmScreenInputTargetEntities                                                                      respjson.Field
+		OfShareLinkReadResponsePipelineSmExploreInputTargetEntities                                                                     respjson.Field
 		raw                                                                                                                             string
 	} `json:"-"`
 }
@@ -1471,7 +1497,8 @@ func (r *ShareLinkReadResponsePipelineUnionInputTargetEntities) UnmarshalJSON(da
 // OfShareLinkReadResponsePipelineProteinDesignRunResponseInputBinderProteinDesignRunInputResponseTargetBonds
 // OfShareLinkReadResponsePipelineProteinLibraryScreenInputTargetNoTemplateTargetResponseBonds
 // OfShareLinkReadResponsePipelineSmDesignRunInputTargetBonds
-// OfShareLinkReadResponsePipelineSmScreenInputTargetBonds]
+// OfShareLinkReadResponsePipelineSmScreenInputTargetBonds
+// OfShareLinkReadResponsePipelineSmExploreInputTargetBonds]
 type ShareLinkReadResponsePipelineUnionInputTargetBonds struct {
 	// This field will be present if the value is a
 	// [[]ShareLinkReadResponsePipelineProteinDesignRunResponseInputProteinDesignRunInputResponseTargetNoTemplateTargetResponseBond]
@@ -1492,12 +1519,16 @@ type ShareLinkReadResponsePipelineUnionInputTargetBonds struct {
 	// This field will be present if the value is a
 	// [[]ShareLinkReadResponsePipelineSmScreenInputTargetBond] instead of an object.
 	OfShareLinkReadResponsePipelineSmScreenInputTargetBonds []ShareLinkReadResponsePipelineSmScreenInputTargetBond `json:",inline"`
-	JSON                                                    struct {
+	// This field will be present if the value is a
+	// [[]ShareLinkReadResponsePipelineSmExploreInputTargetBond] instead of an object.
+	OfShareLinkReadResponsePipelineSmExploreInputTargetBonds []ShareLinkReadResponsePipelineSmExploreInputTargetBond `json:",inline"`
+	JSON                                                     struct {
 		OfShareLinkReadResponsePipelineProteinDesignRunResponseInputProteinDesignRunInputResponseTargetNoTemplateTargetResponseBonds respjson.Field
 		OfShareLinkReadResponsePipelineProteinDesignRunResponseInputBinderProteinDesignRunInputResponseTargetBonds                   respjson.Field
 		OfShareLinkReadResponsePipelineProteinLibraryScreenInputTargetNoTemplateTargetResponseBonds                                  respjson.Field
 		OfShareLinkReadResponsePipelineSmDesignRunInputTargetBonds                                                                   respjson.Field
 		OfShareLinkReadResponsePipelineSmScreenInputTargetBonds                                                                      respjson.Field
+		OfShareLinkReadResponsePipelineSmExploreInputTargetBonds                                                                     respjson.Field
 		raw                                                                                                                          string
 	} `json:"-"`
 }
@@ -1519,7 +1550,8 @@ func (r *ShareLinkReadResponsePipelineUnionInputTargetBonds) UnmarshalJSON(data 
 // OfShareLinkReadResponsePipelineProteinDesignRunResponseInputProteinDesignRunInputResponseTargetNoTemplateTargetResponseConstraints
 // OfShareLinkReadResponsePipelineProteinLibraryScreenInputTargetNoTemplateTargetResponseConstraints
 // OfShareLinkReadResponsePipelineSmDesignRunInputTargetConstraints
-// OfShareLinkReadResponsePipelineSmScreenInputTargetConstraints]
+// OfShareLinkReadResponsePipelineSmScreenInputTargetConstraints
+// OfShareLinkReadResponsePipelineSmExploreInputTargetConstraints]
 type ShareLinkReadResponsePipelineUnionInputTargetConstraints struct {
 	// This field will be present if the value is a
 	// [[]ShareLinkReadResponsePipelineProteinDesignRunResponseInputProteinDesignRunInputResponseTargetNoTemplateTargetResponseConstraintUnion]
@@ -1537,11 +1569,16 @@ type ShareLinkReadResponsePipelineUnionInputTargetConstraints struct {
 	// [[]ShareLinkReadResponsePipelineSmScreenInputTargetConstraintUnion] instead of
 	// an object.
 	OfShareLinkReadResponsePipelineSmScreenInputTargetConstraints []ShareLinkReadResponsePipelineSmScreenInputTargetConstraintUnion `json:",inline"`
-	JSON                                                          struct {
+	// This field will be present if the value is a
+	// [[]ShareLinkReadResponsePipelineSmExploreInputTargetConstraintUnion] instead of
+	// an object.
+	OfShareLinkReadResponsePipelineSmExploreInputTargetConstraints []ShareLinkReadResponsePipelineSmExploreInputTargetConstraintUnion `json:",inline"`
+	JSON                                                           struct {
 		OfShareLinkReadResponsePipelineProteinDesignRunResponseInputProteinDesignRunInputResponseTargetNoTemplateTargetResponseConstraints respjson.Field
 		OfShareLinkReadResponsePipelineProteinLibraryScreenInputTargetNoTemplateTargetResponseConstraints                                  respjson.Field
 		OfShareLinkReadResponsePipelineSmDesignRunInputTargetConstraints                                                                   respjson.Field
 		OfShareLinkReadResponsePipelineSmScreenInputTargetConstraints                                                                      respjson.Field
+		OfShareLinkReadResponsePipelineSmExploreInputTargetConstraints                                                                     respjson.Field
 		raw                                                                                                                                string
 	} `json:"-"`
 }
@@ -1696,7 +1733,8 @@ type ShareLinkReadResponsePipelineUnionInputMoleculeFilters struct {
 	BoltzSmartsCatalogFilterLevel string `json:"boltz_smarts_catalog_filter_level"`
 	// This field is a union of
 	// [[]ShareLinkReadResponsePipelineSmDesignRunInputMoleculeFiltersCustomFilterUnion],
-	// [[]ShareLinkReadResponsePipelineSmScreenInputMoleculeFiltersCustomFilterUnion]
+	// [[]ShareLinkReadResponsePipelineSmScreenInputMoleculeFiltersCustomFilterUnion],
+	// [[]ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterUnion]
 	CustomFilters ShareLinkReadResponsePipelineUnionInputMoleculeFiltersCustomFilters `json:"custom_filters"`
 	JSON          struct {
 		BoltzSmartsCatalogFilterLevel respjson.Field
@@ -1720,7 +1758,8 @@ func (r *ShareLinkReadResponsePipelineUnionInputMoleculeFilters) UnmarshalJSON(d
 // If the underlying value is not a json object, one of the following properties
 // will be valid:
 // OfShareLinkReadResponsePipelineSmDesignRunInputMoleculeFiltersCustomFilters
-// OfShareLinkReadResponsePipelineSmScreenInputMoleculeFiltersCustomFilters]
+// OfShareLinkReadResponsePipelineSmScreenInputMoleculeFiltersCustomFilters
+// OfShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilters]
 type ShareLinkReadResponsePipelineUnionInputMoleculeFiltersCustomFilters struct {
 	// This field will be present if the value is a
 	// [[]ShareLinkReadResponsePipelineSmDesignRunInputMoleculeFiltersCustomFilterUnion]
@@ -1730,9 +1769,14 @@ type ShareLinkReadResponsePipelineUnionInputMoleculeFiltersCustomFilters struct 
 	// [[]ShareLinkReadResponsePipelineSmScreenInputMoleculeFiltersCustomFilterUnion]
 	// instead of an object.
 	OfShareLinkReadResponsePipelineSmScreenInputMoleculeFiltersCustomFilters []ShareLinkReadResponsePipelineSmScreenInputMoleculeFiltersCustomFilterUnion `json:",inline"`
-	JSON                                                                     struct {
+	// This field will be present if the value is a
+	// [[]ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterUnion]
+	// instead of an object.
+	OfShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilters []ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterUnion `json:",inline"`
+	JSON                                                                      struct {
 		OfShareLinkReadResponsePipelineSmDesignRunInputMoleculeFiltersCustomFilters respjson.Field
 		OfShareLinkReadResponsePipelineSmScreenInputMoleculeFiltersCustomFilters    respjson.Field
+		OfShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilters   respjson.Field
 		raw                                                                         string
 	} `json:"-"`
 }
@@ -1764,15 +1808,22 @@ type ShareLinkReadResponsePipelineUnionProgress struct {
 	NumMoleculesGenerated int64 `json:"num_molecules_generated"`
 	// This field is from variant [ShareLinkReadResponsePipelineSmDesignRunProgress].
 	TotalMoleculesToGenerate int64 `json:"total_molecules_to_generate"`
-	// This field is from variant [ShareLinkReadResponsePipelineSmScreenProgress].
-	NumMoleculesFailed int64 `json:"num_molecules_failed"`
+	NumMoleculesFailed       int64 `json:"num_molecules_failed"`
 	// This field is from variant [ShareLinkReadResponsePipelineSmScreenProgress].
 	NumMoleculesScreened int64 `json:"num_molecules_screened"`
 	// This field is from variant [ShareLinkReadResponsePipelineSmScreenProgress].
 	TotalMoleculesToScreen int64 `json:"total_molecules_to_screen"`
-	// This field is from variant [ShareLinkReadResponsePipelineSmScreenProgress].
-	RejectionSummary ShareLinkReadResponsePipelineSmScreenProgressRejectionSummary `json:"rejection_summary"`
-	JSON             struct {
+	// This field is a union of
+	// [ShareLinkReadResponsePipelineSmScreenProgressRejectionSummary],
+	// [ShareLinkReadResponsePipelineSmExploreProgressRejectionSummary]
+	RejectionSummary ShareLinkReadResponsePipelineUnionProgressRejectionSummary `json:"rejection_summary"`
+	// This field is from variant [ShareLinkReadResponsePipelineSmExploreProgress].
+	NumMoleculesScored int64 `json:"num_molecules_scored"`
+	// This field is from variant [ShareLinkReadResponsePipelineSmExploreProgress].
+	TotalMoleculesToScore int64 `json:"total_molecules_to_score"`
+	// This field is from variant [ShareLinkReadResponsePipelineSmExploreProgress].
+	LibrarySize int64 `json:"library_size"`
+	JSON        struct {
 		NumProteinsGenerated     respjson.Field
 		TotalProteinsToGenerate  respjson.Field
 		LatestResultID           respjson.Field
@@ -1785,11 +1836,39 @@ type ShareLinkReadResponsePipelineUnionProgress struct {
 		NumMoleculesScreened     respjson.Field
 		TotalMoleculesToScreen   respjson.Field
 		RejectionSummary         respjson.Field
+		NumMoleculesScored       respjson.Field
+		TotalMoleculesToScore    respjson.Field
+		LibrarySize              respjson.Field
 		raw                      string
 	} `json:"-"`
 }
 
 func (r *ShareLinkReadResponsePipelineUnionProgress) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ShareLinkReadResponsePipelineUnionProgressRejectionSummary is an implicit
+// subunion of [ShareLinkReadResponsePipelineUnion].
+// ShareLinkReadResponsePipelineUnionProgressRejectionSummary provides convenient
+// access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [ShareLinkReadResponsePipelineUnion].
+type ShareLinkReadResponsePipelineUnionProgressRejectionSummary struct {
+	FilteredCount int64 `json:"filtered_count"`
+	InvalidCount  int64 `json:"invalid_count"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreProgressRejectionSummary].
+	DuplicateCount int64 `json:"duplicate_count"`
+	JSON           struct {
+		FilteredCount  respjson.Field
+		InvalidCount   respjson.Field
+		DuplicateCount respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+func (r *ShareLinkReadResponsePipelineUnionProgressRejectionSummary) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -20300,6 +20379,1829 @@ const (
 	ShareLinkReadResponsePipelineSmScreenStatusSucceeded ShareLinkReadResponsePipelineSmScreenStatus = "succeeded"
 	ShareLinkReadResponsePipelineSmScreenStatusFailed    ShareLinkReadResponsePipelineSmScreenStatus = "failed"
 	ShareLinkReadResponsePipelineSmScreenStatusStopped   ShareLinkReadResponsePipelineSmScreenStatus = "stopped"
+)
+
+// A small molecule library exploration pipeline run
+type ShareLinkReadResponsePipelineSmExplore struct {
+	// Unique SmExplore identifier
+	ID          string    `json:"id" api:"required"`
+	CompletedAt time.Time `json:"completed_at" api:"required" format:"date-time"`
+	CreatedAt   time.Time `json:"created_at" api:"required" format:"date-time"`
+	// When the input, output, and result data was permanently deleted. Null if data
+	// has not been deleted.
+	DataDeletedAt time.Time `json:"data_deleted_at" api:"required" format:"date-time"`
+	// Deprecated. Use pipeline instead.
+	//
+	// Deprecated: Use pipeline instead.
+	Engine constant.Boltzmol `json:"engine" default:"boltzmol"`
+	// Deprecated. Use pipeline_version instead.
+	//
+	// Deprecated: Use pipeline_version instead.
+	EngineVersion constant.String1_0                          `json:"engine_version" default:"1.0"`
+	Error         ShareLinkReadResponsePipelineSmExploreError `json:"error" api:"required"`
+	// Pipeline input (null if data deleted)
+	Input ShareLinkReadResponsePipelineSmExploreInput `json:"input" api:"required"`
+	// Whether this resource was created with a live API key.
+	Livemode bool `json:"livemode" api:"required"`
+	// Pipeline used for small molecule library exploration
+	Pipeline constant.Boltzmol `json:"pipeline" default:"boltzmol"`
+	// Pipeline version used for small molecule exploration
+	PipelineVersion constant.String1_0                             `json:"pipeline_version" default:"1.0"`
+	Progress        ShareLinkReadResponsePipelineSmExploreProgress `json:"progress" api:"required"`
+	StartedAt       time.Time                                      `json:"started_at" api:"required" format:"date-time"`
+	// Any of "pending", "running", "succeeded", "failed", "stopped".
+	Status    ShareLinkReadResponsePipelineSmExploreStatus `json:"status" api:"required"`
+	StoppedAt time.Time                                    `json:"stopped_at" api:"required" format:"date-time"`
+	// Workspace ID
+	WorkspaceID string `json:"workspace_id" api:"required"`
+	// Client-provided idempotency key
+	IdempotencyKey string `json:"idempotency_key"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID              respjson.Field
+		CompletedAt     respjson.Field
+		CreatedAt       respjson.Field
+		DataDeletedAt   respjson.Field
+		Engine          respjson.Field
+		EngineVersion   respjson.Field
+		Error           respjson.Field
+		Input           respjson.Field
+		Livemode        respjson.Field
+		Pipeline        respjson.Field
+		PipelineVersion respjson.Field
+		Progress        respjson.Field
+		StartedAt       respjson.Field
+		Status          respjson.Field
+		StoppedAt       respjson.Field
+		WorkspaceID     respjson.Field
+		IdempotencyKey  respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExplore) RawJSON() string { return r.JSON.raw }
+func (r *ShareLinkReadResponsePipelineSmExplore) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ShareLinkReadResponsePipelineSmExploreError struct {
+	// Machine-readable error code
+	Code string `json:"code" api:"required"`
+	// Human-readable error message
+	Message string `json:"message" api:"required"`
+	// Additional field-level error details keyed by input path, when available.
+	Details any `json:"details"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Code        respjson.Field
+		Message     respjson.Field
+		Details     respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreError) RawJSON() string { return r.JSON.raw }
+func (r *ShareLinkReadResponsePipelineSmExploreError) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Pipeline input (null if data deleted)
+type ShareLinkReadResponsePipelineSmExploreInput struct {
+	// How many molecules to score. Must not exceed the accepted library size or
+	// 3,000,000.
+	Budget  int64                                              `json:"budget" api:"required"`
+	Library ShareLinkReadResponsePipelineSmExploreInputLibrary `json:"library" api:"required"`
+	// Target protein sequences for small molecule design or screening.
+	Target ShareLinkReadResponsePipelineSmExploreInputTarget `json:"target" api:"required"`
+	// Molecule filtering configuration. Controls both Boltz built-in SMARTS filtering
+	// and custom filters.
+	MoleculeFilters ShareLinkReadResponsePipelineSmExploreInputMoleculeFilters `json:"molecule_filters"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Budget          respjson.Field
+		Library         respjson.Field
+		Target          respjson.Field
+		MoleculeFilters respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInput) RawJSON() string { return r.JSON.raw }
+func (r *ShareLinkReadResponsePipelineSmExploreInput) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ShareLinkReadResponsePipelineSmExploreInputLibrary struct {
+	// Delimited-text format of the molecule library.
+	//
+	// Any of "csv", "tsv".
+	Format ShareLinkReadResponsePipelineSmExploreInputLibraryFormat `json:"format" api:"required"`
+	// An exact, case-sensitive column name without leading or trailing whitespace.
+	SmilesColumn string `json:"smiles_column" api:"required"`
+	// The original submitted URL for URL sources, or a temporary download URL for an
+	// uploaded base64 source.
+	Source ShareLinkReadResponsePipelineSmExploreInputLibrarySourceUnion `json:"source" api:"required"`
+	// An exact, case-sensitive column name without leading or trailing whitespace.
+	IDColumn string `json:"id_column"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Format       respjson.Field
+		SmilesColumn respjson.Field
+		Source       respjson.Field
+		IDColumn     respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputLibrary) RawJSON() string { return r.JSON.raw }
+func (r *ShareLinkReadResponsePipelineSmExploreInputLibrary) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Delimited-text format of the molecule library.
+type ShareLinkReadResponsePipelineSmExploreInputLibraryFormat string
+
+const (
+	ShareLinkReadResponsePipelineSmExploreInputLibraryFormatCsv ShareLinkReadResponsePipelineSmExploreInputLibraryFormat = "csv"
+	ShareLinkReadResponsePipelineSmExploreInputLibraryFormatTsv ShareLinkReadResponsePipelineSmExploreInputLibraryFormat = "tsv"
+)
+
+// ShareLinkReadResponsePipelineSmExploreInputLibrarySourceUnion contains all
+// possible properties and values from
+// [ShareLinkReadResponsePipelineSmExploreInputLibrarySourceURLSourceResponse],
+// [ShareLinkReadResponsePipelineSmExploreInputLibrarySourceFileOutputResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ShareLinkReadResponsePipelineSmExploreInputLibrarySourceUnion struct {
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputLibrarySourceURLSourceResponse].
+	Type constant.URL `json:"type"`
+	URL  string       `json:"url"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputLibrarySourceFileOutputResponse].
+	URLExpiresAt time.Time `json:"url_expires_at"`
+	JSON         struct {
+		Type         respjson.Field
+		URL          respjson.Field
+		URLExpiresAt respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputLibrarySourceUnion) AsShareLinkReadResponsePipelineSmExploreInputLibrarySourceURLSourceResponse() (v ShareLinkReadResponsePipelineSmExploreInputLibrarySourceURLSourceResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputLibrarySourceUnion) AsShareLinkReadResponsePipelineSmExploreInputLibrarySourceFileOutputResponse() (v ShareLinkReadResponsePipelineSmExploreInputLibrarySourceFileOutputResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ShareLinkReadResponsePipelineSmExploreInputLibrarySourceUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ShareLinkReadResponsePipelineSmExploreInputLibrarySourceUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ShareLinkReadResponsePipelineSmExploreInputLibrarySourceURLSourceResponse struct {
+	Type constant.URL `json:"type" default:"url"`
+	URL  string       `json:"url" api:"required" format:"uri"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		URL         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputLibrarySourceURLSourceResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputLibrarySourceURLSourceResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ShareLinkReadResponsePipelineSmExploreInputLibrarySourceFileOutputResponse struct {
+	// URL to download the file
+	URL string `json:"url" api:"required" format:"uri"`
+	// When the presigned URL expires
+	URLExpiresAt time.Time `json:"url_expires_at" api:"required" format:"date-time"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		URL          respjson.Field
+		URLExpiresAt respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputLibrarySourceFileOutputResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputLibrarySourceFileOutputResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Target protein sequences for small molecule design or screening.
+type ShareLinkReadResponsePipelineSmExploreInputTarget struct {
+	// Protein and glycan entities defining the target structure. At least one protein
+	// entity is required.
+	Entities []ShareLinkReadResponsePipelineSmExploreInputTargetEntityUnion `json:"entities" api:"required"`
+	// Covalent bond constraints between atoms in the target complex. Ligand atom
+	// references support CCD atom names and explicitly atom-mapped SMILES atoms.
+	Bonds []ShareLinkReadResponsePipelineSmExploreInputTargetBond `json:"bonds"`
+	// Structural constraints (pocket and contact). Ligand atom references support CCD
+	// atom names and explicitly atom-mapped SMILES atoms.
+	Constraints []ShareLinkReadResponsePipelineSmExploreInputTargetConstraintUnion `json:"constraints"`
+	// Binding pocket residues, keyed by chain ID. Each key is a chain ID (e.g. "A")
+	// and the value is an array of 0-indexed residue indices that define the binding
+	// pocket on that chain. When provided, these residues guide pocket extraction and
+	// add a derived pocket constraint during affinity predictions. That derived
+	// constraint remains separate from any explicit pocket constraints in
+	// target.constraints. When omitted, the model auto-detects the pocket.
+	PocketResidues map[string][]int64 `json:"pocket_residues"`
+	// Reference ligands as SMILES strings that help the model identify the binding
+	// pocket. When omitted, a set of drug-like default ligands is used for pocket
+	// detection.
+	ReferenceLigands []string `json:"reference_ligands"`
+	// Target is defined directly by protein sequences rather than a structure
+	// template.
+	//
+	// Any of "no_template".
+	Type string `json:"type"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Entities         respjson.Field
+		Bonds            respjson.Field
+		Constraints      respjson.Field
+		PocketResidues   respjson.Field
+		ReferenceLigands respjson.Field
+		Type             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTarget) RawJSON() string { return r.JSON.raw }
+func (r *ShareLinkReadResponsePipelineSmExploreInputTarget) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ShareLinkReadResponsePipelineSmExploreInputTargetEntityUnion contains all
+// possible properties and values from
+// [ShareLinkReadResponsePipelineSmExploreInputTargetEntityProteinEntityResponse],
+// [ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ShareLinkReadResponsePipelineSmExploreInputTargetEntityUnion struct {
+	ChainIDs []string `json:"chain_ids"`
+	Type     string   `json:"type"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputTargetEntityProteinEntityResponse].
+	Value string `json:"value"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputTargetEntityProteinEntityResponse].
+	Cyclic bool `json:"cyclic"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputTargetEntityProteinEntityResponse].
+	Modifications []ShareLinkReadResponsePipelineSmExploreInputTargetEntityProteinEntityResponseModification `json:"modifications"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponse].
+	Bonds []ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponseBond `json:"bonds"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponse].
+	Residues []ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponseResidue `json:"residues"`
+	JSON     struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		Bonds         respjson.Field
+		Residues      respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetEntityUnion) AsShareLinkReadResponsePipelineSmExploreInputTargetEntityProteinEntityResponse() (v ShareLinkReadResponsePipelineSmExploreInputTargetEntityProteinEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetEntityUnion) AsShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponse() (v ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetEntityUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetEntityUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ShareLinkReadResponsePipelineSmExploreInputTargetEntityProteinEntityResponse struct {
+	// Chain IDs for this entity
+	ChainIDs []string         `json:"chain_ids" api:"required"`
+	Type     constant.Protein `json:"type" default:"protein"`
+	// Amino acid sequence (one-letter codes)
+	Value string `json:"value" api:"required"`
+	// Whether the sequence is cyclic
+	Cyclic bool `json:"cyclic"`
+	// CCD post-translational modifications. Optional; defaults to an empty list when
+	// omitted. SMILES modifications are not supported.
+	Modifications []ShareLinkReadResponsePipelineSmExploreInputTargetEntityProteinEntityResponseModification `json:"modifications"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainIDs      respjson.Field
+		Type          respjson.Field
+		Value         respjson.Field
+		Cyclic        respjson.Field
+		Modifications respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetEntityProteinEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetEntityProteinEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Polymer residue modification. Only CCD codes are supported; SMILES modifications
+// are not accepted.
+type ShareLinkReadResponsePipelineSmExploreInputTargetEntityProteinEntityResponseModification struct {
+	// 0-based index of the residue to modify
+	ResidueIndex int64 `json:"residue_index" api:"required"`
+	// Modification format. Only CCD polymer modifications are supported.
+	Type constant.Ccd `json:"type" default:"ccd"`
+	// CCD code from RCSB PDB (e.g. 'MSE' for selenomethionine, 'SEP' for
+	// phosphoserine)
+	Value string `json:"value" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		Value        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetEntityProteinEntityResponseModification) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetEntityProteinEntityResponseModification) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Branched glycan represented as an explicit graph of CCD monosaccharide residues.
+// Declare internal connectivity in this entity and cross-entity attachments in the
+// request-level bonds array.
+type ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponse struct {
+	// Internal covalent bonds connecting the glycan residues. A single-residue glycan
+	// uses an empty array.
+	Bonds []ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponseBond `json:"bonds" api:"required"`
+	// Chain IDs for identical copies of this glycan
+	ChainIDs []string `json:"chain_ids" api:"required"`
+	// CCD residues in the glycan. Array order is not part of the public residue
+	// identity; bonds reference residue IDs.
+	Residues []ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponseResidue `json:"residues" api:"required"`
+	Type     constant.Glycan                                                                      `json:"type" default:"glycan"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bonds       respjson.Field
+		ChainIDs    respjson.Field
+		Residues    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Internal covalent bond between atoms in two residues of the glycan graph.
+type ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponseBond struct {
+	Atom1 ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponseBondAtom1 `json:"atom1" api:"required"`
+	Atom2 ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponseBondAtom2 `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponseBond) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponseBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponseBondAtom1 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponseBondAtom1) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponseBondAtom1) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponseBondAtom2 struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Request-local ID of the glycan residue containing the atom
+	ResidueID string `json:"residue_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ResidueID   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponseBondAtom2) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponseBondAtom2) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponseResidue struct {
+	// Request-local residue ID used by glycan bonds and external atom references
+	ID string `json:"id" api:"required"`
+	// CCD code for this monosaccharide residue (for example NAG, BMA, or FUC)
+	Ccd string `json:"ccd" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Ccd         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponseResidue) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetEntityGlycanEntityResponseResidue) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level covalent bond between atoms, including protein-glycan attachments.
+// Internal glycan connectivity belongs in the glycan entity bonds field.
+type ShareLinkReadResponsePipelineSmExploreInputTargetBond struct {
+	// Atom reference for a specific CCD residue in a glycan graph.
+	Atom1 ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1Union `json:"atom1" api:"required"`
+	// Atom reference for a specific CCD residue in a glycan graph.
+	Atom2 ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2Union `json:"atom2" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Atom1       respjson.Field
+		Atom2       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetBond) RawJSON() string { return r.JSON.raw }
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetBond) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1Union contains all
+// possible properties and values from
+// [ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1PolymerAtomResponse],
+// [ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1CcdAtomResponse],
+// [ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1SmilesAtomResponse],
+// [ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1Union) AsShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1PolymerAtomResponse() (v ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1Union) AsShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1CcdAtomResponse() (v ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1Union) AsShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1SmilesAtomResponse() (v ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1Union) AsShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1LigandAtomResponse() (v ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1PolymerAtomResponse struct {
+	// Standardized atom name (verifiable in CIF file on RCSB)
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// 0-based residue index
+	ResidueIndex int64                `json:"residue_index" api:"required"`
+	Type         constant.PolymerAtom `json:"type" default:"polymer_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1PolymerAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom1LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2Union contains all
+// possible properties and values from
+// [ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2PolymerAtomResponse],
+// [ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2CcdAtomResponse],
+// [ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2SmilesAtomResponse],
+// [ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2LigandAtomResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2Union struct {
+	AtomName string `json:"atom_name"`
+	ChainID  string `json:"chain_id"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2PolymerAtomResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2CcdAtomResponse].
+	AtomID string `json:"atom_id"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2CcdAtomResponse].
+	ResidueID string `json:"residue_id"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2SmilesAtomResponse].
+	AtomMap int64 `json:"atom_map"`
+	JSON    struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomID       respjson.Field
+		ResidueID    respjson.Field
+		AtomMap      respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2Union) AsShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2PolymerAtomResponse() (v ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2PolymerAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2Union) AsShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2CcdAtomResponse() (v ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2CcdAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2Union) AsShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2SmilesAtomResponse() (v ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2SmilesAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2Union) AsShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2LigandAtomResponse() (v ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2LigandAtomResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2PolymerAtomResponse struct {
+	// Standardized atom name (verifiable in CIF file on RCSB)
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string `json:"chain_id" api:"required"`
+	// 0-based residue index
+	ResidueIndex int64                `json:"residue_index" api:"required"`
+	Type         constant.PolymerAtom `json:"type" default:"polymer_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName     respjson.Field
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2PolymerAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2PolymerAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a specific CCD residue in a glycan graph.
+type ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2CcdAtomResponse struct {
+	// Exact atom identifier from the residue CCD entry (\_chem_comp_atom.atom_id)
+	AtomID string `json:"atom_id" api:"required"`
+	// Chain ID containing the CCD residue
+	ChainID string `json:"chain_id" api:"required"`
+	// Request-local residue ID declared by the graph entity
+	ResidueID string           `json:"residue_id" api:"required"`
+	Type      constant.CcdAtom `json:"type" default:"ccd_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomID      respjson.Field
+		ChainID     respjson.Field
+		ResidueID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2CcdAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2CcdAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference using an explicit numeric atom-map in the input SMILES.
+type ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2SmilesAtomResponse struct {
+	// Numeric atom-map identifier from the input SMILES (for example 7 for [C:7])
+	AtomMap int64 `json:"atom_map" api:"required"`
+	// Chain ID containing the SMILES ligand
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.SmilesAtom `json:"type" default:"smiles_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomMap     respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2SmilesAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2SmilesAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Atom reference for a single-residue ligand_ccd or an explicitly atom-mapped
+// SMILES ligand. Glycan bonds use ccd_atom; new SMILES bonds should use
+// smiles_atom.
+type ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2LigandAtomResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID containing the atom
+	ChainID string              `json:"chain_id" api:"required"`
+	Type    constant.LigandAtom `json:"type" default:"ligand_atom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2LigandAtomResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetBondAtom2LigandAtomResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ShareLinkReadResponsePipelineSmExploreInputTargetConstraintUnion contains all
+// possible properties and values from
+// [ShareLinkReadResponsePipelineSmExploreInputTargetConstraintPocketConstraintResponse],
+// [ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ShareLinkReadResponsePipelineSmExploreInputTargetConstraintUnion struct {
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputTargetConstraintPocketConstraintResponse].
+	BinderChainID string `json:"binder_chain_id"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputTargetConstraintPocketConstraintResponse].
+	ContactResidues     map[string][]int64 `json:"contact_residues"`
+	MaxDistanceAngstrom float64            `json:"max_distance_angstrom"`
+	Type                string             `json:"type"`
+	Force               bool               `json:"force"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponse].
+	Token1 ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1Union `json:"token1"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponse].
+	Token2 ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2Union `json:"token2"`
+	JSON   struct {
+		BinderChainID       respjson.Field
+		ContactResidues     respjson.Field
+		MaxDistanceAngstrom respjson.Field
+		Type                respjson.Field
+		Force               respjson.Field
+		Token1              respjson.Field
+		Token2              respjson.Field
+		raw                 string
+	} `json:"-"`
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetConstraintUnion) AsShareLinkReadResponsePipelineSmExploreInputTargetConstraintPocketConstraintResponse() (v ShareLinkReadResponsePipelineSmExploreInputTargetConstraintPocketConstraintResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetConstraintUnion) AsShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponse() (v ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetConstraintUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetConstraintUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Constrains the binder to interact with specific pocket residues on the target.
+type ShareLinkReadResponsePipelineSmExploreInputTargetConstraintPocketConstraintResponse struct {
+	// Chain ID of the binder molecule
+	BinderChainID string `json:"binder_chain_id" api:"required"`
+	// Binding pocket residues keyed by chain ID. Each key is a chain ID (e.g. "A") and
+	// the value is an array of 0-indexed residue indices that define the pocket on
+	// that chain.
+	ContactResidues map[string][]int64 `json:"contact_residues" api:"required"`
+	// Maximum allowed distance in Angstroms between binder and pocket residues.
+	// Typical range: 4-8 A.
+	MaxDistanceAngstrom float64         `json:"max_distance_angstrom" api:"required"`
+	Type                constant.Pocket `json:"type" default:"pocket"`
+	// Whether to force the constraint
+	Force bool `json:"force"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		BinderChainID       respjson.Field
+		ContactResidues     respjson.Field
+		MaxDistanceAngstrom respjson.Field
+		Type                respjson.Field
+		Force               respjson.Field
+		ExtraFields         map[string]respjson.Field
+		raw                 string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetConstraintPocketConstraintResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetConstraintPocketConstraintResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Maximum-distance contact constraint between two polymer residues or ligand
+// atoms.
+type ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponse struct {
+	// Maximum distance in Angstroms
+	MaxDistanceAngstrom float64 `json:"max_distance_angstrom" api:"required"`
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
+	Token1 ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1Union `json:"token1" api:"required"`
+	// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
+	Token2 ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2Union `json:"token2" api:"required"`
+	Type   constant.Contact                                                                                `json:"type" default:"contact"`
+	// Whether to force the constraint
+	Force bool `json:"force"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		MaxDistanceAngstrom respjson.Field
+		Token1              respjson.Field
+		Token2              respjson.Field
+		Type                respjson.Field
+		Force               respjson.Field
+		ExtraFields         map[string]respjson.Field
+		raw                 string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1Union
+// contains all possible properties and values from
+// [ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1PolymerContactTokenResponse],
+// [ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1LigandContactTokenResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1Union struct {
+	ChainID string `json:"chain_id"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1PolymerContactTokenResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1LigandContactTokenResponse].
+	AtomName string `json:"atom_name"`
+	JSON     struct {
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomName     respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1Union) AsShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1PolymerContactTokenResponse() (v ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1PolymerContactTokenResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1Union) AsShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1LigandContactTokenResponse() (v ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1LigandContactTokenResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1PolymerContactTokenResponse struct {
+	// Chain ID
+	ChainID string `json:"chain_id" api:"required"`
+	// 0-based residue index
+	ResidueIndex int64                   `json:"residue_index" api:"required"`
+	Type         constant.PolymerContact `json:"type" default:"polymer_contact"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1PolymerContactTokenResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1PolymerContactTokenResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
+type ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1LigandContactTokenResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID
+	ChainID string                 `json:"chain_id" api:"required"`
+	Type    constant.LigandContact `json:"type" default:"ligand_contact"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1LigandContactTokenResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken1LigandContactTokenResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2Union
+// contains all possible properties and values from
+// [ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2PolymerContactTokenResponse],
+// [ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2LigandContactTokenResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2Union struct {
+	ChainID string `json:"chain_id"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2PolymerContactTokenResponse].
+	ResidueIndex int64  `json:"residue_index"`
+	Type         string `json:"type"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2LigandContactTokenResponse].
+	AtomName string `json:"atom_name"`
+	JSON     struct {
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		AtomName     respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2Union) AsShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2PolymerContactTokenResponse() (v ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2PolymerContactTokenResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2Union) AsShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2LigandContactTokenResponse() (v ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2LigandContactTokenResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2Union) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2Union) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2PolymerContactTokenResponse struct {
+	// Chain ID
+	ChainID string `json:"chain_id" api:"required"`
+	// 0-based residue index
+	ResidueIndex int64                   `json:"residue_index" api:"required"`
+	Type         constant.PolymerContact `json:"type" default:"polymer_contact"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainID      respjson.Field
+		ResidueIndex respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2PolymerContactTokenResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2PolymerContactTokenResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Ligand contact token for a CCD atom or an explicitly atom-mapped SMILES atom.
+type ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2LigandContactTokenResponse struct {
+	// Atom name. For ligand_ccd, use the standardized CIF atom name. For
+	// ligand_smiles, explicitly label the atom with numeric atom-map notation: [C:1]
+	// is referenced as C1 and [O:2] as O2. The resulting name must be unique within
+	// the molecule and at most four characters.
+	AtomName string `json:"atom_name" api:"required"`
+	// Chain ID
+	ChainID string                 `json:"chain_id" api:"required"`
+	Type    constant.LigandContact `json:"type" default:"ligand_contact"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AtomName    respjson.Field
+		ChainID     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2LigandContactTokenResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputTargetConstraintContactConstraintResponseToken2LigandContactTokenResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Molecule filtering configuration. Controls both Boltz built-in SMARTS filtering
+// and custom filters.
+type ShareLinkReadResponsePipelineSmExploreInputMoleculeFilters struct {
+	// Controls the stringency of Boltz's built-in SMARTS structural alert filtering,
+	// which removes molecules matching known problematic substructures. 'recommended'
+	// (default): applies a curated set of alerts balancing safety and hit rate.
+	// 'extra': adds additional alerts beyond the recommended set for stricter
+	// filtering. 'aggressive': applies the most comprehensive alert set — may reject
+	// viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely; only
+	// custom_filters will be applied.
+	//
+	// Any of "recommended", "extra", "aggressive", "disabled".
+	BoltzSmartsCatalogFilterLevel ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersBoltzSmartsCatalogFilterLevel `json:"boltz_smarts_catalog_filter_level"`
+	// Custom filters to apply. Molecules must pass all filters (AND logic).
+	CustomFilters []ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterUnion `json:"custom_filters"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		BoltzSmartsCatalogFilterLevel respjson.Field
+		CustomFilters                 respjson.Field
+		ExtraFields                   map[string]respjson.Field
+		raw                           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputMoleculeFilters) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputMoleculeFilters) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Controls the stringency of Boltz's built-in SMARTS structural alert filtering,
+// which removes molecules matching known problematic substructures. 'recommended'
+// (default): applies a curated set of alerts balancing safety and hit rate.
+// 'extra': adds additional alerts beyond the recommended set for stricter
+// filtering. 'aggressive': applies the most comprehensive alert set — may reject
+// viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely; only
+// custom_filters will be applied.
+type ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersBoltzSmartsCatalogFilterLevel string
+
+const (
+	ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersBoltzSmartsCatalogFilterLevelRecommended ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersBoltzSmartsCatalogFilterLevel = "recommended"
+	ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersBoltzSmartsCatalogFilterLevelExtra       ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersBoltzSmartsCatalogFilterLevel = "extra"
+	ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersBoltzSmartsCatalogFilterLevelAggressive  ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersBoltzSmartsCatalogFilterLevel = "aggressive"
+	ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersBoltzSmartsCatalogFilterLevelDisabled    ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersBoltzSmartsCatalogFilterLevel = "disabled"
+)
+
+// ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterUnion
+// contains all possible properties and values from
+// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterLipinskiFilterResponse],
+// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponse],
+// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterSmartsCustomFilterResponse],
+// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponse],
+// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterSmilesRegexFilterResponse].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterUnion struct {
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterLipinskiFilterResponse].
+	MaxHba float64 `json:"max_hba"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterLipinskiFilterResponse].
+	MaxHbd float64 `json:"max_hbd"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterLipinskiFilterResponse].
+	MaxLogp float64 `json:"max_logp"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterLipinskiFilterResponse].
+	MaxMw float64 `json:"max_mw"`
+	Type  string  `json:"type"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterLipinskiFilterResponse].
+	AllowSingleViolation bool `json:"allow_single_violation"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponse].
+	FractionCsp3 ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseFractionCsp3 `json:"fraction_csp3"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponse].
+	MolLogp ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseMolLogp `json:"mol_logp"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponse].
+	MolWt ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseMolWt `json:"mol_wt"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponse].
+	NumAromaticRings ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumAromaticRings `json:"num_aromatic_rings"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponse].
+	NumHAcceptors ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumHAcceptors `json:"num_h_acceptors"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponse].
+	NumHDonors ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumHDonors `json:"num_h_donors"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponse].
+	NumHeteroatoms ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumHeteroatoms `json:"num_heteroatoms"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponse].
+	NumRings ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumRings `json:"num_rings"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponse].
+	NumRotatableBonds ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumRotatableBonds `json:"num_rotatable_bonds"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponse].
+	Tpsa     ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseTpsa `json:"tpsa"`
+	Patterns []string                                                                                                `json:"patterns"`
+	// This field is from variant
+	// [ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponse].
+	Catalog string `json:"catalog"`
+	JSON    struct {
+		MaxHba               respjson.Field
+		MaxHbd               respjson.Field
+		MaxLogp              respjson.Field
+		MaxMw                respjson.Field
+		Type                 respjson.Field
+		AllowSingleViolation respjson.Field
+		FractionCsp3         respjson.Field
+		MolLogp              respjson.Field
+		MolWt                respjson.Field
+		NumAromaticRings     respjson.Field
+		NumHAcceptors        respjson.Field
+		NumHDonors           respjson.Field
+		NumHeteroatoms       respjson.Field
+		NumRings             respjson.Field
+		NumRotatableBonds    respjson.Field
+		Tpsa                 respjson.Field
+		Patterns             respjson.Field
+		Catalog              respjson.Field
+		raw                  string
+	} `json:"-"`
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterUnion) AsShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterLipinskiFilterResponse() (v ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterLipinskiFilterResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterUnion) AsShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponse() (v ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterUnion) AsShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterSmartsCustomFilterResponse() (v ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterSmartsCustomFilterResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterUnion) AsShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponse() (v ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterUnion) AsShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterSmilesRegexFilterResponse() (v ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterSmilesRegexFilterResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Lipinski's Rule of Five filter. Rejects molecules that violate drug-likeness
+// criteria based on molecular weight, LogP, hydrogen bond donors, and hydrogen
+// bond acceptors.
+type ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterLipinskiFilterResponse struct {
+	// Maximum number of hydrogen bond acceptors. Lipinski threshold: 10
+	MaxHba float64 `json:"max_hba" api:"required"`
+	// Maximum number of hydrogen bond donors. Lipinski threshold: 5
+	MaxHbd float64 `json:"max_hbd" api:"required"`
+	// Maximum LogP. Lipinski threshold: 5
+	MaxLogp float64 `json:"max_logp" api:"required"`
+	// Maximum molecular weight (Da). Lipinski threshold: 500
+	MaxMw float64                 `json:"max_mw" api:"required"`
+	Type  constant.LipinskiFilter `json:"type" default:"lipinski_filter"`
+	// If true, one rule violation is allowed (classic Rule of Five). Defaults to false
+	// (all rules must pass).
+	AllowSingleViolation bool `json:"allow_single_violation"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		MaxHba               respjson.Field
+		MaxHbd               respjson.Field
+		MaxLogp              respjson.Field
+		MaxMw                respjson.Field
+		Type                 respjson.Field
+		AllowSingleViolation respjson.Field
+		ExtraFields          map[string]respjson.Field
+		raw                  string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterLipinskiFilterResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterLipinskiFilterResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Filter molecules by RDKit molecular descriptors. Each descriptor is constrained
+// to a min/max range. Only descriptors you provide are checked — omitted
+// descriptors are unconstrained.
+type ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponse struct {
+	Type constant.RdkitDescriptorFilter `json:"type" default:"rdkit_descriptor_filter"`
+	// Min/max range constraint for an RDKit molecular descriptor
+	FractionCsp3 ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseFractionCsp3 `json:"fraction_csp3"`
+	// Min/max range constraint for an RDKit molecular descriptor
+	MolLogp ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseMolLogp `json:"mol_logp"`
+	// Min/max range constraint for an RDKit molecular descriptor
+	MolWt ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseMolWt `json:"mol_wt"`
+	// Min/max range constraint for an RDKit molecular descriptor
+	NumAromaticRings ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumAromaticRings `json:"num_aromatic_rings"`
+	// Min/max range constraint for an RDKit molecular descriptor
+	NumHAcceptors ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumHAcceptors `json:"num_h_acceptors"`
+	// Min/max range constraint for an RDKit molecular descriptor
+	NumHDonors ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumHDonors `json:"num_h_donors"`
+	// Min/max range constraint for an RDKit molecular descriptor
+	NumHeteroatoms ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumHeteroatoms `json:"num_heteroatoms"`
+	// Min/max range constraint for an RDKit molecular descriptor
+	NumRings ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumRings `json:"num_rings"`
+	// Min/max range constraint for an RDKit molecular descriptor
+	NumRotatableBonds ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumRotatableBonds `json:"num_rotatable_bonds"`
+	// Min/max range constraint for an RDKit molecular descriptor
+	Tpsa ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseTpsa `json:"tpsa"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type              respjson.Field
+		FractionCsp3      respjson.Field
+		MolLogp           respjson.Field
+		MolWt             respjson.Field
+		NumAromaticRings  respjson.Field
+		NumHAcceptors     respjson.Field
+		NumHDonors        respjson.Field
+		NumHeteroatoms    respjson.Field
+		NumRings          respjson.Field
+		NumRotatableBonds respjson.Field
+		Tpsa              respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Min/max range constraint for an RDKit molecular descriptor
+type ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseFractionCsp3 struct {
+	// Maximum allowed value (inclusive)
+	Max float64 `json:"max"`
+	// Minimum allowed value (inclusive)
+	Min float64 `json:"min"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseFractionCsp3) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseFractionCsp3) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Min/max range constraint for an RDKit molecular descriptor
+type ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseMolLogp struct {
+	// Maximum allowed value (inclusive)
+	Max float64 `json:"max"`
+	// Minimum allowed value (inclusive)
+	Min float64 `json:"min"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseMolLogp) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseMolLogp) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Min/max range constraint for an RDKit molecular descriptor
+type ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseMolWt struct {
+	// Maximum allowed value (inclusive)
+	Max float64 `json:"max"`
+	// Minimum allowed value (inclusive)
+	Min float64 `json:"min"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseMolWt) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseMolWt) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Min/max range constraint for an RDKit molecular descriptor
+type ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumAromaticRings struct {
+	// Maximum allowed value (inclusive)
+	Max float64 `json:"max"`
+	// Minimum allowed value (inclusive)
+	Min float64 `json:"min"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumAromaticRings) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumAromaticRings) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Min/max range constraint for an RDKit molecular descriptor
+type ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumHAcceptors struct {
+	// Maximum allowed value (inclusive)
+	Max float64 `json:"max"`
+	// Minimum allowed value (inclusive)
+	Min float64 `json:"min"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumHAcceptors) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumHAcceptors) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Min/max range constraint for an RDKit molecular descriptor
+type ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumHDonors struct {
+	// Maximum allowed value (inclusive)
+	Max float64 `json:"max"`
+	// Minimum allowed value (inclusive)
+	Min float64 `json:"min"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumHDonors) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumHDonors) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Min/max range constraint for an RDKit molecular descriptor
+type ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumHeteroatoms struct {
+	// Maximum allowed value (inclusive)
+	Max float64 `json:"max"`
+	// Minimum allowed value (inclusive)
+	Min float64 `json:"min"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumHeteroatoms) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumHeteroatoms) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Min/max range constraint for an RDKit molecular descriptor
+type ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumRings struct {
+	// Maximum allowed value (inclusive)
+	Max float64 `json:"max"`
+	// Minimum allowed value (inclusive)
+	Min float64 `json:"min"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumRings) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumRings) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Min/max range constraint for an RDKit molecular descriptor
+type ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumRotatableBonds struct {
+	// Maximum allowed value (inclusive)
+	Max float64 `json:"max"`
+	// Minimum allowed value (inclusive)
+	Min float64 `json:"min"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumRotatableBonds) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseNumRotatableBonds) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Min/max range constraint for an RDKit molecular descriptor
+type ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseTpsa struct {
+	// Maximum allowed value (inclusive)
+	Max float64 `json:"max"`
+	// Minimum allowed value (inclusive)
+	Min float64 `json:"min"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Max         respjson.Field
+		Min         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseTpsa) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterRdkitDescriptorFilterResponseTpsa) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Filter molecules by custom SMARTS patterns. Molecules matching any pattern are
+// rejected.
+type ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterSmartsCustomFilterResponse struct {
+	// SMARTS patterns. Molecules matching any pattern are rejected.
+	Patterns []string                    `json:"patterns" api:"required"`
+	Type     constant.SmartsCustomFilter `json:"type" default:"smarts_custom_filter"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Patterns    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterSmartsCustomFilterResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterSmartsCustomFilterResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Filter molecules using a predefined SMARTS catalog of structural alerts.
+type ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponse struct {
+	// Predefined SMARTS catalog to apply. PAINS, BRENK, ChEMBL, and NIH catalogs
+	// reject known problematic substructures.
+	//
+	// Any of "PAINS", "PAINS_A", "PAINS_B", "PAINS_C", "BRENK", "CHEMBL",
+	// "CHEMBL_BMS", "CHEMBL_Dundee", "CHEMBL_Glaxo", "CHEMBL_Inpharmatica",
+	// "CHEMBL_LINT", "CHEMBL_MLSMR", "CHEMBL_SureChEMBL", "NIH".
+	Catalog string                       `json:"catalog" api:"required"`
+	Type    constant.SmartsCatalogFilter `json:"type" default:"smarts_catalog_filter"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Catalog     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterSmartsCatalogFilterResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Filter molecules by regex patterns on their SMILES representation.
+type ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterSmilesRegexFilterResponse struct {
+	// Regex patterns applied to SMILES strings. Molecules matching any pattern are
+	// rejected.
+	Patterns []string                   `json:"patterns" api:"required"`
+	Type     constant.SmilesRegexFilter `json:"type" default:"smiles_regex_filter"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Patterns    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterSmilesRegexFilterResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreInputMoleculeFiltersCustomFilterSmilesRegexFilterResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ShareLinkReadResponsePipelineSmExploreProgress struct {
+	// Molecules that reached terminal failure. These do not consume budget — each is
+	// replaced by another selection.
+	NumMoleculesFailed int64 `json:"num_molecules_failed" api:"required"`
+	// Molecules that produced a usable result. The run completes when this reaches the
+	// budget.
+	NumMoleculesScored int64 `json:"num_molecules_scored" api:"required"`
+	// The requested budget: how many of the library will be scored.
+	TotalMoleculesToScore int64 `json:"total_molecules_to_score" api:"required"`
+	// ID of the most recently scored result
+	LatestResultID string `json:"latest_result_id"`
+	// Distinct molecules accepted after validation, filtering and de-duplication.
+	// Omitted while the submitted library is being prepared.
+	LibrarySize      int64                                                          `json:"library_size"`
+	RejectionSummary ShareLinkReadResponsePipelineSmExploreProgressRejectionSummary `json:"rejection_summary"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		NumMoleculesFailed    respjson.Field
+		NumMoleculesScored    respjson.Field
+		TotalMoleculesToScore respjson.Field
+		LatestResultID        respjson.Field
+		LibrarySize           respjson.Field
+		RejectionSummary      respjson.Field
+		ExtraFields           map[string]respjson.Field
+		raw                   string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreProgress) RawJSON() string { return r.JSON.raw }
+func (r *ShareLinkReadResponsePipelineSmExploreProgress) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ShareLinkReadResponsePipelineSmExploreProgressRejectionSummary struct {
+	// Number of submitted rows that collapsed onto a molecule already in the library.
+	// Exploration works over distinct molecules, so duplicates are merged rather than
+	// scored twice.
+	DuplicateCount int64 `json:"duplicate_count" api:"required"`
+	// Number of submitted molecules removed by server-side filtering rules.
+	FilteredCount int64 `json:"filtered_count" api:"required"`
+	// Number of submitted molecules rejected as invalid input.
+	InvalidCount int64 `json:"invalid_count" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		DuplicateCount respjson.Field
+		FilteredCount  respjson.Field
+		InvalidCount   respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ShareLinkReadResponsePipelineSmExploreProgressRejectionSummary) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *ShareLinkReadResponsePipelineSmExploreProgressRejectionSummary) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ShareLinkReadResponsePipelineSmExploreStatus string
+
+const (
+	ShareLinkReadResponsePipelineSmExploreStatusPending   ShareLinkReadResponsePipelineSmExploreStatus = "pending"
+	ShareLinkReadResponsePipelineSmExploreStatusRunning   ShareLinkReadResponsePipelineSmExploreStatus = "running"
+	ShareLinkReadResponsePipelineSmExploreStatusSucceeded ShareLinkReadResponsePipelineSmExploreStatus = "succeeded"
+	ShareLinkReadResponsePipelineSmExploreStatusFailed    ShareLinkReadResponsePipelineSmExploreStatus = "failed"
+	ShareLinkReadResponsePipelineSmExploreStatusStopped   ShareLinkReadResponsePipelineSmExploreStatus = "stopped"
 )
 
 type ShareLinkReadResponsePipelineStatus string

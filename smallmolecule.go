@@ -28,6 +28,12 @@ type SmallMoleculeService struct {
 	// optimization score (binding strength ranking, for lead optimization), and
 	// structure confidence.
 	LibraryScreen SmallMoleculeLibraryScreenService
+	// Explore a large library of small molecules against a protein target without
+	// screening all of it. Submit the whole library and a budget; molecules are chosen
+	// to score as results arrive, so each choice is informed by everything scored so
+	// far. Results use the same scores as a library screen, and progress reports the
+	// library size alongside the budget.
+	Explore SmallMoleculeExploreService
 }
 
 // NewSmallMoleculeService generates a new service that applies the given options
@@ -38,5 +44,6 @@ func NewSmallMoleculeService(opts ...option.RequestOption) (r SmallMoleculeServi
 	r.Options = opts
 	r.Design = NewSmallMoleculeDesignService(opts...)
 	r.LibraryScreen = NewSmallMoleculeLibraryScreenService(opts...)
+	r.Explore = NewSmallMoleculeExploreService(opts...)
 	return
 }
