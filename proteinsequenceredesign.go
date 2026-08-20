@@ -1121,9 +1121,9 @@ func (r *ProteinSequenceRedesignGetResponseInputGenericProteinSequenceRedesignRu
 }
 
 type ProteinSequenceRedesignGetResponseProgress struct {
-	// Number of protein binders generated so far
+	// Number of protein designs generated so far
 	NumProteinsGenerated int64 `json:"num_proteins_generated" api:"required"`
-	// Total number of protein binders requested
+	// Total number of protein designs requested
 	TotalProteinsToGenerate int64 `json:"total_proteins_to_generate" api:"required"`
 	// ID of the most recently generated result
 	LatestResultID string `json:"latest_result_id"`
@@ -1237,9 +1237,9 @@ func (r *ProteinSequenceRedesignListResponseError) UnmarshalJSON(data []byte) er
 }
 
 type ProteinSequenceRedesignListResponseProgress struct {
-	// Number of protein binders generated so far
+	// Number of protein designs generated so far
 	NumProteinsGenerated int64 `json:"num_proteins_generated" api:"required"`
-	// Total number of protein binders requested
+	// Total number of protein designs requested
 	TotalProteinsToGenerate int64 `json:"total_proteins_to_generate" api:"required"`
 	// ID of the most recently generated result
 	LatestResultID string `json:"latest_result_id"`
@@ -1587,7 +1587,7 @@ type ProteinSequenceRedesignListResultsResponseBinderProteinDesignResult struct 
 	ID        string                                                                       `json:"id" api:"required"`
 	Artifacts ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultArtifacts `json:"artifacts" api:"required"`
 	CreatedAt time.Time                                                                    `json:"created_at" api:"required" format:"date-time"`
-	// Entities in the designed complex, including designed and fixed input entities.
+	// Designed and fixed entities returned for this result.
 	Entities []ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultEntityUnion `json:"entities" api:"required"`
 	// Structural and binding quality metrics for a designed protein binder
 	Metrics ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultMetrics `json:"metrics" api:"required"`
@@ -2209,7 +2209,7 @@ type ProteinSequenceRedesignListResultsResponseGenericProteinDesignResult struct
 	ID        string                                                                        `json:"id" api:"required"`
 	Artifacts ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultArtifacts `json:"artifacts" api:"required"`
 	CreatedAt time.Time                                                                     `json:"created_at" api:"required" format:"date-time"`
-	// Entities in the designed complex, including designed and fixed input entities.
+	// Designed and fixed entities returned for this result.
 	Entities []ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultEntityUnion `json:"entities" api:"required"`
 	// Structure and design-quality metrics for a generic protein design.
 	Metrics ProteinSequenceRedesignListResultsResponseGenericProteinDesignResultMetrics `json:"metrics" api:"required"`
@@ -3771,9 +3771,9 @@ func (r *ProteinSequenceRedesignResumeResponseInputGenericProteinSequenceRedesig
 }
 
 type ProteinSequenceRedesignResumeResponseProgress struct {
-	// Number of protein binders generated so far
+	// Number of protein designs generated so far
 	NumProteinsGenerated int64 `json:"num_proteins_generated" api:"required"`
-	// Total number of protein binders requested
+	// Total number of protein designs requested
 	TotalProteinsToGenerate int64 `json:"total_proteins_to_generate" api:"required"`
 	// ID of the most recently generated result
 	LatestResultID string `json:"latest_result_id"`
@@ -4759,9 +4759,9 @@ func (r *ProteinSequenceRedesignStartResponseInputGenericProteinSequenceRedesign
 }
 
 type ProteinSequenceRedesignStartResponseProgress struct {
-	// Number of protein binders generated so far
+	// Number of protein designs generated so far
 	NumProteinsGenerated int64 `json:"num_proteins_generated" api:"required"`
-	// Total number of protein binders requested
+	// Total number of protein designs requested
 	TotalProteinsToGenerate int64 `json:"total_proteins_to_generate" api:"required"`
 	// ID of the most recently generated result
 	LatestResultID string `json:"latest_result_id"`
@@ -5747,9 +5747,9 @@ func (r *ProteinSequenceRedesignStopResponseInputGenericProteinSequenceRedesignR
 }
 
 type ProteinSequenceRedesignStopResponseProgress struct {
-	// Number of protein binders generated so far
+	// Number of protein designs generated so far
 	NumProteinsGenerated int64 `json:"num_proteins_generated" api:"required"`
-	// Total number of protein binders requested
+	// Total number of protein designs requested
 	TotalProteinsToGenerate int64 `json:"total_proteins_to_generate" api:"required"`
 	// ID of the most recently generated result
 	LatestResultID string `json:"latest_result_id"`

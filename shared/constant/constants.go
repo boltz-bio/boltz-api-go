@@ -42,6 +42,7 @@ type ExcludedAminoAcids string             // Always "excluded_amino_acids"
 type ExcludedSequenceMotifs string         // Always "excluded_sequence_motifs"
 type Failed string                         // Always "failed"
 type FromTemplate string                   // Always "from_template"
+type FusionProtein string                  // Always "fusion_protein"
 type Generic string                        // Always "generic"
 type Glycan string                         // Always "glycan"
 type Insertion string                      // Always "insertion"
@@ -69,6 +70,7 @@ type RdkitDescriptorFilter string          // Always "rdkit_descriptor_filter"
 type Replacement string                    // Always "replacement"
 type Residues string                       // Always "residues"
 type Rna string                            // Always "rna"
+type Single string                         // Always "single"
 type SmartsCatalogFilter string            // Always "smarts_catalog_filter"
 type SmartsCustomFilter string             // Always "smarts_custom_filter"
 type SmilesAtom string                     // Always "smiles_atom"
@@ -76,6 +78,7 @@ type SmilesRegexFilter string              // Always "smiles_regex_filter"
 type StructureTemplate string              // Always "structure_template"
 type Succeeded string                      // Always "succeeded"
 type Target string                         // Always "target"
+type UniformlySampled string               // Always "uniformly_sampled"
 type UniformlySampledSpecifications string // Always "uniformly_sampled_specifications"
 type URL string                            // Always "url"
 type User string                           // Always "user"
@@ -107,6 +110,7 @@ func (c ExcludedAminoAcids) Default() ExcludedAminoAcids         { return "exclu
 func (c ExcludedSequenceMotifs) Default() ExcludedSequenceMotifs { return "excluded_sequence_motifs" }
 func (c Failed) Default() Failed                                 { return "failed" }
 func (c FromTemplate) Default() FromTemplate                     { return "from_template" }
+func (c FusionProtein) Default() FusionProtein                   { return "fusion_protein" }
 func (c Generic) Default() Generic                               { return "generic" }
 func (c Glycan) Default() Glycan                                 { return "glycan" }
 func (c Insertion) Default() Insertion                           { return "insertion" }
@@ -138,6 +142,7 @@ func (c RdkitDescriptorFilter) Default() RdkitDescriptorFilter { return "rdkit_d
 func (c Replacement) Default() Replacement                     { return "replacement" }
 func (c Residues) Default() Residues                           { return "residues" }
 func (c Rna) Default() Rna                                     { return "rna" }
+func (c Single) Default() Single                               { return "single" }
 func (c SmartsCatalogFilter) Default() SmartsCatalogFilter     { return "smarts_catalog_filter" }
 func (c SmartsCustomFilter) Default() SmartsCustomFilter       { return "smarts_custom_filter" }
 func (c SmilesAtom) Default() SmilesAtom                       { return "smiles_atom" }
@@ -145,6 +150,7 @@ func (c SmilesRegexFilter) Default() SmilesRegexFilter         { return "smiles_
 func (c StructureTemplate) Default() StructureTemplate         { return "structure_template" }
 func (c Succeeded) Default() Succeeded                         { return "succeeded" }
 func (c Target) Default() Target                               { return "target" }
+func (c UniformlySampled) Default() UniformlySampled           { return "uniformly_sampled" }
 func (c UniformlySampledSpecifications) Default() UniformlySampledSpecifications {
 	return "uniformly_sampled_specifications"
 }
@@ -178,6 +184,7 @@ func (c ExcludedAminoAcids) MarshalJSON() ([]byte, error)             { return m
 func (c ExcludedSequenceMotifs) MarshalJSON() ([]byte, error)         { return marshalString(c) }
 func (c Failed) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c FromTemplate) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
+func (c FusionProtein) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c Generic) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c Glycan) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c Insertion) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
@@ -205,6 +212,7 @@ func (c RdkitDescriptorFilter) MarshalJSON() ([]byte, error)          { return m
 func (c Replacement) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c Residues) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Rna) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c Single) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c SmartsCatalogFilter) MarshalJSON() ([]byte, error)            { return marshalString(c) }
 func (c SmartsCustomFilter) MarshalJSON() ([]byte, error)             { return marshalString(c) }
 func (c SmilesAtom) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
@@ -212,6 +220,7 @@ func (c SmilesRegexFilter) MarshalJSON() ([]byte, error)              { return m
 func (c StructureTemplate) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c Succeeded) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c Target) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c UniformlySampled) MarshalJSON() ([]byte, error)               { return marshalString(c) }
 func (c UniformlySampledSpecifications) MarshalJSON() ([]byte, error) { return marshalString(c) }
 func (c URL) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c User) MarshalJSON() ([]byte, error)                           { return marshalString(c) }

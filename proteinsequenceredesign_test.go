@@ -125,7 +125,7 @@ func TestProteinSequenceRedesignEstimateCostWithOptionalParams(t *testing.T) {
 			},
 			GlobalDesignFilters: []boltzapi.ProteinSequenceRedesignEstimateCostParamsBodyBinderProteinSequenceRedesignRunInputGlobalDesignFilterUnion{{
 				OfProteinSequenceRedesignEstimateCostsBodyBinderProteinSequenceRedesignRunInputGlobalDesignFilterExcludedAminoAcidsDesignFilter: &boltzapi.ProteinSequenceRedesignEstimateCostParamsBodyBinderProteinSequenceRedesignRunInputGlobalDesignFilterExcludedAminoAcidsDesignFilter{
-					AminoAcids: []string{"x"},
+					AminoAcids: []string{"I"},
 				},
 			}},
 			IdempotencyKey: boltzapi.String("idempotency_key"),
@@ -229,7 +229,7 @@ func TestProteinSequenceRedesignStartWithOptionalParams(t *testing.T) {
 			},
 			GlobalDesignFilters: []boltzapi.ProteinSequenceRedesignStartParamsBodyBinderProteinSequenceRedesignRunInputGlobalDesignFilterUnion{{
 				OfProteinSequenceRedesignStartsBodyBinderProteinSequenceRedesignRunInputGlobalDesignFilterExcludedAminoAcidsDesignFilter: &boltzapi.ProteinSequenceRedesignStartParamsBodyBinderProteinSequenceRedesignRunInputGlobalDesignFilterExcludedAminoAcidsDesignFilter{
-					AminoAcids: []string{"x"},
+					AminoAcids: []string{"I"},
 				},
 			}},
 			IdempotencyKey: boltzapi.String("idempotency_key"),
