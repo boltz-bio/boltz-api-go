@@ -216,7 +216,7 @@ func (r *SmallMoleculeExploreGetResponseError) UnmarshalJSON(data []byte) error 
 // Pipeline input (null if data deleted)
 type SmallMoleculeExploreGetResponseInput struct {
 	// How many molecules to score. Must not exceed the accepted library size or
-	// 4,000,000.
+	// 5,000,000.
 	Budget  int64                                       `json:"budget" api:"required"`
 	Library SmallMoleculeExploreGetResponseInputLibrary `json:"library" api:"required"`
 	// Target protein sequences for small molecule design or screening.
@@ -2206,7 +2206,7 @@ func (r *SmallMoleculeExploreResumeResponseError) UnmarshalJSON(data []byte) err
 // Pipeline input (null if data deleted)
 type SmallMoleculeExploreResumeResponseInput struct {
 	// How many molecules to score. Must not exceed the accepted library size or
-	// 4,000,000.
+	// 5,000,000.
 	Budget  int64                                          `json:"budget" api:"required"`
 	Library SmallMoleculeExploreResumeResponseInputLibrary `json:"library" api:"required"`
 	// Target protein sequences for small molecule design or screening.
@@ -4025,7 +4025,7 @@ func (r *SmallMoleculeExploreStartResponseError) UnmarshalJSON(data []byte) erro
 // Pipeline input (null if data deleted)
 type SmallMoleculeExploreStartResponseInput struct {
 	// How many molecules to score. Must not exceed the accepted library size or
-	// 4,000,000.
+	// 5,000,000.
 	Budget  int64                                         `json:"budget" api:"required"`
 	Library SmallMoleculeExploreStartResponseInputLibrary `json:"library" api:"required"`
 	// Target protein sequences for small molecule design or screening.
@@ -5842,7 +5842,7 @@ func (r *SmallMoleculeExploreStopResponseError) UnmarshalJSON(data []byte) error
 // Pipeline input (null if data deleted)
 type SmallMoleculeExploreStopResponseInput struct {
 	// How many molecules to score. Must not exceed the accepted library size or
-	// 4,000,000.
+	// 5,000,000.
 	Budget  int64                                        `json:"budget" api:"required"`
 	Library SmallMoleculeExploreStopResponseInputLibrary `json:"library" api:"required"`
 	// Target protein sequences for small molecule design or screening.
@@ -7611,9 +7611,9 @@ func (r SmallMoleculeExploreListResultsParams) URLQuery() (v url.Values, err err
 
 type SmallMoleculeExploreStartParams struct {
 	// How many molecules to score. Must not exceed the accepted library size or
-	// 4,000,000.
+	// 5,000,000.
 	Budget int64 `json:"budget" api:"required"`
-	// CSV or TSV molecule library, limited to 300 MiB and 4,000,000 data records. URL
+	// CSV or TSV molecule library, limited to 375 MiB and 5,000,000 data records. URL
 	// sources can use the full file limit. Base64 sources are also subject to the
 	// API's 50 MiB JSON request-body limit, so use a URL source for larger files. The
 	// file must be UTF-8 and may contain only the selected SMILES and ID columns;
@@ -7640,7 +7640,7 @@ func (r *SmallMoleculeExploreStartParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// CSV or TSV molecule library, limited to 300 MiB and 4,000,000 data records. URL
+// CSV or TSV molecule library, limited to 375 MiB and 5,000,000 data records. URL
 // sources can use the full file limit. Base64 sources are also subject to the
 // API's 50 MiB JSON request-body limit, so use a URL source for larger files. The
 // file must be UTF-8 and may contain only the selected SMILES and ID columns;
