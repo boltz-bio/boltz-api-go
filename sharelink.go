@@ -20472,7 +20472,7 @@ func (r *ShareLinkReadResponsePipelineSmExploreError) UnmarshalJSON(data []byte)
 // Pipeline input (null if data deleted)
 type ShareLinkReadResponsePipelineSmExploreInput struct {
 	// How many molecules to score. Must not exceed the accepted library size or
-	// 4,000,000.
+	// 5,000,000.
 	Budget  int64                                              `json:"budget" api:"required"`
 	Library ShareLinkReadResponsePipelineSmExploreInputLibrary `json:"library" api:"required"`
 	// Target protein sequences for small molecule design or screening.
