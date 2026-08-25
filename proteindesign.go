@@ -5239,22 +5239,22 @@ type ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderUnion
 	// This field is from variant
 	// [ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponse].
 	Modality ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponseModality `json:"modality"`
-	Type     string                                                                                                          `json:"type"`
 	// This field is from variant
 	// [ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponse].
 	Bonds []ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponseBond `json:"bonds"`
 	// This field is from variant
 	// [ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderProteinDesignBoltzCuratedBinderResponse].
 	Binder ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderProteinDesignBoltzCuratedBinderResponseBinder `json:"binder"`
+	Type   string                                                                                                              `json:"type"`
 	// This field is from variant
 	// [ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponse].
 	Specifications []ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationUnion `json:"specifications"`
 	JSON           struct {
 		Entities       respjson.Field
 		Modality       respjson.Field
-		Type           respjson.Field
 		Bonds          respjson.Field
 		Binder         respjson.Field
+		Type           respjson.Field
 		Specifications respjson.Field
 		raw            string
 	} `json:"-"`
@@ -5288,13 +5288,11 @@ type ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderSingl
 	Entities []ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponseEntityUnion `json:"entities" api:"required"`
 	// Any of "peptide", "antibody", "nanobody", "custom_protein".
 	Modality ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponseModality `json:"modality" api:"required"`
-	Type     constant.Single                                                                                                 `json:"type" default:"single"`
 	Bonds    []ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponseBond   `json:"bonds"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Entities    respjson.Field
 		Modality    respjson.Field
-		Type        respjson.Field
 		Bonds       respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -6880,19 +6878,21 @@ type ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderUnifo
 	// This field is from variant
 	// [ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponse].
 	Modality ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponseModality `json:"modality"`
-	Type     string                                                                                                                                                                  `json:"type"`
 	// This field is from variant
 	// [ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponse].
 	Bonds []ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponseBond `json:"bonds"`
 	// This field is from variant
 	// [ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationProteinDesignBoltzCuratedBinderResponse].
 	Binder ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationProteinDesignBoltzCuratedBinderResponseBinder `json:"binder"`
-	JSON   struct {
+	// This field is from variant
+	// [ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationProteinDesignBoltzCuratedBinderResponse].
+	Type constant.BoltzCurated `json:"type"`
+	JSON struct {
 		Entities respjson.Field
 		Modality respjson.Field
-		Type     respjson.Field
 		Bonds    respjson.Field
 		Binder   respjson.Field
+		Type     respjson.Field
 		raw      string
 	} `json:"-"`
 }
@@ -6920,13 +6920,11 @@ type ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderUnifo
 	Entities []ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponseEntityUnion `json:"entities" api:"required"`
 	// Any of "peptide", "antibody", "nanobody", "custom_protein".
 	Modality ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponseModality `json:"modality" api:"required"`
-	Type     constant.Single                                                                                                                                                         `json:"type" default:"single"`
 	Bonds    []ProteinDesignGetResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponseBond   `json:"bonds"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Entities    respjson.Field
 		Modality    respjson.Field
-		Type        respjson.Field
 		Bonds       respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -23026,22 +23024,22 @@ type ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderUn
 	// This field is from variant
 	// [ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponse].
 	Modality ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponseModality `json:"modality"`
-	Type     string                                                                                                             `json:"type"`
 	// This field is from variant
 	// [ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponse].
 	Bonds []ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponseBond `json:"bonds"`
 	// This field is from variant
 	// [ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderProteinDesignBoltzCuratedBinderResponse].
 	Binder ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderProteinDesignBoltzCuratedBinderResponseBinder `json:"binder"`
+	Type   string                                                                                                                 `json:"type"`
 	// This field is from variant
 	// [ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponse].
 	Specifications []ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationUnion `json:"specifications"`
 	JSON           struct {
 		Entities       respjson.Field
 		Modality       respjson.Field
-		Type           respjson.Field
 		Bonds          respjson.Field
 		Binder         respjson.Field
+		Type           respjson.Field
 		Specifications respjson.Field
 		raw            string
 	} `json:"-"`
@@ -23075,13 +23073,11 @@ type ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderSi
 	Entities []ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponseEntityUnion `json:"entities" api:"required"`
 	// Any of "peptide", "antibody", "nanobody", "custom_protein".
 	Modality ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponseModality `json:"modality" api:"required"`
-	Type     constant.Single                                                                                                    `json:"type" default:"single"`
 	Bonds    []ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponseBond   `json:"bonds"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Entities    respjson.Field
 		Modality    respjson.Field
-		Type        respjson.Field
 		Bonds       respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -24667,19 +24663,21 @@ type ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderUn
 	// This field is from variant
 	// [ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponse].
 	Modality ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponseModality `json:"modality"`
-	Type     string                                                                                                                                                                     `json:"type"`
 	// This field is from variant
 	// [ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponse].
 	Bonds []ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponseBond `json:"bonds"`
 	// This field is from variant
 	// [ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationProteinDesignBoltzCuratedBinderResponse].
 	Binder ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationProteinDesignBoltzCuratedBinderResponseBinder `json:"binder"`
-	JSON   struct {
+	// This field is from variant
+	// [ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationProteinDesignBoltzCuratedBinderResponse].
+	Type constant.BoltzCurated `json:"type"`
+	JSON struct {
 		Entities respjson.Field
 		Modality respjson.Field
-		Type     respjson.Field
 		Bonds    respjson.Field
 		Binder   respjson.Field
+		Type     respjson.Field
 		raw      string
 	} `json:"-"`
 }
@@ -24707,13 +24705,11 @@ type ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderUn
 	Entities []ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponseEntityUnion `json:"entities" api:"required"`
 	// Any of "peptide", "antibody", "nanobody", "custom_protein".
 	Modality ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponseModality `json:"modality" api:"required"`
-	Type     constant.Single                                                                                                                                                            `json:"type" default:"single"`
 	Bonds    []ProteinDesignResumeResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponseBond   `json:"bonds"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Entities    respjson.Field
 		Modality    respjson.Field
-		Type        respjson.Field
 		Bonds       respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -35159,22 +35155,22 @@ type ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderUni
 	// This field is from variant
 	// [ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponse].
 	Modality ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponseModality `json:"modality"`
-	Type     string                                                                                                            `json:"type"`
 	// This field is from variant
 	// [ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponse].
 	Bonds []ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponseBond `json:"bonds"`
 	// This field is from variant
 	// [ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderProteinDesignBoltzCuratedBinderResponse].
 	Binder ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderProteinDesignBoltzCuratedBinderResponseBinder `json:"binder"`
+	Type   string                                                                                                                `json:"type"`
 	// This field is from variant
 	// [ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponse].
 	Specifications []ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationUnion `json:"specifications"`
 	JSON           struct {
 		Entities       respjson.Field
 		Modality       respjson.Field
-		Type           respjson.Field
 		Bonds          respjson.Field
 		Binder         respjson.Field
+		Type           respjson.Field
 		Specifications respjson.Field
 		raw            string
 	} `json:"-"`
@@ -35208,13 +35204,11 @@ type ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderSin
 	Entities []ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponseEntityUnion `json:"entities" api:"required"`
 	// Any of "peptide", "antibody", "nanobody", "custom_protein".
 	Modality ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponseModality `json:"modality" api:"required"`
-	Type     constant.Single                                                                                                   `json:"type" default:"single"`
 	Bonds    []ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponseBond   `json:"bonds"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Entities    respjson.Field
 		Modality    respjson.Field
-		Type        respjson.Field
 		Bonds       respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -36800,19 +36794,21 @@ type ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderUni
 	// This field is from variant
 	// [ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponse].
 	Modality ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponseModality `json:"modality"`
-	Type     string                                                                                                                                                                    `json:"type"`
 	// This field is from variant
 	// [ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponse].
 	Bonds []ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponseBond `json:"bonds"`
 	// This field is from variant
 	// [ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationProteinDesignBoltzCuratedBinderResponse].
 	Binder ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationProteinDesignBoltzCuratedBinderResponseBinder `json:"binder"`
-	JSON   struct {
+	// This field is from variant
+	// [ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationProteinDesignBoltzCuratedBinderResponse].
+	Type constant.BoltzCurated `json:"type"`
+	JSON struct {
 		Entities respjson.Field
 		Modality respjson.Field
-		Type     respjson.Field
 		Bonds    respjson.Field
 		Binder   respjson.Field
+		Type     respjson.Field
 		raw      string
 	} `json:"-"`
 }
@@ -36840,13 +36836,11 @@ type ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderUni
 	Entities []ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponseEntityUnion `json:"entities" api:"required"`
 	// Any of "peptide", "antibody", "nanobody", "custom_protein".
 	Modality ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponseModality `json:"modality" api:"required"`
-	Type     constant.Single                                                                                                                                                           `json:"type" default:"single"`
 	Bonds    []ProteinDesignStartResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponseBond   `json:"bonds"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Entities    respjson.Field
 		Modality    respjson.Field
-		Type        respjson.Field
 		Bonds       respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -47291,22 +47285,22 @@ type ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderUnio
 	// This field is from variant
 	// [ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponse].
 	Modality ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponseModality `json:"modality"`
-	Type     string                                                                                                           `json:"type"`
 	// This field is from variant
 	// [ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponse].
 	Bonds []ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponseBond `json:"bonds"`
 	// This field is from variant
 	// [ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderProteinDesignBoltzCuratedBinderResponse].
 	Binder ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderProteinDesignBoltzCuratedBinderResponseBinder `json:"binder"`
+	Type   string                                                                                                               `json:"type"`
 	// This field is from variant
 	// [ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponse].
 	Specifications []ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationUnion `json:"specifications"`
 	JSON           struct {
 		Entities       respjson.Field
 		Modality       respjson.Field
-		Type           respjson.Field
 		Bonds          respjson.Field
 		Binder         respjson.Field
+		Type           respjson.Field
 		Specifications respjson.Field
 		raw            string
 	} `json:"-"`
@@ -47340,13 +47334,11 @@ type ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderSing
 	Entities []ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponseEntityUnion `json:"entities" api:"required"`
 	// Any of "peptide", "antibody", "nanobody", "custom_protein".
 	Modality ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponseModality `json:"modality" api:"required"`
-	Type     constant.Single                                                                                                  `json:"type" default:"single"`
 	Bonds    []ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderSingleProteinDesignBinderResponseBond   `json:"bonds"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Entities    respjson.Field
 		Modality    respjson.Field
-		Type        respjson.Field
 		Bonds       respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -48932,19 +48924,21 @@ type ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderUnif
 	// This field is from variant
 	// [ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponse].
 	Modality ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponseModality `json:"modality"`
-	Type     string                                                                                                                                                                   `json:"type"`
 	// This field is from variant
 	// [ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponse].
 	Bonds []ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponseBond `json:"bonds"`
 	// This field is from variant
 	// [ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationProteinDesignBoltzCuratedBinderResponse].
 	Binder ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationProteinDesignBoltzCuratedBinderResponseBinder `json:"binder"`
-	JSON   struct {
+	// This field is from variant
+	// [ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationProteinDesignBoltzCuratedBinderResponse].
+	Type constant.BoltzCurated `json:"type"`
+	JSON struct {
 		Entities respjson.Field
 		Modality respjson.Field
-		Type     respjson.Field
 		Bonds    respjson.Field
 		Binder   respjson.Field
+		Type     respjson.Field
 		raw      string
 	} `json:"-"`
 }
@@ -48972,13 +48966,11 @@ type ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderUnif
 	Entities []ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponseEntityUnion `json:"entities" api:"required"`
 	// Any of "peptide", "antibody", "nanobody", "custom_protein".
 	Modality ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponseModality `json:"modality" api:"required"`
-	Type     constant.Single                                                                                                                                                          `json:"type" default:"single"`
 	Bonds    []ProteinDesignStopResponseInputBinderProteinDesignRunInputResponseBinderUniformlySampledProteinDesignBinderResponseSpecificationSingleProteinDesignBinderResponseBond   `json:"bonds"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Entities    respjson.Field
 		Modality    respjson.Field
-		Type        respjson.Field
 		Bonds       respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -57576,14 +57568,12 @@ func (u *ProteinDesignEstimateCostParamsBodyBinderProteinDesignRunInputBinderUni
 	return apijson.UnmarshalRoot(data, u)
 }
 
-// The properties Entities, Modality, Type are required.
+// The properties Entities, Modality are required.
 type ProteinDesignEstimateCostParamsBodyBinderProteinDesignRunInputBinderSingleProteinDesignBinder struct {
 	Entities []ProteinDesignEstimateCostParamsBodyBinderProteinDesignRunInputBinderSingleProteinDesignBinderEntityUnion `json:"entities,omitzero" api:"required"`
 	// Any of "peptide", "antibody", "nanobody", "custom_protein".
 	Modality ProteinDesignEstimateCostParamsBodyBinderProteinDesignRunInputBinderSingleProteinDesignBinderModality `json:"modality,omitzero" api:"required"`
 	Bonds    []ProteinDesignEstimateCostParamsBodyBinderProteinDesignRunInputBinderSingleProteinDesignBinderBond   `json:"bonds,omitzero"`
-	// This field can be elided, and will marshal its zero value as "single".
-	Type constant.Single `json:"type" default:"single"`
 	paramObj
 }
 
@@ -58583,14 +58573,12 @@ func (u *ProteinDesignEstimateCostParamsBodyBinderProteinDesignRunInputBinderUni
 	return apijson.UnmarshalRoot(data, u)
 }
 
-// The properties Entities, Modality, Type are required.
+// The properties Entities, Modality are required.
 type ProteinDesignEstimateCostParamsBodyBinderProteinDesignRunInputBinderUniformlySampledProteinDesignBinderSpecificationSingleProteinDesignBinder struct {
 	Entities []ProteinDesignEstimateCostParamsBodyBinderProteinDesignRunInputBinderUniformlySampledProteinDesignBinderSpecificationSingleProteinDesignBinderEntityUnion `json:"entities,omitzero" api:"required"`
 	// Any of "peptide", "antibody", "nanobody", "custom_protein".
 	Modality ProteinDesignEstimateCostParamsBodyBinderProteinDesignRunInputBinderUniformlySampledProteinDesignBinderSpecificationSingleProteinDesignBinderModality `json:"modality,omitzero" api:"required"`
 	Bonds    []ProteinDesignEstimateCostParamsBodyBinderProteinDesignRunInputBinderUniformlySampledProteinDesignBinderSpecificationSingleProteinDesignBinderBond   `json:"bonds,omitzero"`
-	// This field can be elided, and will marshal its zero value as "single".
-	Type constant.Single `json:"type" default:"single"`
 	paramObj
 }
 
@@ -65071,14 +65059,12 @@ func (u *ProteinDesignStartParamsBodyBinderProteinDesignRunInputBinderUnion) Unm
 	return apijson.UnmarshalRoot(data, u)
 }
 
-// The properties Entities, Modality, Type are required.
+// The properties Entities, Modality are required.
 type ProteinDesignStartParamsBodyBinderProteinDesignRunInputBinderSingleProteinDesignBinder struct {
 	Entities []ProteinDesignStartParamsBodyBinderProteinDesignRunInputBinderSingleProteinDesignBinderEntityUnion `json:"entities,omitzero" api:"required"`
 	// Any of "peptide", "antibody", "nanobody", "custom_protein".
 	Modality ProteinDesignStartParamsBodyBinderProteinDesignRunInputBinderSingleProteinDesignBinderModality `json:"modality,omitzero" api:"required"`
 	Bonds    []ProteinDesignStartParamsBodyBinderProteinDesignRunInputBinderSingleProteinDesignBinderBond   `json:"bonds,omitzero"`
-	// This field can be elided, and will marshal its zero value as "single".
-	Type constant.Single `json:"type" default:"single"`
 	paramObj
 }
 
@@ -66078,14 +66064,12 @@ func (u *ProteinDesignStartParamsBodyBinderProteinDesignRunInputBinderUniformlyS
 	return apijson.UnmarshalRoot(data, u)
 }
 
-// The properties Entities, Modality, Type are required.
+// The properties Entities, Modality are required.
 type ProteinDesignStartParamsBodyBinderProteinDesignRunInputBinderUniformlySampledProteinDesignBinderSpecificationSingleProteinDesignBinder struct {
 	Entities []ProteinDesignStartParamsBodyBinderProteinDesignRunInputBinderUniformlySampledProteinDesignBinderSpecificationSingleProteinDesignBinderEntityUnion `json:"entities,omitzero" api:"required"`
 	// Any of "peptide", "antibody", "nanobody", "custom_protein".
 	Modality ProteinDesignStartParamsBodyBinderProteinDesignRunInputBinderUniformlySampledProteinDesignBinderSpecificationSingleProteinDesignBinderModality `json:"modality,omitzero" api:"required"`
 	Bonds    []ProteinDesignStartParamsBodyBinderProteinDesignRunInputBinderUniformlySampledProteinDesignBinderSpecificationSingleProteinDesignBinderBond   `json:"bonds,omitzero"`
-	// This field can be elided, and will marshal its zero value as "single".
-	Type constant.Single `json:"type" default:"single"`
 	paramObj
 }
 
