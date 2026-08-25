@@ -1534,7 +1534,10 @@ type ProteinSequenceRedesignListResultsResponseUnionMetrics struct {
 	MinInteractionPae   float64 `json:"min_interaction_pae"`
 	SheetFraction       float64 `json:"sheet_fraction"`
 	StructureConfidence float64 `json:"structure_confidence"`
-	JSON                struct {
+	// This field is from variant
+	// [ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultMetrics].
+	IpsaeMin float64 `json:"ipsae_min"`
+	JSON     struct {
 		BindingConfidence   respjson.Field
 		HelixFraction       respjson.Field
 		Iptm                respjson.Field
@@ -1542,6 +1545,7 @@ type ProteinSequenceRedesignListResultsResponseUnionMetrics struct {
 		MinInteractionPae   respjson.Field
 		SheetFraction       respjson.Field
 		StructureConfidence respjson.Field
+		IpsaeMin            respjson.Field
 		raw                 string
 	} `json:"-"`
 }
@@ -2159,6 +2163,10 @@ type ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultMetrics 
 	SheetFraction float64 `json:"sheet_fraction" api:"required"`
 	// Confidence in the predicted 3D structure (0-1).
 	StructureConfidence float64 `json:"structure_confidence" api:"required"`
+	// Lower of the target-to-binder and binder-to-target ipSAE scores using a 10
+	// Angstrom PAE cutoff. Higher values indicate a more confidently predicted
+	// interface.
+	IpsaeMin float64 `json:"ipsae_min"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		BindingConfidence   respjson.Field
@@ -2168,6 +2176,7 @@ type ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultMetrics 
 		MinInteractionPae   respjson.Field
 		SheetFraction       respjson.Field
 		StructureConfidence respjson.Field
+		IpsaeMin            respjson.Field
 		ExtraFields         map[string]respjson.Field
 		raw                 string
 	} `json:"-"`
