@@ -1317,12 +1317,13 @@ func (r *SmallMoleculeExploreGetResponseInputTargetConstraintContactConstraintRe
 // and custom filters.
 type SmallMoleculeExploreGetResponseInputMoleculeFilters struct {
 	// Controls the stringency of Boltz's built-in SMARTS structural alert filtering,
-	// which removes molecules matching known problematic substructures. 'recommended'
-	// (default): applies a curated set of alerts balancing safety and hit rate.
-	// 'extra': adds additional alerts beyond the recommended set for stricter
-	// filtering. 'aggressive': applies the most comprehensive alert set — may reject
-	// viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely; only
-	// custom_filters will be applied.
+	// which removes molecules matching known problematic substructures. When omitted,
+	// small-molecule design and library screen use 'recommended', while Explore uses
+	// 'disabled'. 'recommended': applies a curated set of alerts balancing safety and
+	// hit rate. 'extra': adds additional alerts beyond the recommended set for
+	// stricter filtering. 'aggressive': applies the most comprehensive alert set — may
+	// reject viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely;
+	// only custom_filters will be applied.
 	//
 	// Any of "recommended", "extra", "aggressive", "disabled".
 	BoltzSmartsCatalogFilterLevel SmallMoleculeExploreGetResponseInputMoleculeFiltersBoltzSmartsCatalogFilterLevel `json:"boltz_smarts_catalog_filter_level"`
@@ -1344,12 +1345,13 @@ func (r *SmallMoleculeExploreGetResponseInputMoleculeFilters) UnmarshalJSON(data
 }
 
 // Controls the stringency of Boltz's built-in SMARTS structural alert filtering,
-// which removes molecules matching known problematic substructures. 'recommended'
-// (default): applies a curated set of alerts balancing safety and hit rate.
-// 'extra': adds additional alerts beyond the recommended set for stricter
-// filtering. 'aggressive': applies the most comprehensive alert set — may reject
-// viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely; only
-// custom_filters will be applied.
+// which removes molecules matching known problematic substructures. When omitted,
+// small-molecule design and library screen use 'recommended', while Explore uses
+// 'disabled'. 'recommended': applies a curated set of alerts balancing safety and
+// hit rate. 'extra': adds additional alerts beyond the recommended set for
+// stricter filtering. 'aggressive': applies the most comprehensive alert set — may
+// reject viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely;
+// only custom_filters will be applied.
 type SmallMoleculeExploreGetResponseInputMoleculeFiltersBoltzSmartsCatalogFilterLevel string
 
 const (
@@ -3313,12 +3315,13 @@ func (r *SmallMoleculeExploreResumeResponseInputTargetConstraintContactConstrain
 // and custom filters.
 type SmallMoleculeExploreResumeResponseInputMoleculeFilters struct {
 	// Controls the stringency of Boltz's built-in SMARTS structural alert filtering,
-	// which removes molecules matching known problematic substructures. 'recommended'
-	// (default): applies a curated set of alerts balancing safety and hit rate.
-	// 'extra': adds additional alerts beyond the recommended set for stricter
-	// filtering. 'aggressive': applies the most comprehensive alert set — may reject
-	// viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely; only
-	// custom_filters will be applied.
+	// which removes molecules matching known problematic substructures. When omitted,
+	// small-molecule design and library screen use 'recommended', while Explore uses
+	// 'disabled'. 'recommended': applies a curated set of alerts balancing safety and
+	// hit rate. 'extra': adds additional alerts beyond the recommended set for
+	// stricter filtering. 'aggressive': applies the most comprehensive alert set — may
+	// reject viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely;
+	// only custom_filters will be applied.
 	//
 	// Any of "recommended", "extra", "aggressive", "disabled".
 	BoltzSmartsCatalogFilterLevel SmallMoleculeExploreResumeResponseInputMoleculeFiltersBoltzSmartsCatalogFilterLevel `json:"boltz_smarts_catalog_filter_level"`
@@ -3340,12 +3343,13 @@ func (r *SmallMoleculeExploreResumeResponseInputMoleculeFilters) UnmarshalJSON(d
 }
 
 // Controls the stringency of Boltz's built-in SMARTS structural alert filtering,
-// which removes molecules matching known problematic substructures. 'recommended'
-// (default): applies a curated set of alerts balancing safety and hit rate.
-// 'extra': adds additional alerts beyond the recommended set for stricter
-// filtering. 'aggressive': applies the most comprehensive alert set — may reject
-// viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely; only
-// custom_filters will be applied.
+// which removes molecules matching known problematic substructures. When omitted,
+// small-molecule design and library screen use 'recommended', while Explore uses
+// 'disabled'. 'recommended': applies a curated set of alerts balancing safety and
+// hit rate. 'extra': adds additional alerts beyond the recommended set for
+// stricter filtering. 'aggressive': applies the most comprehensive alert set — may
+// reject viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely;
+// only custom_filters will be applied.
 type SmallMoleculeExploreResumeResponseInputMoleculeFiltersBoltzSmartsCatalogFilterLevel string
 
 const (
@@ -5130,12 +5134,13 @@ func (r *SmallMoleculeExploreStartResponseInputTargetConstraintContactConstraint
 // and custom filters.
 type SmallMoleculeExploreStartResponseInputMoleculeFilters struct {
 	// Controls the stringency of Boltz's built-in SMARTS structural alert filtering,
-	// which removes molecules matching known problematic substructures. 'recommended'
-	// (default): applies a curated set of alerts balancing safety and hit rate.
-	// 'extra': adds additional alerts beyond the recommended set for stricter
-	// filtering. 'aggressive': applies the most comprehensive alert set — may reject
-	// viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely; only
-	// custom_filters will be applied.
+	// which removes molecules matching known problematic substructures. When omitted,
+	// small-molecule design and library screen use 'recommended', while Explore uses
+	// 'disabled'. 'recommended': applies a curated set of alerts balancing safety and
+	// hit rate. 'extra': adds additional alerts beyond the recommended set for
+	// stricter filtering. 'aggressive': applies the most comprehensive alert set — may
+	// reject viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely;
+	// only custom_filters will be applied.
 	//
 	// Any of "recommended", "extra", "aggressive", "disabled".
 	BoltzSmartsCatalogFilterLevel SmallMoleculeExploreStartResponseInputMoleculeFiltersBoltzSmartsCatalogFilterLevel `json:"boltz_smarts_catalog_filter_level"`
@@ -5157,12 +5162,13 @@ func (r *SmallMoleculeExploreStartResponseInputMoleculeFilters) UnmarshalJSON(da
 }
 
 // Controls the stringency of Boltz's built-in SMARTS structural alert filtering,
-// which removes molecules matching known problematic substructures. 'recommended'
-// (default): applies a curated set of alerts balancing safety and hit rate.
-// 'extra': adds additional alerts beyond the recommended set for stricter
-// filtering. 'aggressive': applies the most comprehensive alert set — may reject
-// viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely; only
-// custom_filters will be applied.
+// which removes molecules matching known problematic substructures. When omitted,
+// small-molecule design and library screen use 'recommended', while Explore uses
+// 'disabled'. 'recommended': applies a curated set of alerts balancing safety and
+// hit rate. 'extra': adds additional alerts beyond the recommended set for
+// stricter filtering. 'aggressive': applies the most comprehensive alert set — may
+// reject viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely;
+// only custom_filters will be applied.
 type SmallMoleculeExploreStartResponseInputMoleculeFiltersBoltzSmartsCatalogFilterLevel string
 
 const (
@@ -6947,12 +6953,13 @@ func (r *SmallMoleculeExploreStopResponseInputTargetConstraintContactConstraintR
 // and custom filters.
 type SmallMoleculeExploreStopResponseInputMoleculeFilters struct {
 	// Controls the stringency of Boltz's built-in SMARTS structural alert filtering,
-	// which removes molecules matching known problematic substructures. 'recommended'
-	// (default): applies a curated set of alerts balancing safety and hit rate.
-	// 'extra': adds additional alerts beyond the recommended set for stricter
-	// filtering. 'aggressive': applies the most comprehensive alert set — may reject
-	// viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely; only
-	// custom_filters will be applied.
+	// which removes molecules matching known problematic substructures. When omitted,
+	// small-molecule design and library screen use 'recommended', while Explore uses
+	// 'disabled'. 'recommended': applies a curated set of alerts balancing safety and
+	// hit rate. 'extra': adds additional alerts beyond the recommended set for
+	// stricter filtering. 'aggressive': applies the most comprehensive alert set — may
+	// reject viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely;
+	// only custom_filters will be applied.
 	//
 	// Any of "recommended", "extra", "aggressive", "disabled".
 	BoltzSmartsCatalogFilterLevel SmallMoleculeExploreStopResponseInputMoleculeFiltersBoltzSmartsCatalogFilterLevel `json:"boltz_smarts_catalog_filter_level"`
@@ -6974,12 +6981,13 @@ func (r *SmallMoleculeExploreStopResponseInputMoleculeFilters) UnmarshalJSON(dat
 }
 
 // Controls the stringency of Boltz's built-in SMARTS structural alert filtering,
-// which removes molecules matching known problematic substructures. 'recommended'
-// (default): applies a curated set of alerts balancing safety and hit rate.
-// 'extra': adds additional alerts beyond the recommended set for stricter
-// filtering. 'aggressive': applies the most comprehensive alert set — may reject
-// viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely; only
-// custom_filters will be applied.
+// which removes molecules matching known problematic substructures. When omitted,
+// small-molecule design and library screen use 'recommended', while Explore uses
+// 'disabled'. 'recommended': applies a curated set of alerts balancing safety and
+// hit rate. 'extra': adds additional alerts beyond the recommended set for
+// stricter filtering. 'aggressive': applies the most comprehensive alert set — may
+// reject viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely;
+// only custom_filters will be applied.
 type SmallMoleculeExploreStopResponseInputMoleculeFiltersBoltzSmartsCatalogFilterLevel string
 
 const (
@@ -8367,12 +8375,13 @@ func (r *SmallMoleculeExploreStartParamsTargetConstraintContactConstraintToken2L
 // and custom filters.
 type SmallMoleculeExploreStartParamsMoleculeFilters struct {
 	// Controls the stringency of Boltz's built-in SMARTS structural alert filtering,
-	// which removes molecules matching known problematic substructures. 'recommended'
-	// (default): applies a curated set of alerts balancing safety and hit rate.
-	// 'extra': adds additional alerts beyond the recommended set for stricter
-	// filtering. 'aggressive': applies the most comprehensive alert set — may reject
-	// viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely; only
-	// custom_filters will be applied.
+	// which removes molecules matching known problematic substructures. When omitted,
+	// small-molecule design and library screen use 'recommended', while Explore uses
+	// 'disabled'. 'recommended': applies a curated set of alerts balancing safety and
+	// hit rate. 'extra': adds additional alerts beyond the recommended set for
+	// stricter filtering. 'aggressive': applies the most comprehensive alert set — may
+	// reject viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely;
+	// only custom_filters will be applied.
 	//
 	// Any of "recommended", "extra", "aggressive", "disabled".
 	BoltzSmartsCatalogFilterLevel SmallMoleculeExploreStartParamsMoleculeFiltersBoltzSmartsCatalogFilterLevel `json:"boltz_smarts_catalog_filter_level,omitzero"`
@@ -8390,12 +8399,13 @@ func (r *SmallMoleculeExploreStartParamsMoleculeFilters) UnmarshalJSON(data []by
 }
 
 // Controls the stringency of Boltz's built-in SMARTS structural alert filtering,
-// which removes molecules matching known problematic substructures. 'recommended'
-// (default): applies a curated set of alerts balancing safety and hit rate.
-// 'extra': adds additional alerts beyond the recommended set for stricter
-// filtering. 'aggressive': applies the most comprehensive alert set — may reject
-// viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely; only
-// custom_filters will be applied.
+// which removes molecules matching known problematic substructures. When omitted,
+// small-molecule design and library screen use 'recommended', while Explore uses
+// 'disabled'. 'recommended': applies a curated set of alerts balancing safety and
+// hit rate. 'extra': adds additional alerts beyond the recommended set for
+// stricter filtering. 'aggressive': applies the most comprehensive alert set — may
+// reject viable molecules. 'disabled': turns off Boltz SMARTS filtering entirely;
+// only custom_filters will be applied.
 type SmallMoleculeExploreStartParamsMoleculeFiltersBoltzSmartsCatalogFilterLevel string
 
 const (
