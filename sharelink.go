@@ -1825,6 +1825,8 @@ type ShareLinkReadResponsePipelineUnionProgress struct {
 	// This field is from variant [ShareLinkReadResponsePipelineSmExploreProgress].
 	NumMoleculesScored int64 `json:"num_molecules_scored"`
 	// This field is from variant [ShareLinkReadResponsePipelineSmExploreProgress].
+	Phase ShareLinkReadResponsePipelineSmExploreProgressPhase `json:"phase"`
+	// This field is from variant [ShareLinkReadResponsePipelineSmExploreProgress].
 	TotalMoleculesToScore int64 `json:"total_molecules_to_score"`
 	// This field is from variant [ShareLinkReadResponsePipelineSmExploreProgress].
 	LibrarySize int64 `json:"library_size"`
@@ -1842,6 +1844,7 @@ type ShareLinkReadResponsePipelineUnionProgress struct {
 		TotalMoleculesToScreen   respjson.Field
 		RejectionSummary         respjson.Field
 		NumMoleculesScored       respjson.Field
+		Phase                    respjson.Field
 		TotalMoleculesToScore    respjson.Field
 		LibrarySize              respjson.Field
 		raw                      string
@@ -20478,7 +20481,10 @@ func (r *ShareLinkReadResponsePipelineSmExploreError) UnmarshalJSON(data []byte)
 
 // Pipeline input (null if data deleted)
 type ShareLinkReadResponsePipelineSmExploreInput struct {
-	// How many molecules to score. Must not exceed the accepted library size or
+	// How many molecules to score. Each is chosen using everything scored before it,
+	// so a run recovers far more of the library's best-scoring molecules than
+	// screening the same number blindly. Scoring around 7% of the library is where
+	// that advantage is clearest. Must not exceed the accepted library size or
 	// 5,000,000.
 	Budget  int64                                              `json:"budget" api:"required"`
 	Library ShareLinkReadResponsePipelineSmExploreInputLibrary `json:"library" api:"required"`
@@ -22149,6 +22155,14 @@ type ShareLinkReadResponsePipelineSmExploreProgress struct {
 	// Molecules that produced a usable result. The run completes when this reaches the
 	// budget.
 	NumMoleculesScored int64 `json:"num_molecules_scored" api:"required"`
+	// Stage of the run: `preparing_library` while the submitted library is fetched,
+	// validated and de-duplicated; `building_graph` while the neighbor graph and
+	// target inputs are prepared; `scoring` once molecules are being selected and
+	// scored. Phases only move forward, and a resumed run does not repeat one it has
+	// finished.
+	//
+	// Any of "preparing_library", "building_graph", "scoring".
+	Phase ShareLinkReadResponsePipelineSmExploreProgressPhase `json:"phase" api:"required"`
 	// The requested budget: how many of the library will be scored.
 	TotalMoleculesToScore int64 `json:"total_molecules_to_score" api:"required"`
 	// ID of the most recently scored result
@@ -22161,6 +22175,7 @@ type ShareLinkReadResponsePipelineSmExploreProgress struct {
 	JSON struct {
 		NumMoleculesFailed    respjson.Field
 		NumMoleculesScored    respjson.Field
+		Phase                 respjson.Field
 		TotalMoleculesToScore respjson.Field
 		LatestResultID        respjson.Field
 		LibrarySize           respjson.Field
@@ -22175,6 +22190,19 @@ func (r ShareLinkReadResponsePipelineSmExploreProgress) RawJSON() string { retur
 func (r *ShareLinkReadResponsePipelineSmExploreProgress) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Stage of the run: `preparing_library` while the submitted library is fetched,
+// validated and de-duplicated; `building_graph` while the neighbor graph and
+// target inputs are prepared; `scoring` once molecules are being selected and
+// scored. Phases only move forward, and a resumed run does not repeat one it has
+// finished.
+type ShareLinkReadResponsePipelineSmExploreProgressPhase string
+
+const (
+	ShareLinkReadResponsePipelineSmExploreProgressPhasePreparingLibrary ShareLinkReadResponsePipelineSmExploreProgressPhase = "preparing_library"
+	ShareLinkReadResponsePipelineSmExploreProgressPhaseBuildingGraph    ShareLinkReadResponsePipelineSmExploreProgressPhase = "building_graph"
+	ShareLinkReadResponsePipelineSmExploreProgressPhaseScoring          ShareLinkReadResponsePipelineSmExploreProgressPhase = "scoring"
+)
 
 type ShareLinkReadResponsePipelineSmExploreProgressRejectionSummary struct {
 	// Number of submitted rows that collapsed onto a molecule already in the library.
