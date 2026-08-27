@@ -1,5 +1,45 @@
 # Changelog
 
+## [0.36.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.35.0...v0.36.0) (2026-08-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* **sdk:** regenerate from reviewed API contract
+* **sdk:** regenerate from reviewed API contract
+* **sdk:** regenerate from reviewed API contract
+* **sdk:** regenerate from reviewed API contract
+* **sdk:** regenerate from reviewed API contract
+* **sdk:** regenerate from reviewed API contract
+* **sdk:** regenerate from reviewed API contract
+* **sdk:** regenerate from reviewed API contract
+* **sdk:** regenerate from reviewed API contract
+
+### Features
+
+* **sdk:** regenerate from reviewed API contract ([526f7d9](https://github.com/boltz-bio/boltz-api-go/commit/526f7d96cd3c6d41e61b811feaaf2c495221316b))
+* **sdk:** regenerate from reviewed API contract ([5dfb559](https://github.com/boltz-bio/boltz-api-go/commit/5dfb55906c268118d7abcf45ea46a8293437b6ae))
+* **sdk:** regenerate from reviewed API contract ([186992b](https://github.com/boltz-bio/boltz-api-go/commit/186992bf4efcee3b4e0f6ce5d9251bc8f758ebc7))
+* **sdk:** regenerate from reviewed API contract ([57e0a17](https://github.com/boltz-bio/boltz-api-go/commit/57e0a17a33e197e555065d16d1655b8d4b244ef0))
+* **sdk:** regenerate from reviewed API contract ([d1e1641](https://github.com/boltz-bio/boltz-api-go/commit/d1e1641d12bbd9aa26bec4fad62aaf6625720a41))
+* **sdk:** regenerate from reviewed API contract ([d213e24](https://github.com/boltz-bio/boltz-api-go/commit/d213e2471c5db7a568c0fbbe4273b2fba3b74d31))
+* **sdk:** regenerate from reviewed API contract ([0410ad9](https://github.com/boltz-bio/boltz-api-go/commit/0410ad90ab5706526a00a0cfd8aed9a87736902f))
+* **sdk:** regenerate from reviewed API contract ([b43e0a5](https://github.com/boltz-bio/boltz-api-go/commit/b43e0a5a53e34beacc793c7552aaa44cc59b1081))
+* **sdk:** regenerate from reviewed API contract ([72fbd3f](https://github.com/boltz-bio/boltz-api-go/commit/72fbd3f971ed72c8d1ecf865485eefe927d38862))
+
+
+### Chores
+
+* **sdk:** promote generated SDK ([3388cd0](https://github.com/boltz-bio/boltz-api-go/commit/3388cd0dbf94bcf1f08c64dc534175556299da0e))
+* **sdk:** promote generated SDK ([e293273](https://github.com/boltz-bio/boltz-api-go/commit/e293273383cfca82b8ab4fa06ce8f1a65572942a))
+* **sdk:** promote generated SDK ([9b3ae68](https://github.com/boltz-bio/boltz-api-go/commit/9b3ae68d8deb49086bbd4ba56961a952edcc2de9))
+* **sdk:** promote generated SDK ([05d4ecb](https://github.com/boltz-bio/boltz-api-go/commit/05d4ecba1dd08c4823ac3a668a6d880e94af669e))
+* **sdk:** promote generated SDK ([7b92345](https://github.com/boltz-bio/boltz-api-go/commit/7b92345701faac9001152d9e9acac352678ccccb))
+* **sdk:** promote generated SDK ([3b30281](https://github.com/boltz-bio/boltz-api-go/commit/3b30281cf0c9827a8f980809a1947f6d2d3d9ce5))
+* **sdk:** promote generated SDK ([c3356ea](https://github.com/boltz-bio/boltz-api-go/commit/c3356ea2d3d5576f3e28432dd05b9e265958ac65))
+* **sdk:** promote generated SDK ([9d2ef57](https://github.com/boltz-bio/boltz-api-go/commit/9d2ef57fb60d8b6baa116663022a0c46d9d72c49))
+* **sdk:** promote generated SDK ([937c146](https://github.com/boltz-bio/boltz-api-go/commit/937c146834a38c50ccd997b3be30bd4e0b1290c0))
+
 ## [0.35.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.34.0...v0.35.0) (2026-08-14)
 
 
