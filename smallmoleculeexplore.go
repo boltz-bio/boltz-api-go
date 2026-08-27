@@ -215,7 +215,10 @@ func (r *SmallMoleculeExploreGetResponseError) UnmarshalJSON(data []byte) error 
 
 // Pipeline input (null if data deleted)
 type SmallMoleculeExploreGetResponseInput struct {
-	// How many molecules to score. Must not exceed the accepted library size or
+	// How many molecules to score. Each is chosen using everything scored before it,
+	// so a run recovers far more of the library's best-scoring molecules than
+	// screening the same number blindly. Scoring around 7% of the library is where
+	// that advantage is clearest. Must not exceed the accepted library size or
 	// 5,000,000.
 	Budget  int64                                       `json:"budget" api:"required"`
 	Library SmallMoleculeExploreGetResponseInputLibrary `json:"library" api:"required"`
@@ -1876,6 +1879,14 @@ type SmallMoleculeExploreGetResponseProgress struct {
 	// Molecules that produced a usable result. The run completes when this reaches the
 	// budget.
 	NumMoleculesScored int64 `json:"num_molecules_scored" api:"required"`
+	// Stage of the run: `preparing_library` while the submitted library is fetched,
+	// validated and de-duplicated; `building_graph` while the neighbor graph and
+	// target inputs are prepared; `scoring` once molecules are being selected and
+	// scored. Phases only move forward, and a resumed run does not repeat one it has
+	// finished.
+	//
+	// Any of "preparing_library", "building_graph", "scoring".
+	Phase SmallMoleculeExploreGetResponseProgressPhase `json:"phase" api:"required"`
 	// The requested budget: how many of the library will be scored.
 	TotalMoleculesToScore int64 `json:"total_molecules_to_score" api:"required"`
 	// ID of the most recently scored result
@@ -1888,6 +1899,7 @@ type SmallMoleculeExploreGetResponseProgress struct {
 	JSON struct {
 		NumMoleculesFailed    respjson.Field
 		NumMoleculesScored    respjson.Field
+		Phase                 respjson.Field
 		TotalMoleculesToScore respjson.Field
 		LatestResultID        respjson.Field
 		LibrarySize           respjson.Field
@@ -1902,6 +1914,19 @@ func (r SmallMoleculeExploreGetResponseProgress) RawJSON() string { return r.JSO
 func (r *SmallMoleculeExploreGetResponseProgress) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Stage of the run: `preparing_library` while the submitted library is fetched,
+// validated and de-duplicated; `building_graph` while the neighbor graph and
+// target inputs are prepared; `scoring` once molecules are being selected and
+// scored. Phases only move forward, and a resumed run does not repeat one it has
+// finished.
+type SmallMoleculeExploreGetResponseProgressPhase string
+
+const (
+	SmallMoleculeExploreGetResponseProgressPhasePreparingLibrary SmallMoleculeExploreGetResponseProgressPhase = "preparing_library"
+	SmallMoleculeExploreGetResponseProgressPhaseBuildingGraph    SmallMoleculeExploreGetResponseProgressPhase = "building_graph"
+	SmallMoleculeExploreGetResponseProgressPhaseScoring          SmallMoleculeExploreGetResponseProgressPhase = "scoring"
+)
 
 type SmallMoleculeExploreGetResponseProgressRejectionSummary struct {
 	// Number of submitted rows that collapsed onto a molecule already in the library.
@@ -2207,7 +2232,10 @@ func (r *SmallMoleculeExploreResumeResponseError) UnmarshalJSON(data []byte) err
 
 // Pipeline input (null if data deleted)
 type SmallMoleculeExploreResumeResponseInput struct {
-	// How many molecules to score. Must not exceed the accepted library size or
+	// How many molecules to score. Each is chosen using everything scored before it,
+	// so a run recovers far more of the library's best-scoring molecules than
+	// screening the same number blindly. Scoring around 7% of the library is where
+	// that advantage is clearest. Must not exceed the accepted library size or
 	// 5,000,000.
 	Budget  int64                                          `json:"budget" api:"required"`
 	Library SmallMoleculeExploreResumeResponseInputLibrary `json:"library" api:"required"`
@@ -3874,6 +3902,14 @@ type SmallMoleculeExploreResumeResponseProgress struct {
 	// Molecules that produced a usable result. The run completes when this reaches the
 	// budget.
 	NumMoleculesScored int64 `json:"num_molecules_scored" api:"required"`
+	// Stage of the run: `preparing_library` while the submitted library is fetched,
+	// validated and de-duplicated; `building_graph` while the neighbor graph and
+	// target inputs are prepared; `scoring` once molecules are being selected and
+	// scored. Phases only move forward, and a resumed run does not repeat one it has
+	// finished.
+	//
+	// Any of "preparing_library", "building_graph", "scoring".
+	Phase SmallMoleculeExploreResumeResponseProgressPhase `json:"phase" api:"required"`
 	// The requested budget: how many of the library will be scored.
 	TotalMoleculesToScore int64 `json:"total_molecules_to_score" api:"required"`
 	// ID of the most recently scored result
@@ -3886,6 +3922,7 @@ type SmallMoleculeExploreResumeResponseProgress struct {
 	JSON struct {
 		NumMoleculesFailed    respjson.Field
 		NumMoleculesScored    respjson.Field
+		Phase                 respjson.Field
 		TotalMoleculesToScore respjson.Field
 		LatestResultID        respjson.Field
 		LibrarySize           respjson.Field
@@ -3900,6 +3937,19 @@ func (r SmallMoleculeExploreResumeResponseProgress) RawJSON() string { return r.
 func (r *SmallMoleculeExploreResumeResponseProgress) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Stage of the run: `preparing_library` while the submitted library is fetched,
+// validated and de-duplicated; `building_graph` while the neighbor graph and
+// target inputs are prepared; `scoring` once molecules are being selected and
+// scored. Phases only move forward, and a resumed run does not repeat one it has
+// finished.
+type SmallMoleculeExploreResumeResponseProgressPhase string
+
+const (
+	SmallMoleculeExploreResumeResponseProgressPhasePreparingLibrary SmallMoleculeExploreResumeResponseProgressPhase = "preparing_library"
+	SmallMoleculeExploreResumeResponseProgressPhaseBuildingGraph    SmallMoleculeExploreResumeResponseProgressPhase = "building_graph"
+	SmallMoleculeExploreResumeResponseProgressPhaseScoring          SmallMoleculeExploreResumeResponseProgressPhase = "scoring"
+)
 
 type SmallMoleculeExploreResumeResponseProgressRejectionSummary struct {
 	// Number of submitted rows that collapsed onto a molecule already in the library.
@@ -4028,7 +4078,10 @@ func (r *SmallMoleculeExploreStartResponseError) UnmarshalJSON(data []byte) erro
 
 // Pipeline input (null if data deleted)
 type SmallMoleculeExploreStartResponseInput struct {
-	// How many molecules to score. Must not exceed the accepted library size or
+	// How many molecules to score. Each is chosen using everything scored before it,
+	// so a run recovers far more of the library's best-scoring molecules than
+	// screening the same number blindly. Scoring around 7% of the library is where
+	// that advantage is clearest. Must not exceed the accepted library size or
 	// 5,000,000.
 	Budget  int64                                         `json:"budget" api:"required"`
 	Library SmallMoleculeExploreStartResponseInputLibrary `json:"library" api:"required"`
@@ -5693,6 +5746,14 @@ type SmallMoleculeExploreStartResponseProgress struct {
 	// Molecules that produced a usable result. The run completes when this reaches the
 	// budget.
 	NumMoleculesScored int64 `json:"num_molecules_scored" api:"required"`
+	// Stage of the run: `preparing_library` while the submitted library is fetched,
+	// validated and de-duplicated; `building_graph` while the neighbor graph and
+	// target inputs are prepared; `scoring` once molecules are being selected and
+	// scored. Phases only move forward, and a resumed run does not repeat one it has
+	// finished.
+	//
+	// Any of "preparing_library", "building_graph", "scoring".
+	Phase SmallMoleculeExploreStartResponseProgressPhase `json:"phase" api:"required"`
 	// The requested budget: how many of the library will be scored.
 	TotalMoleculesToScore int64 `json:"total_molecules_to_score" api:"required"`
 	// ID of the most recently scored result
@@ -5705,6 +5766,7 @@ type SmallMoleculeExploreStartResponseProgress struct {
 	JSON struct {
 		NumMoleculesFailed    respjson.Field
 		NumMoleculesScored    respjson.Field
+		Phase                 respjson.Field
 		TotalMoleculesToScore respjson.Field
 		LatestResultID        respjson.Field
 		LibrarySize           respjson.Field
@@ -5719,6 +5781,19 @@ func (r SmallMoleculeExploreStartResponseProgress) RawJSON() string { return r.J
 func (r *SmallMoleculeExploreStartResponseProgress) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Stage of the run: `preparing_library` while the submitted library is fetched,
+// validated and de-duplicated; `building_graph` while the neighbor graph and
+// target inputs are prepared; `scoring` once molecules are being selected and
+// scored. Phases only move forward, and a resumed run does not repeat one it has
+// finished.
+type SmallMoleculeExploreStartResponseProgressPhase string
+
+const (
+	SmallMoleculeExploreStartResponseProgressPhasePreparingLibrary SmallMoleculeExploreStartResponseProgressPhase = "preparing_library"
+	SmallMoleculeExploreStartResponseProgressPhaseBuildingGraph    SmallMoleculeExploreStartResponseProgressPhase = "building_graph"
+	SmallMoleculeExploreStartResponseProgressPhaseScoring          SmallMoleculeExploreStartResponseProgressPhase = "scoring"
+)
 
 type SmallMoleculeExploreStartResponseProgressRejectionSummary struct {
 	// Number of submitted rows that collapsed onto a molecule already in the library.
@@ -5847,7 +5922,10 @@ func (r *SmallMoleculeExploreStopResponseError) UnmarshalJSON(data []byte) error
 
 // Pipeline input (null if data deleted)
 type SmallMoleculeExploreStopResponseInput struct {
-	// How many molecules to score. Must not exceed the accepted library size or
+	// How many molecules to score. Each is chosen using everything scored before it,
+	// so a run recovers far more of the library's best-scoring molecules than
+	// screening the same number blindly. Scoring around 7% of the library is where
+	// that advantage is clearest. Must not exceed the accepted library size or
 	// 5,000,000.
 	Budget  int64                                        `json:"budget" api:"required"`
 	Library SmallMoleculeExploreStopResponseInputLibrary `json:"library" api:"required"`
@@ -7512,6 +7590,14 @@ type SmallMoleculeExploreStopResponseProgress struct {
 	// Molecules that produced a usable result. The run completes when this reaches the
 	// budget.
 	NumMoleculesScored int64 `json:"num_molecules_scored" api:"required"`
+	// Stage of the run: `preparing_library` while the submitted library is fetched,
+	// validated and de-duplicated; `building_graph` while the neighbor graph and
+	// target inputs are prepared; `scoring` once molecules are being selected and
+	// scored. Phases only move forward, and a resumed run does not repeat one it has
+	// finished.
+	//
+	// Any of "preparing_library", "building_graph", "scoring".
+	Phase SmallMoleculeExploreStopResponseProgressPhase `json:"phase" api:"required"`
 	// The requested budget: how many of the library will be scored.
 	TotalMoleculesToScore int64 `json:"total_molecules_to_score" api:"required"`
 	// ID of the most recently scored result
@@ -7524,6 +7610,7 @@ type SmallMoleculeExploreStopResponseProgress struct {
 	JSON struct {
 		NumMoleculesFailed    respjson.Field
 		NumMoleculesScored    respjson.Field
+		Phase                 respjson.Field
 		TotalMoleculesToScore respjson.Field
 		LatestResultID        respjson.Field
 		LibrarySize           respjson.Field
@@ -7538,6 +7625,19 @@ func (r SmallMoleculeExploreStopResponseProgress) RawJSON() string { return r.JS
 func (r *SmallMoleculeExploreStopResponseProgress) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Stage of the run: `preparing_library` while the submitted library is fetched,
+// validated and de-duplicated; `building_graph` while the neighbor graph and
+// target inputs are prepared; `scoring` once molecules are being selected and
+// scored. Phases only move forward, and a resumed run does not repeat one it has
+// finished.
+type SmallMoleculeExploreStopResponseProgressPhase string
+
+const (
+	SmallMoleculeExploreStopResponseProgressPhasePreparingLibrary SmallMoleculeExploreStopResponseProgressPhase = "preparing_library"
+	SmallMoleculeExploreStopResponseProgressPhaseBuildingGraph    SmallMoleculeExploreStopResponseProgressPhase = "building_graph"
+	SmallMoleculeExploreStopResponseProgressPhaseScoring          SmallMoleculeExploreStopResponseProgressPhase = "scoring"
+)
 
 type SmallMoleculeExploreStopResponseProgressRejectionSummary struct {
 	// Number of submitted rows that collapsed onto a molecule already in the library.
@@ -7618,7 +7718,10 @@ func (r SmallMoleculeExploreListResultsParams) URLQuery() (v url.Values, err err
 }
 
 type SmallMoleculeExploreStartParams struct {
-	// How many molecules to score. Must not exceed the accepted library size or
+	// How many molecules to score. Each is chosen using everything scored before it,
+	// so a run recovers far more of the library's best-scoring molecules than
+	// screening the same number blindly. Scoring around 7% of the library is where
+	// that advantage is clearest. Must not exceed the accepted library size or
 	// 5,000,000.
 	Budget int64 `json:"budget" api:"required"`
 	// CSV or TSV molecule library, limited to 375 MiB and 5,000,000 data records. URL
