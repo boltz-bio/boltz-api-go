@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.37.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.36.0...v0.37.0) (2026-09-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* **sdk:** regenerate from reviewed API contract
+
+### Features
+
+* **sdk:** regenerate from reviewed API contract ([3e24ddd](https://github.com/boltz-bio/boltz-api-go/commit/3e24ddd5e3a54e0db288ef4e9ac23b35814a5bfa))
+
+
+### Chores
+
+* **sdk:** promote generated SDK ([cb94394](https://github.com/boltz-bio/boltz-api-go/commit/cb94394a7b4281cb847004c1d9595aa5a94a014e))
+
 ## [0.36.0](https://github.com/boltz-bio/boltz-api-go/compare/v0.35.0...v0.36.0) (2026-08-27)
 
 
