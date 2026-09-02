@@ -260,11 +260,10 @@ type SmallMoleculeDesignGetResponseInput struct {
 	// Target protein sequences for small molecule design or screening.
 	Target SmallMoleculeDesignGetResponseInputTarget `json:"target" api:"required"`
 	// Chemical space to constrain generated molecules. Use 'enamine_real' for the
-	// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
-	// when enabled for your organization, or 'none' to disable chemical-space
-	// filtering.
+	// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space,
+	// or 'none' to disable chemical-space filtering.
 	//
-	// Any of "enamine_real", "none".
+	// Any of "enamine_real", "none", "wuxi_galaxi".
 	ChemicalSpace SmallMoleculeDesignGetResponseInputChemicalSpace `json:"chemical_space"`
 	// Client-provided key to prevent duplicate submissions on retries
 	IdempotencyKey string `json:"idempotency_key"`
@@ -1245,14 +1244,14 @@ func (r *SmallMoleculeDesignGetResponseInputTargetConstraintContactConstraintRes
 }
 
 // Chemical space to constrain generated molecules. Use 'enamine_real' for the
-// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
-// when enabled for your organization, or 'none' to disable chemical-space
-// filtering.
+// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space,
+// or 'none' to disable chemical-space filtering.
 type SmallMoleculeDesignGetResponseInputChemicalSpace string
 
 const (
 	SmallMoleculeDesignGetResponseInputChemicalSpaceEnamineReal SmallMoleculeDesignGetResponseInputChemicalSpace = "enamine_real"
 	SmallMoleculeDesignGetResponseInputChemicalSpaceNone        SmallMoleculeDesignGetResponseInputChemicalSpace = "none"
+	SmallMoleculeDesignGetResponseInputChemicalSpaceWuxiGalaxi  SmallMoleculeDesignGetResponseInputChemicalSpace = "wuxi_galaxi"
 )
 
 // Molecule filtering configuration. Controls both Boltz built-in SMARTS filtering
@@ -2357,11 +2356,10 @@ type SmallMoleculeDesignResumeResponseInput struct {
 	// Target protein sequences for small molecule design or screening.
 	Target SmallMoleculeDesignResumeResponseInputTarget `json:"target" api:"required"`
 	// Chemical space to constrain generated molecules. Use 'enamine_real' for the
-	// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
-	// when enabled for your organization, or 'none' to disable chemical-space
-	// filtering.
+	// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space,
+	// or 'none' to disable chemical-space filtering.
 	//
-	// Any of "enamine_real", "none".
+	// Any of "enamine_real", "none", "wuxi_galaxi".
 	ChemicalSpace SmallMoleculeDesignResumeResponseInputChemicalSpace `json:"chemical_space"`
 	// Client-provided key to prevent duplicate submissions on retries
 	IdempotencyKey string `json:"idempotency_key"`
@@ -3348,14 +3346,14 @@ func (r *SmallMoleculeDesignResumeResponseInputTargetConstraintContactConstraint
 }
 
 // Chemical space to constrain generated molecules. Use 'enamine_real' for the
-// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
-// when enabled for your organization, or 'none' to disable chemical-space
-// filtering.
+// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space,
+// or 'none' to disable chemical-space filtering.
 type SmallMoleculeDesignResumeResponseInputChemicalSpace string
 
 const (
 	SmallMoleculeDesignResumeResponseInputChemicalSpaceEnamineReal SmallMoleculeDesignResumeResponseInputChemicalSpace = "enamine_real"
 	SmallMoleculeDesignResumeResponseInputChemicalSpaceNone        SmallMoleculeDesignResumeResponseInputChemicalSpace = "none"
+	SmallMoleculeDesignResumeResponseInputChemicalSpaceWuxiGalaxi  SmallMoleculeDesignResumeResponseInputChemicalSpace = "wuxi_galaxi"
 )
 
 // Molecule filtering configuration. Controls both Boltz built-in SMARTS filtering
@@ -4042,11 +4040,10 @@ type SmallMoleculeDesignStartResponseInput struct {
 	// Target protein sequences for small molecule design or screening.
 	Target SmallMoleculeDesignStartResponseInputTarget `json:"target" api:"required"`
 	// Chemical space to constrain generated molecules. Use 'enamine_real' for the
-	// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
-	// when enabled for your organization, or 'none' to disable chemical-space
-	// filtering.
+	// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space,
+	// or 'none' to disable chemical-space filtering.
 	//
-	// Any of "enamine_real", "none".
+	// Any of "enamine_real", "none", "wuxi_galaxi".
 	ChemicalSpace SmallMoleculeDesignStartResponseInputChemicalSpace `json:"chemical_space"`
 	// Client-provided key to prevent duplicate submissions on retries
 	IdempotencyKey string `json:"idempotency_key"`
@@ -5033,14 +5030,14 @@ func (r *SmallMoleculeDesignStartResponseInputTargetConstraintContactConstraintR
 }
 
 // Chemical space to constrain generated molecules. Use 'enamine_real' for the
-// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
-// when enabled for your organization, or 'none' to disable chemical-space
-// filtering.
+// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space,
+// or 'none' to disable chemical-space filtering.
 type SmallMoleculeDesignStartResponseInputChemicalSpace string
 
 const (
 	SmallMoleculeDesignStartResponseInputChemicalSpaceEnamineReal SmallMoleculeDesignStartResponseInputChemicalSpace = "enamine_real"
 	SmallMoleculeDesignStartResponseInputChemicalSpaceNone        SmallMoleculeDesignStartResponseInputChemicalSpace = "none"
+	SmallMoleculeDesignStartResponseInputChemicalSpaceWuxiGalaxi  SmallMoleculeDesignStartResponseInputChemicalSpace = "wuxi_galaxi"
 )
 
 // Molecule filtering configuration. Controls both Boltz built-in SMARTS filtering
@@ -5727,11 +5724,10 @@ type SmallMoleculeDesignStopResponseInput struct {
 	// Target protein sequences for small molecule design or screening.
 	Target SmallMoleculeDesignStopResponseInputTarget `json:"target" api:"required"`
 	// Chemical space to constrain generated molecules. Use 'enamine_real' for the
-	// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
-	// when enabled for your organization, or 'none' to disable chemical-space
-	// filtering.
+	// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space,
+	// or 'none' to disable chemical-space filtering.
 	//
-	// Any of "enamine_real", "none".
+	// Any of "enamine_real", "none", "wuxi_galaxi".
 	ChemicalSpace SmallMoleculeDesignStopResponseInputChemicalSpace `json:"chemical_space"`
 	// Client-provided key to prevent duplicate submissions on retries
 	IdempotencyKey string `json:"idempotency_key"`
@@ -6714,14 +6710,14 @@ func (r *SmallMoleculeDesignStopResponseInputTargetConstraintContactConstraintRe
 }
 
 // Chemical space to constrain generated molecules. Use 'enamine_real' for the
-// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
-// when enabled for your organization, or 'none' to disable chemical-space
-// filtering.
+// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space,
+// or 'none' to disable chemical-space filtering.
 type SmallMoleculeDesignStopResponseInputChemicalSpace string
 
 const (
 	SmallMoleculeDesignStopResponseInputChemicalSpaceEnamineReal SmallMoleculeDesignStopResponseInputChemicalSpace = "enamine_real"
 	SmallMoleculeDesignStopResponseInputChemicalSpaceNone        SmallMoleculeDesignStopResponseInputChemicalSpace = "none"
+	SmallMoleculeDesignStopResponseInputChemicalSpaceWuxiGalaxi  SmallMoleculeDesignStopResponseInputChemicalSpace = "wuxi_galaxi"
 )
 
 // Molecule filtering configuration. Controls both Boltz built-in SMARTS filtering
@@ -7362,11 +7358,10 @@ type SmallMoleculeDesignEstimateCostParams struct {
 	// Target workspace ID (admin keys only; ignored for workspace keys)
 	WorkspaceID param.Opt[string] `json:"workspace_id,omitzero"`
 	// Chemical space to constrain generated molecules. Use 'enamine_real' for the
-	// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
-	// when enabled for your organization, or 'none' to disable chemical-space
-	// filtering.
+	// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space,
+	// or 'none' to disable chemical-space filtering.
 	//
-	// Any of "enamine_real", "none".
+	// Any of "enamine_real", "none", "wuxi_galaxi".
 	ChemicalSpace SmallMoleculeDesignEstimateCostParamsChemicalSpace `json:"chemical_space,omitzero"`
 	// Molecule filtering configuration. Controls both Boltz built-in SMARTS filtering
 	// and custom filters.
@@ -8016,14 +8011,14 @@ func (r *SmallMoleculeDesignEstimateCostParamsTargetConstraintContactConstraintT
 }
 
 // Chemical space to constrain generated molecules. Use 'enamine_real' for the
-// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
-// when enabled for your organization, or 'none' to disable chemical-space
-// filtering.
+// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space,
+// or 'none' to disable chemical-space filtering.
 type SmallMoleculeDesignEstimateCostParamsChemicalSpace string
 
 const (
 	SmallMoleculeDesignEstimateCostParamsChemicalSpaceEnamineReal SmallMoleculeDesignEstimateCostParamsChemicalSpace = "enamine_real"
 	SmallMoleculeDesignEstimateCostParamsChemicalSpaceNone        SmallMoleculeDesignEstimateCostParamsChemicalSpace = "none"
+	SmallMoleculeDesignEstimateCostParamsChemicalSpaceWuxiGalaxi  SmallMoleculeDesignEstimateCostParamsChemicalSpace = "wuxi_galaxi"
 )
 
 // Molecule filtering configuration. Controls both Boltz built-in SMARTS filtering
@@ -8443,11 +8438,10 @@ type SmallMoleculeDesignStartParams struct {
 	// Target workspace ID (admin keys only; ignored for workspace keys)
 	WorkspaceID param.Opt[string] `json:"workspace_id,omitzero"`
 	// Chemical space to constrain generated molecules. Use 'enamine_real' for the
-	// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
-	// when enabled for your organization, or 'none' to disable chemical-space
-	// filtering.
+	// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space,
+	// or 'none' to disable chemical-space filtering.
 	//
-	// Any of "enamine_real", "none".
+	// Any of "enamine_real", "none", "wuxi_galaxi".
 	ChemicalSpace SmallMoleculeDesignStartParamsChemicalSpace `json:"chemical_space,omitzero"`
 	// Molecule filtering configuration. Controls both Boltz built-in SMARTS filtering
 	// and custom filters.
@@ -9097,14 +9091,14 @@ func (r *SmallMoleculeDesignStartParamsTargetConstraintContactConstraintToken2Li
 }
 
 // Chemical space to constrain generated molecules. Use 'enamine_real' for the
-// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
-// when enabled for your organization, or 'none' to disable chemical-space
-// filtering.
+// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space,
+// or 'none' to disable chemical-space filtering.
 type SmallMoleculeDesignStartParamsChemicalSpace string
 
 const (
 	SmallMoleculeDesignStartParamsChemicalSpaceEnamineReal SmallMoleculeDesignStartParamsChemicalSpace = "enamine_real"
 	SmallMoleculeDesignStartParamsChemicalSpaceNone        SmallMoleculeDesignStartParamsChemicalSpace = "none"
+	SmallMoleculeDesignStartParamsChemicalSpaceWuxiGalaxi  SmallMoleculeDesignStartParamsChemicalSpace = "wuxi_galaxi"
 )
 
 // Molecule filtering configuration. Controls both Boltz built-in SMARTS filtering

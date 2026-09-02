@@ -17086,11 +17086,10 @@ type ShareLinkReadResponsePipelineSmDesignRunInput struct {
 	// Target protein sequences for small molecule design or screening.
 	Target ShareLinkReadResponsePipelineSmDesignRunInputTarget `json:"target" api:"required"`
 	// Chemical space to constrain generated molecules. Use 'enamine_real' for the
-	// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
-	// when enabled for your organization, or 'none' to disable chemical-space
-	// filtering.
+	// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space,
+	// or 'none' to disable chemical-space filtering.
 	//
-	// Any of "enamine_real", "none".
+	// Any of "enamine_real", "none", "wuxi_galaxi".
 	ChemicalSpace ShareLinkReadResponsePipelineSmDesignRunInputChemicalSpace `json:"chemical_space"`
 	// Client-provided key to prevent duplicate submissions on retries
 	IdempotencyKey string `json:"idempotency_key"`
@@ -18079,14 +18078,14 @@ func (r *ShareLinkReadResponsePipelineSmDesignRunInputTargetConstraintContactCon
 }
 
 // Chemical space to constrain generated molecules. Use 'enamine_real' for the
-// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space
-// when enabled for your organization, or 'none' to disable chemical-space
-// filtering.
+// Enamine REAL chemical space, 'wuxi_galaxi' for the WuXi GalaXi chemical space,
+// or 'none' to disable chemical-space filtering.
 type ShareLinkReadResponsePipelineSmDesignRunInputChemicalSpace string
 
 const (
 	ShareLinkReadResponsePipelineSmDesignRunInputChemicalSpaceEnamineReal ShareLinkReadResponsePipelineSmDesignRunInputChemicalSpace = "enamine_real"
 	ShareLinkReadResponsePipelineSmDesignRunInputChemicalSpaceNone        ShareLinkReadResponsePipelineSmDesignRunInputChemicalSpace = "none"
+	ShareLinkReadResponsePipelineSmDesignRunInputChemicalSpaceWuxiGalaxi  ShareLinkReadResponsePipelineSmDesignRunInputChemicalSpace = "wuxi_galaxi"
 )
 
 // Molecule filtering configuration. Controls both Boltz built-in SMARTS filtering
