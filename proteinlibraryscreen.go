@@ -2548,6 +2548,9 @@ type ProteinLibraryScreenListResultsResponseMetrics struct {
 	SheetFraction float64 `json:"sheet_fraction" api:"required"`
 	// Confidence in the predicted 3D structure (0-1).
 	StructureConfidence float64 `json:"structure_confidence" api:"required"`
+	// ipSAE minimum multiplied by the lDDT refolding gate; equals ipsae_min without a
+	// design reference.
+	GatedIpsaeMin float64 `json:"gated_ipsae_min"`
 	// Lower of the target-to-protein and protein-to-target ipSAE scores using a 10
 	// Angstrom PAE cutoff. Higher values indicate a more confidently predicted
 	// interface.
@@ -2561,6 +2564,7 @@ type ProteinLibraryScreenListResultsResponseMetrics struct {
 		MinInteractionPae   respjson.Field
 		SheetFraction       respjson.Field
 		StructureConfidence respjson.Field
+		GatedIpsaeMin       respjson.Field
 		IpsaeMin            respjson.Field
 		ExtraFields         map[string]respjson.Field
 		raw                 string

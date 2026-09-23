@@ -971,6 +971,9 @@ type ShareLinkListPipelineResultsResponseMetrics struct {
 	SheetFraction float64 `json:"sheet_fraction" api:"required"`
 	// Confidence in the predicted 3D structure (0-1).
 	StructureConfidence float64 `json:"structure_confidence" api:"required"`
+	// ipSAE minimum multiplied by the lDDT refolding gate. Used to rank ESMFold2
+	// designs.
+	GatedIpsaeMin float64 `json:"gated_ipsae_min"`
 	// Lower of the target-to-binder and binder-to-target ipSAE scores using a 10
 	// Angstrom PAE cutoff. Higher values indicate a more confidently predicted
 	// interface.
@@ -984,6 +987,7 @@ type ShareLinkListPipelineResultsResponseMetrics struct {
 		MinInteractionPae   respjson.Field
 		SheetFraction       respjson.Field
 		StructureConfidence respjson.Field
+		GatedIpsaeMin       respjson.Field
 		IpsaeMin            respjson.Field
 		ExtraFields         map[string]respjson.Field
 		raw                 string
@@ -23917,6 +23921,10 @@ type ShareLinkReadResponsePredictionBoltz2PredictionInputModelOptions struct {
 	RecyclingSteps int64 `json:"recycling_steps"`
 	// The number of sampling steps to use for prediction. Default is 200.
 	SamplingSteps int64 `json:"sampling_steps"`
+	// Random seed for structure and binding prediction. Omit to use stochastic
+	// sampling. Results can vary across hardware and model versions even with the same
+	// seed.
+	Seed int64 `json:"seed"`
 	// Diffusion step scale (temperature). Controls sampling diversity — higher values
 	// produce more varied structures. Default is 1.638.
 	StepScale float64 `json:"step_scale"`
@@ -23924,6 +23932,7 @@ type ShareLinkReadResponsePredictionBoltz2PredictionInputModelOptions struct {
 	JSON struct {
 		RecyclingSteps respjson.Field
 		SamplingSteps  respjson.Field
+		Seed           respjson.Field
 		StepScale      respjson.Field
 		ExtraFields    map[string]respjson.Field
 		raw            string
