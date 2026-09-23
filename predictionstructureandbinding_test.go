@@ -163,6 +163,7 @@ func TestPredictionStructureAndBindingEstimateCostWithOptionalParams(t *testing.
 			ModelOptions: boltzapi.PredictionStructureAndBindingEstimateCostParamsInputModelOptions{
 				RecyclingSteps: boltzapi.Int(1),
 				SamplingSteps:  boltzapi.Int(50),
+				Seed:           boltzapi.Int(0),
 				StepScale:      boltzapi.Float(1.3),
 			},
 			NumSamples: boltzapi.Int(1),
@@ -262,6 +263,7 @@ func TestPredictionStructureAndBindingStartWithOptionalParams(t *testing.T) {
 			ModelOptions: boltzapi.PredictionStructureAndBindingStartParamsInputModelOptions{
 				RecyclingSteps: boltzapi.Int(1),
 				SamplingSteps:  boltzapi.Int(50),
+				Seed:           boltzapi.Int(0),
 				StepScale:      boltzapi.Float(1.3),
 			},
 			NumSamples: boltzapi.Int(1),

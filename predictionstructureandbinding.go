@@ -1606,6 +1606,10 @@ type PredictionStructureAndBindingGetResponseInputModelOptions struct {
 	RecyclingSteps int64 `json:"recycling_steps"`
 	// The number of sampling steps to use for prediction. Default is 200.
 	SamplingSteps int64 `json:"sampling_steps"`
+	// Random seed for structure and binding prediction. Omit to use stochastic
+	// sampling. Results can vary across hardware and model versions even with the same
+	// seed.
+	Seed int64 `json:"seed"`
 	// Diffusion step scale (temperature). Controls sampling diversity — higher values
 	// produce more varied structures. Default is 1.638.
 	StepScale float64 `json:"step_scale"`
@@ -1613,6 +1617,7 @@ type PredictionStructureAndBindingGetResponseInputModelOptions struct {
 	JSON struct {
 		RecyclingSteps respjson.Field
 		SamplingSteps  respjson.Field
+		Seed           respjson.Field
 		StepScale      respjson.Field
 		ExtraFields    map[string]respjson.Field
 		raw            string
@@ -3721,6 +3726,10 @@ type PredictionStructureAndBindingStartResponseInputModelOptions struct {
 	RecyclingSteps int64 `json:"recycling_steps"`
 	// The number of sampling steps to use for prediction. Default is 200.
 	SamplingSteps int64 `json:"sampling_steps"`
+	// Random seed for structure and binding prediction. Omit to use stochastic
+	// sampling. Results can vary across hardware and model versions even with the same
+	// seed.
+	Seed int64 `json:"seed"`
 	// Diffusion step scale (temperature). Controls sampling diversity — higher values
 	// produce more varied structures. Default is 1.638.
 	StepScale float64 `json:"step_scale"`
@@ -3728,6 +3737,7 @@ type PredictionStructureAndBindingStartResponseInputModelOptions struct {
 	JSON struct {
 		RecyclingSteps respjson.Field
 		SamplingSteps  respjson.Field
+		Seed           respjson.Field
 		StepScale      respjson.Field
 		ExtraFields    map[string]respjson.Field
 		raw            string
@@ -5185,6 +5195,10 @@ type PredictionStructureAndBindingEstimateCostParamsInputModelOptions struct {
 	RecyclingSteps param.Opt[int64] `json:"recycling_steps,omitzero"`
 	// The number of sampling steps to use for prediction. Default is 200.
 	SamplingSteps param.Opt[int64] `json:"sampling_steps,omitzero"`
+	// Random seed for structure and binding prediction. Omit to use stochastic
+	// sampling. Results can vary across hardware and model versions even with the same
+	// seed.
+	Seed param.Opt[int64] `json:"seed,omitzero"`
 	// Diffusion step scale (temperature). Controls sampling diversity — higher values
 	// produce more varied structures. Default is 1.638.
 	StepScale param.Opt[float64] `json:"step_scale,omitzero"`
@@ -6281,6 +6295,10 @@ type PredictionStructureAndBindingStartParamsInputModelOptions struct {
 	RecyclingSteps param.Opt[int64] `json:"recycling_steps,omitzero"`
 	// The number of sampling steps to use for prediction. Default is 200.
 	SamplingSteps param.Opt[int64] `json:"sampling_steps,omitzero"`
+	// Random seed for structure and binding prediction. Omit to use stochastic
+	// sampling. Results can vary across hardware and model versions even with the same
+	// seed.
+	Seed param.Opt[int64] `json:"seed,omitzero"`
 	// Diffusion step scale (temperature). Controls sampling diversity — higher values
 	// produce more varied structures. Default is 1.638.
 	StepScale param.Opt[float64] `json:"step_scale,omitzero"`
