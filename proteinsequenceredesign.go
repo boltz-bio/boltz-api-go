@@ -2167,8 +2167,7 @@ type ProteinSequenceRedesignListResultsResponseBinderProteinDesignResultMetrics 
 	SheetFraction float64 `json:"sheet_fraction" api:"required"`
 	// Confidence in the predicted 3D structure (0-1).
 	StructureConfidence float64 `json:"structure_confidence" api:"required"`
-	// ipSAE minimum multiplied by the lDDT refolding gate. Used to rank ESMFold2
-	// designs.
+	// ipSAE minimum multiplied by the lDDT refolding gate.
 	GatedIpsaeMin float64 `json:"gated_ipsae_min"`
 	// Lower of the target-to-binder and binder-to-target ipSAE scores using a 10
 	// Angstrom PAE cutoff. Higher values indicate a more confidently predicted
