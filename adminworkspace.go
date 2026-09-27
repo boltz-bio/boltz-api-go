@@ -149,8 +149,9 @@ type AdminWorkspaceNewResponse struct {
 	ID         string    `json:"id" api:"required"`
 	ArchivedAt time.Time `json:"archived_at" api:"required" format:"date-time"`
 	CreatedAt  time.Time `json:"created_at" api:"required" format:"date-time"`
-	// How long result data is retained before automatic deletion. Defaults to 7 days
-	// if not specified. Maximum retention is 14 days (336 hours).
+	// How long result data is retained before automatic deletion. Uses the
+	// organization default if not specified (normally 7 days). The standard maximum is
+	// 14 days (336 hours); custom organization policies can extend it.
 	DataRetention AdminWorkspaceNewResponseDataRetention `json:"data_retention" api:"required"`
 	// Whether this is the default workspace
 	IsDefault bool `json:"is_default" api:"required"`
@@ -177,14 +178,16 @@ func (r *AdminWorkspaceNewResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// How long result data is retained before automatic deletion. Defaults to 7 days
-// if not specified. Maximum retention is 14 days (336 hours).
+// How long result data is retained before automatic deletion. Uses the
+// organization default if not specified (normally 7 days). The standard maximum is
+// 14 days (336 hours); custom organization policies can extend it.
 type AdminWorkspaceNewResponseDataRetention struct {
 	// Time unit for retention duration
 	//
 	// Any of "hours", "days".
 	Unit AdminWorkspaceNewResponseDataRetentionUnit `json:"unit" api:"required"`
-	// Duration value. Maximum retention is 14 days (or 336 hours).
+	// Duration value. The standard maximum is 14 days (336 hours). Organizations can
+	// have a custom maximum.
 	Value int64 `json:"value" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -214,8 +217,9 @@ type AdminWorkspaceGetResponse struct {
 	ID         string    `json:"id" api:"required"`
 	ArchivedAt time.Time `json:"archived_at" api:"required" format:"date-time"`
 	CreatedAt  time.Time `json:"created_at" api:"required" format:"date-time"`
-	// How long result data is retained before automatic deletion. Defaults to 7 days
-	// if not specified. Maximum retention is 14 days (336 hours).
+	// How long result data is retained before automatic deletion. Uses the
+	// organization default if not specified (normally 7 days). The standard maximum is
+	// 14 days (336 hours); custom organization policies can extend it.
 	DataRetention AdminWorkspaceGetResponseDataRetention `json:"data_retention" api:"required"`
 	// Whether this is the default workspace
 	IsDefault bool `json:"is_default" api:"required"`
@@ -242,14 +246,16 @@ func (r *AdminWorkspaceGetResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// How long result data is retained before automatic deletion. Defaults to 7 days
-// if not specified. Maximum retention is 14 days (336 hours).
+// How long result data is retained before automatic deletion. Uses the
+// organization default if not specified (normally 7 days). The standard maximum is
+// 14 days (336 hours); custom organization policies can extend it.
 type AdminWorkspaceGetResponseDataRetention struct {
 	// Time unit for retention duration
 	//
 	// Any of "hours", "days".
 	Unit AdminWorkspaceGetResponseDataRetentionUnit `json:"unit" api:"required"`
-	// Duration value. Maximum retention is 14 days (or 336 hours).
+	// Duration value. The standard maximum is 14 days (336 hours). Organizations can
+	// have a custom maximum.
 	Value int64 `json:"value" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -279,8 +285,9 @@ type AdminWorkspaceUpdateResponse struct {
 	ID         string    `json:"id" api:"required"`
 	ArchivedAt time.Time `json:"archived_at" api:"required" format:"date-time"`
 	CreatedAt  time.Time `json:"created_at" api:"required" format:"date-time"`
-	// How long result data is retained before automatic deletion. Defaults to 7 days
-	// if not specified. Maximum retention is 14 days (336 hours).
+	// How long result data is retained before automatic deletion. Uses the
+	// organization default if not specified (normally 7 days). The standard maximum is
+	// 14 days (336 hours); custom organization policies can extend it.
 	DataRetention AdminWorkspaceUpdateResponseDataRetention `json:"data_retention" api:"required"`
 	// Whether this is the default workspace
 	IsDefault bool `json:"is_default" api:"required"`
@@ -307,14 +314,16 @@ func (r *AdminWorkspaceUpdateResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// How long result data is retained before automatic deletion. Defaults to 7 days
-// if not specified. Maximum retention is 14 days (336 hours).
+// How long result data is retained before automatic deletion. Uses the
+// organization default if not specified (normally 7 days). The standard maximum is
+// 14 days (336 hours); custom organization policies can extend it.
 type AdminWorkspaceUpdateResponseDataRetention struct {
 	// Time unit for retention duration
 	//
 	// Any of "hours", "days".
 	Unit AdminWorkspaceUpdateResponseDataRetentionUnit `json:"unit" api:"required"`
-	// Duration value. Maximum retention is 14 days (or 336 hours).
+	// Duration value. The standard maximum is 14 days (336 hours). Organizations can
+	// have a custom maximum.
 	Value int64 `json:"value" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -344,8 +353,9 @@ type AdminWorkspaceListResponse struct {
 	ID         string    `json:"id" api:"required"`
 	ArchivedAt time.Time `json:"archived_at" api:"required" format:"date-time"`
 	CreatedAt  time.Time `json:"created_at" api:"required" format:"date-time"`
-	// How long result data is retained before automatic deletion. Defaults to 7 days
-	// if not specified. Maximum retention is 14 days (336 hours).
+	// How long result data is retained before automatic deletion. Uses the
+	// organization default if not specified (normally 7 days). The standard maximum is
+	// 14 days (336 hours); custom organization policies can extend it.
 	DataRetention AdminWorkspaceListResponseDataRetention `json:"data_retention" api:"required"`
 	// Whether this is the default workspace
 	IsDefault bool `json:"is_default" api:"required"`
@@ -372,14 +382,16 @@ func (r *AdminWorkspaceListResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// How long result data is retained before automatic deletion. Defaults to 7 days
-// if not specified. Maximum retention is 14 days (336 hours).
+// How long result data is retained before automatic deletion. Uses the
+// organization default if not specified (normally 7 days). The standard maximum is
+// 14 days (336 hours); custom organization policies can extend it.
 type AdminWorkspaceListResponseDataRetention struct {
 	// Time unit for retention duration
 	//
 	// Any of "hours", "days".
 	Unit AdminWorkspaceListResponseDataRetentionUnit `json:"unit" api:"required"`
-	// Duration value. Maximum retention is 14 days (or 336 hours).
+	// Duration value. The standard maximum is 14 days (336 hours). Organizations can
+	// have a custom maximum.
 	Value int64 `json:"value" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -409,8 +421,9 @@ type AdminWorkspaceArchiveResponse struct {
 	ID         string    `json:"id" api:"required"`
 	ArchivedAt time.Time `json:"archived_at" api:"required" format:"date-time"`
 	CreatedAt  time.Time `json:"created_at" api:"required" format:"date-time"`
-	// How long result data is retained before automatic deletion. Defaults to 7 days
-	// if not specified. Maximum retention is 14 days (336 hours).
+	// How long result data is retained before automatic deletion. Uses the
+	// organization default if not specified (normally 7 days). The standard maximum is
+	// 14 days (336 hours); custom organization policies can extend it.
 	DataRetention AdminWorkspaceArchiveResponseDataRetention `json:"data_retention" api:"required"`
 	// Whether this is the default workspace
 	IsDefault bool `json:"is_default" api:"required"`
@@ -437,14 +450,16 @@ func (r *AdminWorkspaceArchiveResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// How long result data is retained before automatic deletion. Defaults to 7 days
-// if not specified. Maximum retention is 14 days (336 hours).
+// How long result data is retained before automatic deletion. Uses the
+// organization default if not specified (normally 7 days). The standard maximum is
+// 14 days (336 hours); custom organization policies can extend it.
 type AdminWorkspaceArchiveResponseDataRetention struct {
 	// Time unit for retention duration
 	//
 	// Any of "hours", "days".
 	Unit AdminWorkspaceArchiveResponseDataRetentionUnit `json:"unit" api:"required"`
-	// Duration value. Maximum retention is 14 days (or 336 hours).
+	// Duration value. The standard maximum is 14 days (336 hours). Organizations can
+	// have a custom maximum.
 	Value int64 `json:"value" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -612,8 +627,9 @@ func (r *AdminWorkspaceSetSpendingLimitResponseLimit) UnmarshalJSON(data []byte)
 type AdminWorkspaceNewParams struct {
 	// Workspace name
 	Name param.Opt[string] `json:"name,omitzero"`
-	// How long result data is retained before automatic deletion. Defaults to 7 days
-	// if not specified. Maximum retention is 14 days (336 hours).
+	// How long result data is retained before automatic deletion. Uses the
+	// organization default if not specified (normally 7 days). The standard maximum is
+	// 14 days (336 hours); custom organization policies can extend it.
 	DataRetention AdminWorkspaceNewParamsDataRetention `json:"data_retention,omitzero"`
 	SpendingLimit AdminWorkspaceNewParamsSpendingLimit `json:"spending_limit,omitzero"`
 	paramObj
@@ -627,8 +643,9 @@ func (r *AdminWorkspaceNewParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// How long result data is retained before automatic deletion. Defaults to 7 days
-// if not specified. Maximum retention is 14 days (336 hours).
+// How long result data is retained before automatic deletion. Uses the
+// organization default if not specified (normally 7 days). The standard maximum is
+// 14 days (336 hours); custom organization policies can extend it.
 //
 // The properties Unit, Value are required.
 type AdminWorkspaceNewParamsDataRetention struct {
@@ -636,7 +653,8 @@ type AdminWorkspaceNewParamsDataRetention struct {
 	//
 	// Any of "hours", "days".
 	Unit AdminWorkspaceNewParamsDataRetentionUnit `json:"unit,omitzero" api:"required"`
-	// Duration value. Maximum retention is 14 days (or 336 hours).
+	// Duration value. The standard maximum is 14 days (336 hours). Organizations can
+	// have a custom maximum.
 	Value int64 `json:"value" api:"required"`
 	paramObj
 }
@@ -698,8 +716,9 @@ func (r *AdminWorkspaceNewParamsSpendingLimitLimit) UnmarshalJSON(data []byte) e
 
 type AdminWorkspaceUpdateParams struct {
 	Name param.Opt[string] `json:"name,omitzero"`
-	// How long result data is retained before automatic deletion. Defaults to 7 days
-	// if not specified. Maximum retention is 14 days (336 hours).
+	// How long result data is retained before automatic deletion. Uses the
+	// organization default if not specified (normally 7 days). The standard maximum is
+	// 14 days (336 hours); custom organization policies can extend it.
 	DataRetention AdminWorkspaceUpdateParamsDataRetention `json:"data_retention,omitzero"`
 	paramObj
 }
@@ -712,8 +731,9 @@ func (r *AdminWorkspaceUpdateParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// How long result data is retained before automatic deletion. Defaults to 7 days
-// if not specified. Maximum retention is 14 days (336 hours).
+// How long result data is retained before automatic deletion. Uses the
+// organization default if not specified (normally 7 days). The standard maximum is
+// 14 days (336 hours); custom organization policies can extend it.
 //
 // The properties Unit, Value are required.
 type AdminWorkspaceUpdateParamsDataRetention struct {
@@ -721,7 +741,8 @@ type AdminWorkspaceUpdateParamsDataRetention struct {
 	//
 	// Any of "hours", "days".
 	Unit AdminWorkspaceUpdateParamsDataRetentionUnit `json:"unit,omitzero" api:"required"`
-	// Duration value. Maximum retention is 14 days (or 336 hours).
+	// Duration value. The standard maximum is 14 days (336 hours). Organizations can
+	// have a custom maximum.
 	Value int64 `json:"value" api:"required"`
 	paramObj
 }
