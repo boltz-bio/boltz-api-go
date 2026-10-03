@@ -2061,19 +2061,24 @@ type SmallMoleculeDesignListResultsResponse struct {
 	Smiles string `json:"smiles" api:"required"`
 	// Tier 1 ADME summary values for this molecule.
 	Adme SmallMoleculeDesignListResultsResponseAdme `json:"adme"`
+	// Named generation configuration for BoltzMol 1.5.
+	GenerationConfigID      string                                                        `json:"generation_config_id"`
+	StructuralFilterOutcome SmallMoleculeDesignListResultsResponseStructuralFilterOutcome `json:"structural_filter_outcome"`
 	// Warnings about potential quality issues with this result.
 	Warnings []SmallMoleculeDesignListResultsResponseWarning `json:"warnings"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID          respjson.Field
-		Artifacts   respjson.Field
-		CreatedAt   respjson.Field
-		Metrics     respjson.Field
-		Smiles      respjson.Field
-		Adme        respjson.Field
-		Warnings    respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		ID                      respjson.Field
+		Artifacts               respjson.Field
+		CreatedAt               respjson.Field
+		Metrics                 respjson.Field
+		Smiles                  respjson.Field
+		Adme                    respjson.Field
+		GenerationConfigID      respjson.Field
+		StructuralFilterOutcome respjson.Field
+		Warnings                respjson.Field
+		ExtraFields             map[string]respjson.Field
+		raw                     string
 	} `json:"-"`
 }
 
@@ -2239,6 +2244,112 @@ const (
 	SmallMoleculeDesignListResultsResponseAdmeSolubilityMediumConfidence SmallMoleculeDesignListResultsResponseAdmeSolubility = "medium-confidence"
 	SmallMoleculeDesignListResultsResponseAdmeSolubilityHighRisk         SmallMoleculeDesignListResultsResponseAdmeSolubility = "high-risk"
 )
+
+type SmallMoleculeDesignListResultsResponseStructuralFilterOutcome struct {
+	AvoidanceContacts []SmallMoleculeDesignListResultsResponseStructuralFilterOutcomeAvoidanceContact `json:"avoidance_contacts" api:"required"`
+	Codes             []string                                                                        `json:"codes" api:"required"`
+	ConfigID          string                                                                          `json:"config_id" api:"required"`
+	// One matched CA atom per paired residue.
+	PairedAtomCount    int64 `json:"paired_atom_count" api:"required"`
+	PairedResidueCount int64 `json:"paired_residue_count" api:"required"`
+	Passed             bool  `json:"passed" api:"required"`
+	// Any of "not_required", "evaluated", "unevaluable".
+	PlipStatus                SmallMoleculeDesignListResultsResponseStructuralFilterOutcomePlipStatus      `json:"plip_status" api:"required"`
+	PocketContactChainCount   int64                                                                        `json:"pocket_contact_chain_count" api:"required"`
+	PocketContacts            []SmallMoleculeDesignListResultsResponseStructuralFilterOutcomePocketContact `json:"pocket_contacts" api:"required"`
+	Reason                    string                                                                       `json:"reason" api:"required"`
+	SatisfiedInteractionCount int64                                                                        `json:"satisfied_interaction_count" api:"required"`
+	TargetRmsdAngstrom        float64                                                                      `json:"target_rmsd_angstrom" api:"required"`
+	// One global proper rigid alignment of matched CA atoms across all mapped retained
+	// target chains. Removed residues are outside this measurement.
+	TargetRmsdScope constant.FullRetainedCrop `json:"target_rmsd_scope" default:"full_retained_crop"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AvoidanceContacts         respjson.Field
+		Codes                     respjson.Field
+		ConfigID                  respjson.Field
+		PairedAtomCount           respjson.Field
+		PairedResidueCount        respjson.Field
+		Passed                    respjson.Field
+		PlipStatus                respjson.Field
+		PocketContactChainCount   respjson.Field
+		PocketContacts            respjson.Field
+		Reason                    respjson.Field
+		SatisfiedInteractionCount respjson.Field
+		TargetRmsdAngstrom        respjson.Field
+		TargetRmsdScope           respjson.Field
+		ExtraFields               map[string]respjson.Field
+		raw                       string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeDesignListResultsResponseStructuralFilterOutcome) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeDesignListResultsResponseStructuralFilterOutcome) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SmallMoleculeDesignListResultsResponseStructuralFilterOutcomeAvoidanceContact struct {
+	// Author chain ID in the immutable reference structure.
+	ChainID string `json:"chain_id" api:"required"`
+	// Author residue number in the reference structure.
+	ResidueNumber int64  `json:"residue_number" api:"required"`
+	StructureID   string `json:"structure_id" api:"required"`
+	InsertionCode string `json:"insertion_code"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainID       respjson.Field
+		ResidueNumber respjson.Field
+		StructureID   respjson.Field
+		InsertionCode respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeDesignListResultsResponseStructuralFilterOutcomeAvoidanceContact) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeDesignListResultsResponseStructuralFilterOutcomeAvoidanceContact) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SmallMoleculeDesignListResultsResponseStructuralFilterOutcomePlipStatus string
+
+const (
+	SmallMoleculeDesignListResultsResponseStructuralFilterOutcomePlipStatusNotRequired SmallMoleculeDesignListResultsResponseStructuralFilterOutcomePlipStatus = "not_required"
+	SmallMoleculeDesignListResultsResponseStructuralFilterOutcomePlipStatusEvaluated   SmallMoleculeDesignListResultsResponseStructuralFilterOutcomePlipStatus = "evaluated"
+	SmallMoleculeDesignListResultsResponseStructuralFilterOutcomePlipStatusUnevaluable SmallMoleculeDesignListResultsResponseStructuralFilterOutcomePlipStatus = "unevaluable"
+)
+
+type SmallMoleculeDesignListResultsResponseStructuralFilterOutcomePocketContact struct {
+	// Author chain ID in the immutable reference structure.
+	ChainID string `json:"chain_id" api:"required"`
+	// Author residue number in the reference structure.
+	ResidueNumber int64  `json:"residue_number" api:"required"`
+	StructureID   string `json:"structure_id" api:"required"`
+	InsertionCode string `json:"insertion_code"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChainID       respjson.Field
+		ResidueNumber respjson.Field
+		StructureID   respjson.Field
+		InsertionCode respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SmallMoleculeDesignListResultsResponseStructuralFilterOutcomePocketContact) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *SmallMoleculeDesignListResultsResponseStructuralFilterOutcomePocketContact) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // A warning about a potential quality issue with a result
 type SmallMoleculeDesignListResultsResponseWarning struct {
