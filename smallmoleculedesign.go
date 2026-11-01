@@ -1817,11 +1817,15 @@ type SmallMoleculeDesignGetResponseProgress struct {
 	TotalMoleculesToGenerate int64 `json:"total_molecules_to_generate" api:"required"`
 	// ID of the most recently generated result
 	LatestResultID string `json:"latest_result_id"`
+	// Completed scoring evaluations, including molecules rejected by filters. Present
+	// on evaluation-budget runs.
+	NumMoleculesScored int64 `json:"num_molecules_scored"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		NumMoleculesGenerated    respjson.Field
 		TotalMoleculesToGenerate respjson.Field
 		LatestResultID           respjson.Field
+		NumMoleculesScored       respjson.Field
 		ExtraFields              map[string]respjson.Field
 		raw                      string
 	} `json:"-"`
@@ -1935,11 +1939,15 @@ type SmallMoleculeDesignListResponseProgress struct {
 	TotalMoleculesToGenerate int64 `json:"total_molecules_to_generate" api:"required"`
 	// ID of the most recently generated result
 	LatestResultID string `json:"latest_result_id"`
+	// Completed scoring evaluations, including molecules rejected by filters. Present
+	// on evaluation-budget runs.
+	NumMoleculesScored int64 `json:"num_molecules_scored"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		NumMoleculesGenerated    respjson.Field
 		TotalMoleculesToGenerate respjson.Field
 		LatestResultID           respjson.Field
+		NumMoleculesScored       respjson.Field
 		ExtraFields              map[string]respjson.Field
 		raw                      string
 	} `json:"-"`
@@ -4030,11 +4038,15 @@ type SmallMoleculeDesignResumeResponseProgress struct {
 	TotalMoleculesToGenerate int64 `json:"total_molecules_to_generate" api:"required"`
 	// ID of the most recently generated result
 	LatestResultID string `json:"latest_result_id"`
+	// Completed scoring evaluations, including molecules rejected by filters. Present
+	// on evaluation-budget runs.
+	NumMoleculesScored int64 `json:"num_molecules_scored"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		NumMoleculesGenerated    respjson.Field
 		TotalMoleculesToGenerate respjson.Field
 		LatestResultID           respjson.Field
+		NumMoleculesScored       respjson.Field
 		ExtraFields              map[string]respjson.Field
 		raw                      string
 	} `json:"-"`
@@ -5714,11 +5726,15 @@ type SmallMoleculeDesignStartResponseProgress struct {
 	TotalMoleculesToGenerate int64 `json:"total_molecules_to_generate" api:"required"`
 	// ID of the most recently generated result
 	LatestResultID string `json:"latest_result_id"`
+	// Completed scoring evaluations, including molecules rejected by filters. Present
+	// on evaluation-budget runs.
+	NumMoleculesScored int64 `json:"num_molecules_scored"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		NumMoleculesGenerated    respjson.Field
 		TotalMoleculesToGenerate respjson.Field
 		LatestResultID           respjson.Field
+		NumMoleculesScored       respjson.Field
 		ExtraFields              map[string]respjson.Field
 		raw                      string
 	} `json:"-"`
@@ -7394,11 +7410,15 @@ type SmallMoleculeDesignStopResponseProgress struct {
 	TotalMoleculesToGenerate int64 `json:"total_molecules_to_generate" api:"required"`
 	// ID of the most recently generated result
 	LatestResultID string `json:"latest_result_id"`
+	// Completed scoring evaluations, including molecules rejected by filters. Present
+	// on evaluation-budget runs.
+	NumMoleculesScored int64 `json:"num_molecules_scored"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		NumMoleculesGenerated    respjson.Field
 		TotalMoleculesToGenerate respjson.Field
 		LatestResultID           respjson.Field
+		NumMoleculesScored       respjson.Field
 		ExtraFields              map[string]respjson.Field
 		raw                      string
 	} `json:"-"`
