@@ -1816,6 +1816,7 @@ type ShareLinkReadResponsePipelineUnionProgress struct {
 	NumMoleculesGenerated int64 `json:"num_molecules_generated"`
 	// This field is from variant [ShareLinkReadResponsePipelineSmDesignRunProgress].
 	TotalMoleculesToGenerate int64 `json:"total_molecules_to_generate"`
+	NumMoleculesScored       int64 `json:"num_molecules_scored"`
 	NumMoleculesFailed       int64 `json:"num_molecules_failed"`
 	// This field is from variant [ShareLinkReadResponsePipelineSmScreenProgress].
 	NumMoleculesScreened int64 `json:"num_molecules_screened"`
@@ -1825,8 +1826,6 @@ type ShareLinkReadResponsePipelineUnionProgress struct {
 	// [ShareLinkReadResponsePipelineSmScreenProgressRejectionSummary],
 	// [ShareLinkReadResponsePipelineSmExploreProgressRejectionSummary]
 	RejectionSummary ShareLinkReadResponsePipelineUnionProgressRejectionSummary `json:"rejection_summary"`
-	// This field is from variant [ShareLinkReadResponsePipelineSmExploreProgress].
-	NumMoleculesScored int64 `json:"num_molecules_scored"`
 	// This field is from variant [ShareLinkReadResponsePipelineSmExploreProgress].
 	Phase ShareLinkReadResponsePipelineSmExploreProgressPhase `json:"phase"`
 	// This field is from variant [ShareLinkReadResponsePipelineSmExploreProgress].
@@ -1842,11 +1841,11 @@ type ShareLinkReadResponsePipelineUnionProgress struct {
 		TotalProteinsToScreen    respjson.Field
 		NumMoleculesGenerated    respjson.Field
 		TotalMoleculesToGenerate respjson.Field
+		NumMoleculesScored       respjson.Field
 		NumMoleculesFailed       respjson.Field
 		NumMoleculesScreened     respjson.Field
 		TotalMoleculesToScreen   respjson.Field
 		RejectionSummary         respjson.Field
-		NumMoleculesScored       respjson.Field
 		Phase                    respjson.Field
 		TotalMoleculesToScore    respjson.Field
 		LibrarySize              respjson.Field
@@ -18656,11 +18655,15 @@ type ShareLinkReadResponsePipelineSmDesignRunProgress struct {
 	TotalMoleculesToGenerate int64 `json:"total_molecules_to_generate" api:"required"`
 	// ID of the most recently generated result
 	LatestResultID string `json:"latest_result_id"`
+	// Completed scoring evaluations, including molecules rejected by filters. Present
+	// on evaluation-budget runs.
+	NumMoleculesScored int64 `json:"num_molecules_scored"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		NumMoleculesGenerated    respjson.Field
 		TotalMoleculesToGenerate respjson.Field
 		LatestResultID           respjson.Field
+		NumMoleculesScored       respjson.Field
 		ExtraFields              map[string]respjson.Field
 		raw                      string
 	} `json:"-"`
