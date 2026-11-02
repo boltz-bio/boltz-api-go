@@ -42,7 +42,6 @@ type ExcludedAminoAcids string             // Always "excluded_amino_acids"
 type ExcludedSequenceMotifs string         // Always "excluded_sequence_motifs"
 type Failed string                         // Always "failed"
 type FromTemplate string                   // Always "from_template"
-type FullRetainedCrop string               // Always "full_retained_crop"
 type FusionProtein string                  // Always "fusion_protein"
 type Generic string                        // Always "generic"
 type Glycan string                         // Always "glycan"
@@ -110,7 +109,6 @@ func (c ExcludedAminoAcids) Default() ExcludedAminoAcids         { return "exclu
 func (c ExcludedSequenceMotifs) Default() ExcludedSequenceMotifs { return "excluded_sequence_motifs" }
 func (c Failed) Default() Failed                                 { return "failed" }
 func (c FromTemplate) Default() FromTemplate                     { return "from_template" }
-func (c FullRetainedCrop) Default() FullRetainedCrop             { return "full_retained_crop" }
 func (c FusionProtein) Default() FusionProtein                   { return "fusion_protein" }
 func (c Generic) Default() Generic                               { return "generic" }
 func (c Glycan) Default() Glycan                                 { return "glycan" }
@@ -184,7 +182,6 @@ func (c ExcludedAminoAcids) MarshalJSON() ([]byte, error)             { return m
 func (c ExcludedSequenceMotifs) MarshalJSON() ([]byte, error)         { return marshalString(c) }
 func (c Failed) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c FromTemplate) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
-func (c FullRetainedCrop) MarshalJSON() ([]byte, error)               { return marshalString(c) }
 func (c FusionProtein) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c Generic) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c Glycan) MarshalJSON() ([]byte, error)                         { return marshalString(c) }

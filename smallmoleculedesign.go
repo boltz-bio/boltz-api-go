@@ -2268,9 +2268,11 @@ type SmallMoleculeDesignListResultsResponseStructuralFilterOutcome struct {
 	Reason                    string                                                                       `json:"reason" api:"required"`
 	SatisfiedInteractionCount int64                                                                        `json:"satisfied_interaction_count" api:"required"`
 	TargetRmsdAngstrom        float64                                                                      `json:"target_rmsd_angstrom" api:"required"`
-	// One global proper rigid alignment of matched CA atoms across all mapped retained
-	// target chains. Removed residues are outside this measurement.
-	TargetRmsdScope constant.FullRetainedCrop `json:"target_rmsd_scope" default:"full_retained_crop"`
+	// One global proper rigid alignment of matched CA atoms across the retained crop
+	// or the fixed preparation pocket residue set.
+	//
+	// Any of "full_retained_crop", "prepared_pocket".
+	TargetRmsdScope SmallMoleculeDesignListResultsResponseStructuralFilterOutcomeTargetRmsdScope `json:"target_rmsd_scope" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		AvoidanceContacts         respjson.Field
@@ -2358,6 +2360,15 @@ func (r SmallMoleculeDesignListResultsResponseStructuralFilterOutcomePocketConta
 func (r *SmallMoleculeDesignListResultsResponseStructuralFilterOutcomePocketContact) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// One global proper rigid alignment of matched CA atoms across the retained crop
+// or the fixed preparation pocket residue set.
+type SmallMoleculeDesignListResultsResponseStructuralFilterOutcomeTargetRmsdScope string
+
+const (
+	SmallMoleculeDesignListResultsResponseStructuralFilterOutcomeTargetRmsdScopeFullRetainedCrop SmallMoleculeDesignListResultsResponseStructuralFilterOutcomeTargetRmsdScope = "full_retained_crop"
+	SmallMoleculeDesignListResultsResponseStructuralFilterOutcomeTargetRmsdScopePreparedPocket   SmallMoleculeDesignListResultsResponseStructuralFilterOutcomeTargetRmsdScope = "prepared_pocket"
+)
 
 // A warning about a potential quality issue with a result
 type SmallMoleculeDesignListResultsResponseWarning struct {
