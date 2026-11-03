@@ -24482,7 +24482,9 @@ func (r *ShareLinkReadResponsePredictionAdmePredictionInput) UnmarshalJSON(data 
 }
 
 type ShareLinkReadResponsePredictionAdmePredictionInputMolecule struct {
-	// SMILES string of the molecule to predict ADME properties for.
+	// SMILES string of the molecule to predict ADME properties for. Salt and solvent
+	// fragments are removed and charges are neutralized before prediction, so a salt
+	// and its free base get the same result.
 	Smiles string `json:"smiles" api:"required"`
 	// Optional client-provided identifier. Returned as `external_id` in the matching
 	// output item.
